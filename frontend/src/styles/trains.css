@@ -1,34 +1,75 @@
-.trains-filter { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 12px; background: #fff }
-.filter-group { border: 1px solid #e5e5e5; border-radius: 6px; padding: 8px }
-.filter-title { display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: #333; margin-bottom: 6px }
-.filter-items { display: flex; flex-wrap: wrap; gap: 8px }
-.filter-item { font-size: 13px; color: #222 }
-.collapse-btn { height: 28px; padding: 0 10px; border: 1px solid #cfd8e3; border-radius: 4px; background: #f8fafc; color: #333; cursor: pointer }
-.collapse-btn:hover { background: #eef5ff; border-color: #a8c2f7 }
-.search-bar { display: grid; grid-template-columns: 140px 1fr 1fr 200px 140px; align-items: end; gap: 12px; padding: 12px; background: #f7f9fc; border: 1px solid #e6effb }
+.trains-filter { position: relative; display: block; padding: 8px 12px 36px; border-top: 1px solid #8ec1ff; background: #fff; font-family: 'SimSun','宋体',serif }
+.trains-filter.collapsed .filter-row:not(:first-child) { display: none }
+.filter-row { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; padding: 6px 0 }
+.filter-label { color: #2b2b2b; font-size: 14px }
+.tag-all { height: 20px; padding: 0 8px; border: 1px solid #8ec1ff; border-radius: 12px; background: linear-gradient(#ecf3ff, #cfe3ff); color: #2b5fab; font-size: 12px }
+.filter-item { font-size: 13px; color: #3a3a3a }
+.filter-item input { width: 16px; height: 16px; margin-right: 6px }
+.filter-item.disabled { color: #9aa0a6 }
+.filter-extra { margin-left: auto; display: inline-flex; align-items: center; gap: 8px }
+.filter-time-label { color: #333; font-size: 13px }
+.time-select { height: 28px; border: 1px solid #cfd8e3; border-radius: 2px; background: #fff; font-size: 13px }
+.filter-toggle { position: absolute; right: 14px; bottom: 6px; height: 24px; padding: 0 10px; background: #ff8c00; color: #fff; border: none; border-radius: 2px; font-size: 12px; cursor: pointer }
+.filter-toggle:hover { background: #f07c00 }
+.search-bar { display: grid; grid-template-columns: 70px 2px 200px 24px 200px 160px 160px 2px 70px 96px; align-items: center; gap: 8px; padding: 10px 12px; background: #f3f7ff; border: 1px solid #8ec1ff; border-radius: 4px; font-family: 'SimSun','宋体',serif }
+.search-divider { width: 2px; height: 36px; background: #2f74ff; opacity: 0.6 }
+.search-side { display: flex; flex-direction: column; gap: 6px }
+.search-side.right { align-items: flex-start }
 .search-type { display: flex; gap: 12px; align-items: center }
-.radio { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: #333 }
+.radio { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #333 }
+.radio input[type="radio"] { width: 14px; height: 14px; accent-color: #2f74ff }
 .search-field { display: flex; flex-direction: column; gap: 6px }
-.search-label { font-size: 12px; color: #666 }
-.search-input { height: 36px; padding: 0 10px; border: 1px solid #c9d8f3; border-radius: 4px; background: #fff; font-size: 14px }
+.search-label { font-size: 12px; color: #666; font-family: 'SimSun','宋体',serif }
+.search-input { height: 26px; padding: 0 8px; border: 1px solid #9fbef0; border-radius: 2px; background: #fff; font-size: 13px; line-height: 24px; font-family: 'SimSun','宋体',serif }
 .search-input:focus { outline: none; border-color: #2f74ff; box-shadow: 0 0 0 2px rgba(47,116,255,0.15) }
+.swap-btn { width: 24px; height: 24px; border: 1px solid #9fbef0; border-radius: 2px; background: #fff; position: relative }
+.swap-btn::before { content: "⇄"; color: #2f74ff; position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); font-size: 14px }
+.swap-btn:hover { background: #eef5ff; border-color: #2f74ff }
+.date-field { position: relative }
+.calendar-icon { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; border: 1px solid #cbd5e1; border-radius: 2px; background: #eceff4 }
+.calendar-icon::after { content: "\1F4C5"; display: block; text-align: center; line-height: 16px; font-size: 12px; color: #9aa5b1 }
+.calendar-icon.active { border-color: #2f74ff; background: #e6f0ff }
+.calendar-icon.active::after { color: #2f74ff }
 .search-action { display: flex; align-items: center; justify-content: center }
-.search-button { height: 36px; padding: 0 18px; background: #ff8c00; color: #fff; border: none; border-radius: 4px; font-size: 14px; cursor: pointer }
+.search-button { height: 26px; padding: 0 14px; background: #ff8c00; color: #fff; border: none; border-radius: 2px; font-size: 13px; cursor: pointer; font-family: 'SimSun','宋体',serif }
 .search-button:hover { background: #f07c00 }
 .error-text { margin-top: 4px; font-size: 12px; color: #e54d42 }
-.date-tabs { display: flex; gap: 8px; padding: 8px 12px; background: #fff; border-bottom: 1px solid #e5e5e5 }
-.date-tab { min-width: 64px; height: 32px; padding: 0 10px; border: 1px solid #cfd8e3; border-radius: 4px; background: #f8fafc; color: #333; cursor: pointer }
-.date-tab:hover { background: #eef5ff; border-color: #a8c2f7 }
-.date-tab.active { background: #2f74ff; border-color: #2f74ff; color: #fff }
-.train-table { width: 100%; border-collapse: collapse; background: #fff; margin-top: 8px }
-.train-table thead th { background: #2f74ff; color: #fff; font-weight: 600; height: 38px; border-right: 1px solid #dfe8ff }
+.date-tabs { display: flex; gap: 0; padding: 8px 12px; background: #fff; border-bottom: 1px solid #e5e5e5; font-family: 'SimSun','宋体',serif }
+.date-tab { min-width: 72px; height: 32px; padding: 0 12px; border: 1px solid #cfd8e3; border-radius: 0; background: linear-gradient(#f9f9fb, #e7e9ee); color: #333; cursor: pointer; font-size: 13px }
+.date-tab + .date-tab { border-left: none }
+.date-tab:hover { background: #eef2f6; border-color: #b9c6d8 }
+.date-tab:focus { outline: 2px solid rgba(142,193,255,0.4); outline-offset: -2px }
+.date-tab.active { min-width: 120px; background: #fff; border-color: #8ec1ff; color: #1f5ea8; font-weight: 700 }
+.date-tab .weekday { display: none; margin-left: 6px; font-weight: 400; color: #1f5ea8 }
+.date-tab.active .weekday { display: inline }
+.train-table { width: 100%; border-collapse: collapse; background: #fff; margin-top: 8px; font-family: 'SimSun','宋体',serif }
+.train-table thead th { background: linear-gradient(#2a6bd8, #2f74ff); color: #fff; font-weight: 700; height: 40px; border-right: 1px solid #dfe8ff; line-height: 18px; padding: 4px 8px }
 .train-table thead th:last-child { border-right: none }
-.train-table tbody td { height: 44px; border-bottom: 1px solid #eef2f7; color: #333 }
+.train-table thead .th-line { display: block }
+.train-table tbody td { height: 56px; border-bottom: 1px solid #dfe7f3; color: #333; padding: 6px 8px }
 .train-table tbody tr:nth-child(even) { background: #f7fbff }
 .train-table tbody tr:hover { background: #eef5ff }
-.cell-train { font-weight: 600; color: #2f74ff }
-.cell-time, .cell-duration, .cell-seat { text-align: center }
-.seat-status.available { color: #1abf70 }
+.cell-train { font-weight: 700; color: #2f74ff; position: relative }
+.cell-train .train-no { font-size: 16px }
+.cell-train::after { content: ""; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #2f74ff }
+.cell-stations { padding-left: 8px }
+.station-line { display: flex; align-items: center; gap: 6px; height: 24px }
+.station-name { font-size: 13px; color: #333 }
+.cell-times { text-align: center }
+.time-line { height: 24px }
+.time-strong { font-size: 16px; font-weight: 700 }
+.cell-duration { text-align: center }
+.duration-strong { font-weight: 700; font-size: 14px }
+.arrival-day { color: #9aa0a6; font-size: 12px }
+.cell-seat, .cell-remark { text-align: center }
+.seat-status.available { color: #2aa84a }
 .seat-status.none { color: #a0a0a0 }
-.seat-status.count { color: #ff8c00 }
+.seat-status.count { color: #333 }
 .seat-status.dash { color: #999 }
+
+.cell-action { text-align: center }
+.book-btn { height: 30px; padding: 0 16px; background: linear-gradient(#2f74ff, #2566d6); color: #fff; border: 1px solid #1e57b6; border-radius: 6px; cursor: pointer; position: relative }
+.book-btn::after { content: ""; position: absolute; right: 0; top: 0; width: 0; height: 0; border-left: 12px solid transparent; border-bottom: 12px solid #ff8c00; border-right: 0 solid transparent }
+.book-btn:disabled { opacity: 0.6; cursor: not-allowed }
+.book-btn:hover:not(:disabled) { filter: brightness(1.05) }
+.remark-dash { color: #b0b0b0 }

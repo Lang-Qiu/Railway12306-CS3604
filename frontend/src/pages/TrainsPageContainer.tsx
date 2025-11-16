@@ -119,6 +119,11 @@ const TrainsPageContainer: React.FC = () => {
     return out
   }, [query.date])
 
+  const weekdayText = (key: string) => {
+    const n = new Date(key).getDay()
+    return ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][n]
+  }
+
   return (
     <div>
       <div role="navigation" />
@@ -136,7 +141,7 @@ const TrainsPageContainer: React.FC = () => {
             className={`date-tab${query.date === d.key ? ' active' : ''}`}
             onClick={() => { setQuery((p) => ({ ...p, date: d.key })); doSearch() }}
           >
-            {d.label}
+            {query.date === d.key ? (<><span className="date-strong">{d.label}</span> <span className="weekday">{weekdayText(d.key)}</span></>) : d.label}
           </button>
         ))}
       </div>

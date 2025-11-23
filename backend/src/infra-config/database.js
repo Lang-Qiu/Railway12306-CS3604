@@ -1,26 +1,22 @@
-const sqlite3 = require('sqlite3').verbose()
-const { open } = require('sqlite')
-const path = require('path')
+const initSqlJs = require('sql.js');
+const bcrypt = require('bcryptjs');
 
-class DatabaseConfig {
+class DatabaseManager {
   constructor() {
-    this.db = null
-    this.testDb = null
+    this.db = null;
+    this.isInitialized = false;
   }
 
-  async initDatabase(isTest = false) {
-    const dbPath = isTest 
-      ? process.env.TEST_DB_PATH || path.join(__dirname, '../../test.db')
-      : process.env.DB_PATH || path.join(__dirname, '../../database.db')
+  async initDatabase() {
+    if (this.isInitialized) {
+      return;
+    }
 
-    const db = await open({
-      filename: dbPath,
-      driver: sqlite3.Database
-    })
+    const SQL = await initSqlJs();
+    this.db = new SQL.Database();
 
-    // 创建用户表
-    await db.exec(`
-      CREATE TABLE IF NOT EXISTS users (
+    this.db.run(`
+      CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username VARCHAR(50) UNIQUE NOT NULL,
         email VARCHAR(100) UNIQUE NOT NULL,
@@ -31,80 +27,88 @@ class DatabaseConfig {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         last_login DATETIME,
-        is_active BOOLEAN DEFAULT 1
-      )
-    `)
+        is_active BOOLEAN DEFAULT 1,
+        failed_login_attempts INTEGER DEFAULT 0,
+        lockout_until DATETIME
+      );
+    `);
 
-    // 创建短信验证码表
-    await db.exec(`
-      CREATE TABLE IF NOT EXISTS sms_codes (
+    this.db.run(`
+      CREATE TABLE email_verification_codes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        phone_number VARCHAR(20) NOT NULL,
+        email VARCHAR(100) NOT NULL,
         code VARCHAR(6) NOT NULL,
-        created_at INTEGER NOT NULL,
-        expires_at INTEGER NOT NULL,
-        used BOOLEAN DEFAULT 0,
-        INDEX idx_phone_created (phone_number, created_at),
-        INDEX idx_expires (expires_at)
-      )
-    `)
+        created_at TEXT NOT NULL,
+        expires_at TEXT NOT NULL,
+        used INTEGER DEFAULT 0,
+        sent_status TEXT,
+        sent_at TEXT
+      );
+    `);
 
-    // 创建会话表
-    await db.exec(`
-      CREATE TABLE IF NOT EXISTS sessions (
+    this.db.run(`
+      CREATE TABLE verification_codes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        phone VARCHAR(20) NOT NULL,
+        code VARCHAR(6) NOT NULL,
+        created_at TEXT NOT NULL,
+        expires_at TEXT NOT NULL,
+        used INTEGER DEFAULT 0,
+        sent_status TEXT,
+        sent_at TEXT
+      );
+    `);
+
+    this.db.run(`
+      CREATE TABLE sessions (
+        id VARCHAR(36) PRIMARY KEY,
         session_id VARCHAR(36) UNIQUE NOT NULL,
         user_id INTEGER NOT NULL,
+        user_data TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         expires_at DATETIME NOT NULL,
-        is_active BOOLEAN DEFAULT 1,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-      )
-    `)
+        is_active BOOLEAN DEFAULT 1
+      );
+    `);
 
-    if (isTest) {
-      this.testDb = db
-      // 插入测试数据
-      await this.insertTestData(db)
-    } else {
-      this.db = db
+    await this.insertTestData();
+
+    this.isInitialized = true;
+    console.log('Database initialized successfully with sql.js.');
+  }
+
+  async insertTestData() {
+    const hashedPassword1 = await bcrypt.hash('password123', 10);
+    const hashedPassword2 = await bcrypt.hash('password456', 10);
+
+    this.db.run(
+      `INSERT OR IGNORE INTO users (username, email, phone, password_hash, real_name, id_card) VALUES (?, ?, ?, ?, ?, ?)`,
+      ['testuser', 'test@example.com', '13800138000', hashedPassword1, '张三', '110101199001011234']
+    );
+    this.db.run(
+      `INSERT OR IGNORE INTO users (username, email, phone, password_hash, real_name, id_card) VALUES (?, ?, ?, ?, ?, ?)`,
+      ['user2', 'user2@example.com', '13900139000', hashedPassword2, '李四', '110101199002022345']
+    );
+
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 5 * 60 * 1000);
+    this.db.run(
+      `INSERT OR IGNORE INTO verification_codes (phone, code, created_at, expires_at, used, sent_status, sent_at) VALUES (?, ?, ?, ?, 0, 'seed', ?)`,
+      ['13800138000', '123456', now.toISOString(), expiresAt.toISOString(), now.toISOString()]
+    );
+    this.db.run(
+      `INSERT OR IGNORE INTO verification_codes (phone, code, created_at, expires_at, used, sent_status, sent_at) VALUES (?, ?, ?, ?, 0, 'seed', ?)`,
+      ['13900139000', '654321', now.toISOString(), expiresAt.toISOString(), now.toISOString()]
+    );
+    console.log('Test data inserted.');
+  }
+
+  getDatabase() {
+    if (!this.isInitialized) {
+      throw new Error('Database has not been initialized. Call initDatabase() first.');
     }
-
-    return db
-  }
-
-  async insertTestData(db) {
-    // 插入测试用户
-    await db.run(`
-      INSERT OR IGNORE INTO users (username, email, phone, password_hash, real_name, id_card) 
-      VALUES 
-        ('testuser', 'test@example.com', '13800138000', 'hashedpassword123', '张三', '110101199001011234'),
-        ('user2', 'user2@example.com', '13900139000', 'hashedpassword456', '李四', '110101199002022345')
-    `)
-
-    // 插入有效的短信验证码
-    const now = Date.now()
-    await db.run(`
-      INSERT OR IGNORE INTO sms_codes (phone_number, code, created_at, expires_at) 
-      VALUES 
-        ('13800138000', '123456', ?, ?),
-        ('13900139000', '654321', ?, ?)
-    `, [now, now + 300000, now, now + 300000])
-  }
-
-  async closeDatabase(isTest = false) {
-    if (isTest && this.testDb) {
-      await this.testDb.close()
-      this.testDb = null
-    } else if (this.db) {
-      await this.db.close()
-      this.db = null
-    }
-  }
-
-  getDatabase(isTest = false) {
-    return isTest ? this.testDb : this.db
+    return this.db;
   }
 }
 
-module.exports = new DatabaseConfig()
+module.exports = new DatabaseManager();

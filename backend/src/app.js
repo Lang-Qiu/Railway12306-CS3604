@@ -49,8 +49,10 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
+const databaseManager = require('./infra-config/database');
+
 async function startServer() {
-  await dbService.init();
+  await databaseManager.initDatabase();
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });

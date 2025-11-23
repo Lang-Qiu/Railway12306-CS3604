@@ -8,15 +8,26 @@ const dbService = require('./dbService');
 const bcrypt = require('bcryptjs');
 
 class RegistrationDbService {
+  constructor() {
+    this.db = null;
+  }
+
+  async init() {
+    if (!this.db) {
+      await dbService.init();
+      this.db = dbService.getDb();
+    }
+  }
   /**
    * DB-FindUserByUsername - 根据用户名查找用户信息
    */
   async findUserByUsername(username) {
     try {
-      const user = await dbService.get(
-        'SELECT * FROM users WHERE username = ?',
-        [username]
-      );
+      await this.init();
+      const stmt = this.db.prepare('SELECT * FROM users WHERE username = ?');
+      stmt.bind([username]);
+      const user = stmt.step() ? stmt.getAsObject() : null;
+      stmt.free();
       return user || null;
     } catch (error) {
       console.error('Error finding user by username:', error);
@@ -29,10 +40,11 @@ class RegistrationDbService {
    */
   async findUserByIdCardNumber(idCardType, idCardNumber) {
     try {
-      const user = await dbService.get(
-        'SELECT * FROM users WHERE id_card_type = ? AND id_card_number = ?',
-        [idCardType, idCardNumber]
-      );
+      await this.init();
+      const stmt = this.db.prepare('SELECT * FROM users WHERE id_card_type = ? AND id_card_number = ?');
+      stmt.bind([idCardType, idCardNumber]);
+      const user = stmt.step() ? stmt.getAsObject() : null;
+      stmt.free();
       return user || null;
     } catch (error) {
       console.error('Error finding user by ID card:', error);
@@ -45,10 +57,11 @@ class RegistrationDbService {
    */
   async findUserByPhone(phone) {
     try {
-      const user = await dbService.get(
-        'SELECT * FROM users WHERE phone = ?',
-        [phone]
-      );
+      await this.init();
+      const stmt = this.db.prepare('SELECT * FROM users WHERE phone = ?');
+      stmt.bind([phone]);
+      const user = stmt.step() ? stmt.getAsObject() : null;
+      stmt.free();
       return user || null;
     } catch (error) {
       console.error('Error finding user by phone:', error);
@@ -61,13 +74,14 @@ class RegistrationDbService {
    */
   async findUserByEmail(email) {
     try {
+      await this.init();
       if (!email) {
         return null;
       }
-      const user = await dbService.get(
-        'SELECT * FROM users WHERE email = ?',
-        [email]
-      );
+      const stmt = this.db.prepare('SELECT * FROM users WHERE email = ?');
+      stmt.bind([email]);
+      const user = stmt.step() ? stmt.getAsObject() : null;
+      stmt.free();
       return user || null;
     } catch (error) {
       console.error('Error finding user by email:', error);
@@ -75,38 +89,56 @@ class RegistrationDbService {
     }
   }
 
+
+
   /**
    * DB-CreateUser - 在数据库中创建新用户记录
    */
   async createUser(userData) {
     try {
+      await this.init();
+      console.log('🚀 [createUser] 开始创建用户，接收到数据:', userData);
+
       // 1. 加密密码
       const saltRounds = 10;
+      console.log('🔒 [createUser] 准备加密密码...');
       const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
+      console.log('✅ [createUser] 密码加密完成。');
 
-      // 2. 插入用户记录
-      const result = await dbService.run(
+      // 2. 准备插入用户记录
+      const insertData = [
+        userData.username,
+        hashedPassword,
+        userData.name,
+        userData.email || null,
+        userData.phone,
+        userData.id_card_type,
+        userData.id_card_number,
+        userData.discount_type
+      ];
+      console.log('📝 [createUser] 准备插入数据库，数据:', insertData);
+
+      // 插入用户记录
+      this.db.run(
         `INSERT INTO users (
           username, password, name, email, phone, 
           id_card_type, id_card_number, discount_type, 
           created_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
-        [
-          userData.username,
-          hashedPassword,
-          userData.name,
-          userData.email || null,
-          userData.phone,
-          userData.idCardType || userData.id_card_type,
-          userData.idCardNumber || userData.id_card_number,
-          userData.discountType || userData.discount_type
-        ]
+        insertData
       );
+      console.log('✅ [createUser] 用户记录插入成功。');
 
       // 3. 返回用户ID
-      return result.lastID;
+      console.log('🆔 [createUser] 准备获取新用户的ID...');
+      const stmt = this.db.prepare('SELECT last_insert_rowid() as lastID');
+      stmt.step();
+      const row = stmt.getAsObject();
+      stmt.free();
+      console.log('✅ [createUser] 成功获取新用户ID:', row.lastID);
+      return row.lastID;
     } catch (error) {
-      console.error('Error creating user:', error);
+      console.error('❌ [createUser] 创建用户时发生错误:', error);
       // 检查唯一性约束错误
       if (error.message && error.message.includes('UNIQUE constraint failed')) {
         // 检查是哪个字段冲突
@@ -131,6 +163,7 @@ class RegistrationDbService {
    */
   async createEmailVerificationCode(email) {
     try {
+      await this.init();
       // 1. 生成6位数字验证码
       const code = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -139,7 +172,7 @@ class RegistrationDbService {
       const expiresAt = new Date(now.getTime() + 10 * 60 * 1000);
 
       // 3. 存储到数据库
-      await dbService.run(
+      this.db.run(
         `INSERT INTO email_verification_codes (
           email, code, created_at, expires_at, sent_status, sent_at
         ) VALUES (?, ?, ?, ?, ?, ?)`,
@@ -172,13 +205,14 @@ class RegistrationDbService {
    */
   async verifyEmailCode(email, code) {
     try {
+      await this.init();
       // 1. 查找验证码记录（未使用的最新记录）
-      const record = await dbService.get(
-        `SELECT * FROM email_verification_codes 
+      const stmt = this.db.prepare(`SELECT * FROM email_verification_codes 
          WHERE email = ? AND code = ? AND used = 0
-         ORDER BY created_at DESC LIMIT 1`,
-        [email, code]
-      );
+         ORDER BY created_at DESC LIMIT 1`);
+      stmt.bind([email, code]);
+      const record = stmt.step() ? stmt.getAsObject() : null;
+      stmt.free();
 
       if (!record) {
         return false;
@@ -192,7 +226,7 @@ class RegistrationDbService {
       }
 
       // 3. 标记为已使用
-      await dbService.run(
+      this.db.run(
         'UPDATE email_verification_codes SET used = 1 WHERE id = ?',
         [record.id]
       );
@@ -209,11 +243,12 @@ class RegistrationDbService {
    */
   async createSmsVerificationCode(phone) {
     try {
+      await this.init();
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       const now = new Date();
       const expiresAt = new Date(now.getTime() + 5 * 60 * 1000); // 5分钟后过期
 
-      await dbService.run(
+      this.db.run(
         `INSERT INTO verification_codes (phone, code, created_at, expires_at, sent_status, sent_at) 
          VALUES (?, ?, ?, ?, 'sent', ?)`,
         [phone, code, now.toISOString(), expiresAt.toISOString(), now.toISOString()]
@@ -232,31 +267,36 @@ class RegistrationDbService {
    */
   async verifySmsCode(phone, code) {
     try {
-      console.log(`\n🔍 验证短信验证码:`);
+      await this.init();
+      console.log(`
+🔍 验证短信验证码:`);
       console.log(`手机号: ${phone}`);
       console.log(`验证码: ${code}`);
       
       // 首先检查该手机号是否有未使用且未过期的验证码
       const now = new Date();
-      const validCode = await dbService.get(
-        `SELECT * FROM verification_codes 
-         WHERE phone = ? AND used = 0 AND datetime(expires_at) > datetime('now')
-         ORDER BY created_at DESC LIMIT 1`,
-        [phone]
-      );
+      const stmt = this.db.prepare(`SELECT * FROM verification_codes 
+         WHERE phone = ? AND used = 0
+         ORDER BY created_at DESC LIMIT 1`);
+      stmt.bind([phone]);
+      const validCode = stmt.step() ? stmt.getAsObject() : null;
+      stmt.free();
 
       if (!validCode) {
         console.log('❌ 该手机号没有有效的验证码（未成功获取过验证码）');
         // 查看该手机号的所有验证码
-        const allCodes = await dbService.all(
-          'SELECT code, created_at, expires_at, used FROM verification_codes WHERE phone = ? ORDER BY created_at DESC LIMIT 5',
-          [phone]
-        );
+        const stmt_all = this.db.prepare('SELECT code, created_at, expires_at, used FROM verification_codes WHERE phone = ? ORDER BY created_at DESC LIMIT 5');
+        stmt_all.bind([phone]);
+        const allCodes = [];
+        while (stmt_all.step()) {
+          allCodes.push(stmt_all.getAsObject());
+        }
+        stmt_all.free();
         console.log('该手机号最近的验证码记录:', allCodes);
         return { success: false, error: '验证码校验失败！' };
       }
 
-      console.log('✅ 找到有效的验证码记录:', { code: validCode.code, created_at: validCode.created_at, expires_at: validCode.expires_at });
+      console.log('✅ 找到有效的验证码记录:', validCode);
 
       // 检查用户输入的验证码是否与有效验证码匹配
       if (validCode.code !== code) {
@@ -275,10 +315,12 @@ class RegistrationDbService {
       }
 
       // 标记为已使用
-      await dbService.run(
+      console.log(`🔄 [verifySmsCode] 准备将 ID 为 ${validCode.id} 的验证码标记为已使用...`);
+      this.db.run(
         'UPDATE verification_codes SET used = 1 WHERE id = ?',
         [validCode.id]
       );
+      console.log(`✅ [verifySmsCode] 成功将 ID 为 ${validCode.id} 的验证码标记为已使用。`);
 
       console.log('✅ 验证码验证成功并已标记为使用');
       return { success: true };

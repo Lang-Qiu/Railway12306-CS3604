@@ -1,49 +1,97 @@
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
 const dbService = require('./dbService');
 const sessionService = require('./sessionService');
 const registrationDbService = require('./registrationDbService');
+const crypto = require('../utils/crypto');
 
 class AuthService {
+  constructor() {
+    this.db = null;
+  }
+
+  async init() {
+    if (!this.db) {
+      await dbService.init();
+      this.db = dbService.getDb();
+    }
+  }
   // 验证用户凭据
   async validateCredentials(identifier, password) {
     try {
+      await this.init();
+      console.log('[Validate Credentials] Received:', { identifier, password: password ? '******' : undefined });
       // 识别标识符类型
       const type = this.identifyIdentifierType(identifier);
+      console.log('[Validate Credentials] Identifier type:', type);
       
       if (type === 'invalid') {
+        console.log('[Validate Credentials] Invalid identifier type.');
         return { success: false, error: '用户名或密码错误' };
       }
+
+                  let decryptedPassword;
+      try {
+        decryptedPassword = crypto.decryptPassword(password);
+      } catch (e) {
+        console.error('[Validate Credentials] Password decryption failed:', e);
+        throw new Error('Password decryption failed');
+      }
+      console.log('[Validate Credentials] Decrypted password (first 5 chars):', decryptedPassword.substring(0, 5));
 
       // 根据类型查找用户
       let user = null;
       if (type === 'username') {
         user = await registrationDbService.findUserByUsername(identifier);
       } else if (type === 'email') {
-        const query = 'SELECT * FROM users WHERE email = ?';
-        user = await dbService.get(query, [identifier]);
+        user = await registrationDbService.findUserByEmail(identifier);
       } else if (type === 'phone') {
-        const query = 'SELECT * FROM users WHERE phone = ?';
-        user = await dbService.get(query, [identifier]);
+        user = await registrationDbService.findUserByPhone(identifier);
       }
 
       if (process.env.NODE_ENV === 'test') {
         console.log('login-debug', { type, found: !!user, id: user?.id, username: user?.username });
       }
+      console.log('[Validate Credentials] User found:', user ? { id: user.id, username: user.username, password_hash: user.password } : null);
+
 
       if (!user) {
+        console.log('[Validate Credentials] User not found in database.');
         return { success: false, error: '用户名或密码错误' };
+      }
+
+      if (user.lockout_until && new Date(user.lockout_until) > new Date()) {
+        console.log(`[Validate Credentials] Account locked for user: ${user.username}`);
+        return { success: false, error: '账户已被锁定，请稍后再试' };
       }
 
       // 验证密码
-      const passwordMatch = await bcrypt.compare(password, user.password);
+      console.log('[Validate Credentials] Comparing passwords...');
+            const passwordMatch = await bcrypt.compare(decryptedPassword, user.password_hash);
+      console.log('[Validate Credentials] Password match result:', passwordMatch);
       if (process.env.NODE_ENV === 'test') {
         console.log('login-debug-compare', { match: passwordMatch });
       }
+      console.log('[Validate Credentials] Password match result:', passwordMatch);
+
       if (!passwordMatch) {
+        console.log('[Validate Credentials] Password does not match.');
+        const newAttempts = (user.failed_login_attempts || 0) + 1;
+        if (newAttempts >= 5) {
+          const lockoutUntil = new Date(Date.now() + 15 * 60 * 1000); // 锁定15分钟
+          await this.db.run('UPDATE users SET failed_login_attempts = 0, lockout_until = ? WHERE id = ?', [lockoutUntil.toISOString(), user.id]);
+          return { success: false, error: '登录失败次数过多，账户已锁定15分钟' };
+        } else {
+          await this.db.run('UPDATE users SET failed_login_attempts = ? WHERE id = ?', [newAttempts, user.id]);
+        }
         return { success: false, error: '用户名或密码错误' };
       }
 
+      // 登录成功，重置失败尝试次数
+      await this.db.run('UPDATE users SET failed_login_attempts = 0, lockout_until = NULL WHERE id = ?', [user.id]);
+
+      console.log('[Validate Credentials] Validation successful.');
       return { success: true, user };
     } catch (error) {
       console.error('Validate credentials error:', error);
@@ -96,8 +144,7 @@ class AuthService {
         return { success: false, error: '会话无效或已过期' };
       }
 
-      // session.user_data 已经在 sessionService.getSession 中被解析了
-      const sessionData = session.user_data;
+
       
       console.log('🔍 会话数据:', { 
         userId: sessionData.userId, 
@@ -170,6 +217,7 @@ class AuthService {
   // 验证短信验证码
   async verifySmsCode(sessionId, verificationCode) {
     try {
+      await this.init();
       // 获取会话数据
       const session = await sessionService.getSession(sessionId);
       
@@ -177,61 +225,69 @@ class AuthService {
         return { success: false, error: '会话无效或已过期' };
       }
 
-      // session.user_data 已经在 sessionService.getSession 中被解析了
       const sessionData = session.user_data;
 
       // 验证短信验证码
       const verifyResult = await registrationDbService.verifySmsCode(sessionData.phone, verificationCode);
-      
       if (!verifyResult.success) {
         return { success: false, error: verifyResult.error };
       }
 
-      // 更新会话状态为已验证
-      sessionData.step = 'verified';
-      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24小时
-      await sessionService.createSession(sessionId, sessionData, expiresAt);
+      // 更新 last_login
+      await this.db.run('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', [sessionData.userId]);
 
-      // 更新用户最后登录时间
-      const updateQuery = 'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?';
-      await dbService.run(updateQuery, [sessionData.userId]);
-
-      // 查询完整用户信息
-      const user = await dbService.get('SELECT * FROM users WHERE id = ?', [sessionData.userId]);
-
-      // 生成token
-      const token = this.generateToken(sessionData);
+      // 生成 JWT 令牌
+      const token = this.generateToken({ userId: sessionData.userId, username: sessionData.username, step: 'verified' });
 
       return { 
         success: true, 
         sessionId, 
-        token,
-        user: {
-          id: sessionData.userId,
-          username: sessionData.username,
-          email: user?.email,
-          phone: user?.phone
-        }
+        token, 
+        user: { 
+          id: sessionData.userId, 
+          username: sessionData.username, 
+          email: sessionData.email, 
+          phone: sessionData.phone 
+        } 
       };
+
+
+
+
     } catch (error) {
       console.error('Verify SMS code error:', error);
       throw error;
     }
   }
 
-  // 生成JWT token（简化版，使用sessionId）
-  generateToken(user) {
+  // 生成JWT token
+  generateToken(payload, expiresIn = '30m') {
     try {
-      // 简化实现：使用base64编码的用户信息
-      const tokenData = {
-        userId: user.userId,
-        username: user.username,
-        timestamp: Date.now()
-      };
-      return Buffer.from(JSON.stringify(tokenData)).toString('base64');
+      const secret = process.env.JWT_SECRET || 'dev-secret-change-me';
+      return jwt.sign({ userId: payload.userId, username: payload.username }, secret, { expiresIn });
     } catch (error) {
       console.error('Generate token error:', error);
       throw error;
+    }
+  }
+
+  verifyToken(token) {
+    try {
+      const secret = process.env.JWT_SECRET || 'dev-secret-change-me';
+      return jwt.verify(token, secret);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  refreshToken(token) {
+    try {
+      const decoded = this.verifyToken(token);
+      if (!decoded) return null;
+      return this.generateToken({ userId: decoded.userId, username: decoded.username }, '30m');
+    } catch (error) {
+      console.error('Refresh token error:', error);
+      return null;
     }
   }
 

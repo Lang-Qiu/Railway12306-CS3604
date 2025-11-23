@@ -1,6 +1,6 @@
 :root {
-  --color-primary: #1890ff;
-  --color-primary-hover: #40a9ff;
+  --color-primary: hsl(210, 100%, 55%);
+  --color-primary-hover: hsl(213, 100%, 60%);
   --color-accent: #ff6600;
   --color-accent-hover: #ff8533;
   --color-danger: #ff4d4f;

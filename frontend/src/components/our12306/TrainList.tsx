@@ -68,8 +68,8 @@ const TrainList: React.FC<Props> = ({ trains, onReserve, isLoggedIn, queryTimest
         </div>
         {sorted.length===0 ? (
           <div className="train-list-empty">
-            <div className="train-list-empty-text">暂无符合条件的车次</div>
-            <div className="train-list-empty-hint">请尝试修改筛选条件或查询日期</div>
+            <div className="train-list-empty-text">很抱歉，按您的查询条件，当前未找到从{departureCity||'--'} 到 {arrivalCity||'--'} 的列车。</div>
+            <div className="train-list-empty-hint">您可以使用<span className="transfer-highlight">中转换乘</span>功能，查询途中换乘一次的部分列车余票情况。</div>
           </div>
         ) : (
           <div className="train-list-body">

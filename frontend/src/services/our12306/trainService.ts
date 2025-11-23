@@ -1,47 +1,58 @@
+const API_BASE = (import.meta as any)?.env?.VITE_API_BASE || 'http://localhost:3000'
+
+function transformTrainData(trains: any[]) {
+  return trains.map(train => {
+    const availableSeats: { [key: string]: number | null } = {};
+
+    const getRandomSeats = () => {
+        const r = Math.random();
+        if (r < 0.1) return 0; 
+        if (r < 0.3) return Math.floor(Math.random() * 19) + 1;
+        return 20;
+    };
+
+    if (train.business_price !== null) {
+      availableSeats['商务座'] = getRandomSeats();
+    }
+    if (train.first_class_price !== null) {
+      availableSeats['一等座'] = getRandomSeats();
+    }
+    if (train.second_class_price !== null) {
+      availableSeats['二等座'] = getRandomSeats();
+    }
+    if (train.no_seat_price !== null) {
+        availableSeats['无座'] = getRandomSeats();
+    }
+
+    return {
+      trainNo: train.train_no,
+      trainType: train.train_type,
+      departureStation: train.origin,
+      arrivalStation: train.destination,
+      departureTime: train.departure_time,
+      arrivalTime: train.arrival_time,
+      duration: train.planned_duration_min,
+      availableSeats: availableSeats,
+    };
+  });
+}
+
 export async function searchTrains(departureStation: string, arrivalStation: string, departureDate: string, trainTypes?: string[]) {
   try {
-    const highspeed = trainTypes && trainTypes.length ? '1' : undefined
-    const params = new URLSearchParams()
-    params.set('from', departureStation)
-    params.set('to', arrivalStation)
-    params.set('date', departureDate)
-    if (highspeed === '1') params.set('highspeed', '1')
-    const res = await fetch(`/api/trains/search?${params.toString()}`)
-    if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.message || '查询失败') }
-    const data = await res.json()
-    const trains = (data.trains || []).map((t: any) => {
-      const durStr = String(t.duration || '')
-      const match = durStr.match(/(\d+)小时(\d+)分/)
-      const durationMin = match ? (Number(match[1]) * 60 + Number(match[2])) : 0
-      return {
-        trainNo: String(t.trainNumber || t.trainNo || ''),
-        departureStation: String(t.departure || ''),
-        arrivalStation: String(t.arrival || ''),
-        departureTime: String(t.departureTime || ''),
-        arrivalTime: String(t.arrivalTime || ''),
-        departureDate: departureDate,
-        duration: durationMin,
-        availableSeats: {
-          '商务座': Number(t.businessSeat ?? 0),
-          '一等座': Number(t.firstClassSeat ?? 0),
-          '二等座': Number(t.secondClassSeat ?? 0),
-          '软卧': Number(t.softSleeperSeat ?? 0),
-          '硬卧': Number(t.hardSleeperSeat ?? 0),
-        },
-      }
-    })
-    return { success: true, trains, timestamp: Date.now() }
-  } catch (e: any) {
-    return { success: false, error: e.message || '查询失败，请稍后重试', trains: [] }
+    const response = await fetch(`${API_BASE}/api/trains?origin=${departureStation}&destination=${arrivalStation}&date=${departureDate}`);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    const transformedData = transformTrainData(data);
+    return { success: true, trains: transformedData, timestamp: Date.now() };
+  } catch (error) {
+    console.error('Error fetching trains:', error);
+    return { success: false, error: 'Failed to fetch trains', trains: [] };
   }
 }
 
 export async function getAvailableDates() {
-  try {
-    const res = await fetch('/api/trains/available-dates')
-    const data = await res.json()
-    return { success: true, availableDates: data.dates || [], currentDate: new Date().toISOString().split('T')[0] }
-  } catch (e: any) {
-    return { success: false, error: e.message || '获取可选日期失败', availableDates: [], currentDate: new Date().toISOString().split('T')[0] }
-  }
+  const today = new Date().toISOString().split('T')[0]
+  return { success: true, availableDates: [today], currentDate: today }
 }

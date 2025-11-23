@@ -18,15 +18,6 @@ const ReserveButton: React.FC<Props> = ({ trainNo, departureStation: _ds, arriva
         return true
       },
       () => {
-        const now = new Date(); const qt = new Date(queryTimestamp); const diff = now.getTime() - qt.getTime()
-        if (diff > 5 * 60 * 1000) {
-          setModalConfig({ title:'提示', message:'页面内容已过期，请重新查询！', confirmText:'确认', cancelText:'取消', onConfirm:()=>{ setShowConfirmModal(false); window.location.reload() } })
-          setShowConfirmModal(true)
-          return false
-        }
-        return true
-      },
-      () => {
         const now = new Date(); const dep = new Date(`${departureDate} ${departureTime}`); const until = dep.getTime() - now.getTime()
         if (until < 3 * 60 * 60 * 1000 && until > 0) {
           setModalConfig({ title:'温馨提示', message:'您选择的列车距开车时间很近了，进站约需20分钟，请确保有足够的时间办理安全检查、实名制验证及检票等手续，以免耽误您的旅行。', confirmText:'确认', cancelText:'取消', onConfirm:()=>{ setShowConfirmModal(false); onReserve(trainNo) } })

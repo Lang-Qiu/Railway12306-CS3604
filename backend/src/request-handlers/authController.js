@@ -1,6 +1,8 @@
 const { validationResult } = require('express-validator');
 const authService = require('../domain-providers/authService');
 const messages = require('../message-catalog/messages');
+const crypto = require('../utils/crypto');
+const loginRateMap = new Map();
 
 class AuthController {
   /**
@@ -8,31 +10,65 @@ class AuthController {
    * 内部采用策略选择与早退控制，外部契约保持一致
    */
   async login(req, res) {
+    const ip = req.ip || req.headers['x-forwarded-for'] || 'local';
+    const now = Date.now();
+    const windowMs = 60 * 1000;
+    const limit = 10;
+    const record = loginRateMap.get(ip) || { count: 0, start: now };
+    if (now - record.start > windowMs) {
+      record.count = 0;
+      record.start = now;
+    }
+    record.count += 1;
+    loginRateMap.set(ip, record);
+    if (record.count > limit) {
+      return res.status(429).json({ success: false, error: '请求过于频繁，请稍后再试' });
+    }
+    // CSRF 校验
     try {
-      const { identifier, password } = req.body;
+      if (['POST','PUT','DELETE'].includes(req.method)) {
+        const headerToken = req.headers['x-csrf-token'];
+        const cookieHeader = req.headers['cookie'] || '';
+        const cookieTokenMatch = cookieHeader.match(/XSRF-TOKEN=([^;]+)/);
+        const cookieToken = cookieTokenMatch ? cookieTokenMatch[1] : null;
+        if (!headerToken || !cookieToken || headerToken !== cookieToken) {
+          return res.status(403).json({ success: false, error: 'CSRF token 无效' });
+        }
+      }
+    } catch {}
+    const { identifier, password } = req.body;
+    console.log(`[Login Attempt] identifier: ${identifier}`);
 
+    try {
       const missing = [];
       if (!identifier || identifier.trim() === '') missing.push(messages.login.missingIdentifier);
       if (!password || password.trim() === '') missing.push(messages.login.missingPassword);
       if (missing.length) {
+        console.log(`[Login Failed] Missing fields: ${missing.join(', ')}`);
         return res.status(400).json({ success: false, errors: missing });
       }
 
       if (password.length < 6) {
+        console.log(`[Login Failed] Password too short for identifier: ${identifier}`);
         return res.status(400).json({ success: false, error: messages.login.passwordTooShort });
       }
 
       const result = await authService.validateCredentials(identifier, password);
       if (!result.success) {
+        console.log(`[Login Failed] Invalid credentials for identifier: ${identifier}`);
         return res.status(401).json({ success: false, error: result.error });
       }
 
       const sessionId = await authService.createLoginSession(result.user);
       const token = authService.generateToken({ userId: result.user.id, username: result.user.username, step: 'pending_verification' });
 
+      console.log(`[Login Success] Session created for user: ${result.user.username} (ID: ${result.user.id})`);
       return res.status(200).json({ success: true, sessionId, token, message: messages.login.pendingVerification });
     } catch (error) {
       console.error('Login error:', error);
+      if (error.message && error.message.includes('decryption')) {
+        return res.status(500).json({ success: false, message: '密码解密失败' });
+      }
       return res.status(500).json({ success: false, message: '服务器内部错误' });
     }
   }
@@ -42,26 +78,32 @@ class AuthController {
    * 分支采用守卫式早退，避免深层嵌套
    */
   async sendVerificationCode(req, res) {
-    try {
-      const { phoneNumber, sessionId, idCardLast4 } = req.body;
+    const { phoneNumber, sessionId, idCardLast4 } = req.body;
+    console.log(`[SMS Code Request] SID: ${sessionId}, Phone: ${phoneNumber}`);
 
+    try {
       if (sessionId && idCardLast4) {
         if (!idCardLast4 || idCardLast4.length !== 4) {
+          console.log(`[SMS Code Failed] Invalid ID card format for SID: ${sessionId}`);
           return res.status(400).json({ success: false, error: '证件号后4位格式不正确' });
         }
 
         const result = await authService.generateAndSendSmsCode(sessionId, idCardLast4);
         if (result.code === 429) {
+          console.log(`[SMS Code Failed] Rate limit exceeded for SID: ${sessionId}`);
           return res.status(429).json({ success: false, error: result.error });
         }
         if (!result.success) {
+          console.log(`[SMS Code Failed] Error for SID: ${sessionId}: ${result.error}`);
           return res.status(400).json({ success: false, error: result.error });
         }
+        console.log(`[SMS Code Success] Code sent for SID: ${sessionId}`);
         return res.status(200).json({ success: true, message: result.message, verificationCode: result.verificationCode, phone: result.phone });
       }
 
       if (phoneNumber) {
         if (!authService.validatePhone(phoneNumber)) {
+          console.log(`[SMS Code Failed] Invalid phone number: ${phoneNumber}`);
           return res.status(400).json({ success: false, errors: ['请输入有效的手机号'] });
         }
 
@@ -69,6 +111,7 @@ class AuthController {
         const sessionService = require('../domain-providers/sessionService');
         const canSend = await sessionService.checkSmsSendFrequency(phoneNumber);
         if (!canSend) {
+          console.log(`[SMS Code Failed] Rate limit exceeded for phone: ${phoneNumber}`);
           return res.status(429).json({ success: false, error: messages.sms.tooFrequent });
         }
 
@@ -78,6 +121,7 @@ class AuthController {
         return res.status(200).json({ success: true, message: messages.sms.codeSent });
       }
 
+      console.log(`[SMS Code Failed] Missing sessionId or phoneNumber`);
       return res.status(400).json({ success: false, message: '会话ID不能为空' });
     } catch (error) {
       console.error('Send verification code error:', error);
@@ -90,20 +134,24 @@ class AuthController {
    * 支持会话通道与手机号通道，分支早退保证等价逻辑
    */
   async verifyLogin(req, res) {
-    try {
-      const { sessionId, verificationCode, phoneNumber } = req.body;
+    const { sessionId, verificationCode, phoneNumber } = req.body;
+    console.log(`[Verify Login Attempt] SID: ${sessionId}, Phone: ${phoneNumber}`);
 
+    try {
       if (!verificationCode || !/^\d{6}$/.test(verificationCode)) {
         const msg = !verificationCode ? '验证码不能为空' : '验证码必须为6位数字';
+        console.log(`[Verify Login Failed] Invalid code format for SID/Phone: ${sessionId || phoneNumber}`);
         return res.status(400).json({ success: false, errors: [msg] });
       }
 
       if (sessionId) {
         const result = await authService.verifySmsCode(sessionId, verificationCode);
         if (!result.success) {
+          console.log(`[Verify Login Failed] Invalid code for SID: ${sessionId}`);
           const statusCode = result.error.includes('会话') ? 400 : 401;
           return res.status(statusCode).json({ success: false, error: result.error });
         }
+        console.log(`[Verify Login Success] Login successful for SID: ${sessionId}`);
         return res.status(200).json({ success: true, sessionId: result.sessionId, token: result.token, user: result.user, message: messages.login.success });
       }
 
@@ -112,21 +160,33 @@ class AuthController {
         const dbService = require('../domain-providers/dbService');
         const verifyResult = await registrationDbService.verifySmsCode(phoneNumber, verificationCode);
         if (!verifyResult.success) {
+          console.log(`[Verify Login Failed] Invalid code for phone: ${phoneNumber}`);
           return res.status(401).json({ success: false, error: verifyResult.error });
         }
 
-        const user = await dbService.get('SELECT * FROM users WHERE phone = ?', [phoneNumber]);
+        await dbService.init();
+        const db = dbService.getDb();
+        const stmt = db.prepare('SELECT * FROM users WHERE phone = ?');
+        stmt.bind([phoneNumber]);
+        let user = null;
+        if (stmt.step()) {
+          user = stmt.getAsObject();
+        }
+        stmt.free();
         if (!user) {
+          console.log(`[Verify Login Failed] User not found for phone: ${phoneNumber}`);
           return res.status(401).json({ success: false, error: '用户不存在' });
         }
 
         const newSessionId = authService.generateSessionId(user.id);
         const token = authService.generateToken({ userId: user.id, username: user.username, step: 'verified' });
-        await dbService.run('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', [user.id]);
+        await db.run('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', [user.id]);
 
+        console.log(`[Verify Login Success] Login successful for phone: ${phoneNumber}`);
         return res.status(200).json({ success: true, sessionId: newSessionId, token, user: { id: user.id, username: user.username, email: user.email, phone: user.phone }, message: messages.login.success });
       }
 
+      console.log(`[Verify Login Failed] Missing sessionId or phoneNumber`);
       return res.status(400).json({ success: false, message: '会话ID或手机号不能为空' });
     } catch (error) {
       console.error('Verify login error:', error);
@@ -183,6 +243,44 @@ class AuthController {
         success: false, 
         message: '服务器内部错误' 
       });
+    }
+  }
+
+  async getPublicKey(req, res) {
+    try {
+      const publicKey = crypto.getPublicKey();
+      res.status(200).json({ success: true, publicKey });
+    } catch (error) {
+      console.error('Get public key error:', error);
+      res.status(500).json({ success: false, message: '服务器内部错误' });
+    }
+  }
+
+  async getCsrfToken(req, res) {
+    try {
+      const { v4: uuidv4 } = require('uuid');
+      const token = uuidv4();
+      res.cookie('XSRF-TOKEN', token, {
+        httpOnly: false,
+        sameSite: 'lax',
+        secure: false
+      });
+      return res.status(200).json({ success: true, token });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: '服务器内部错误' });
+    }
+  }
+
+  async refreshToken(req, res) {
+    try {
+      const { token } = req.body;
+      const newToken = authService.refreshToken(token);
+      if (!newToken) {
+        return res.status(401).json({ success: false, error: '令牌无效或已过期' });
+      }
+      return res.status(200).json({ success: true, token: newToken });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: '服务器内部错误' });
     }
   }
 }

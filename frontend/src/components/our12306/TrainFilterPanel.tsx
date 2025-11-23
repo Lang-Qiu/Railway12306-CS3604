@@ -54,6 +54,7 @@ const TrainFilterPanel: React.FC<Props> = ({ onFilterChange, departureStations, 
       departureStations: updates.departureStations !== undefined ? updates.departureStations : selectedDepartureStations,
       arrivalStations: updates.arrivalStations !== undefined ? updates.arrivalStations : selectedArrivalStations,
       seatTypes: updates.seatTypes !== undefined ? updates.seatTypes : selectedSeatTypes,
+      departureTimeRange: updates.departureTimeRange !== undefined ? updates.departureTimeRange : departureTimeRange,
     })
   }
 
@@ -88,7 +89,7 @@ const TrainFilterPanel: React.FC<Props> = ({ onFilterChange, departureStations, 
           </div>
           <div className="filter-time-select">
             <span className="time-label">发车时间：</span>
-            <select value={departureTimeRange} onChange={(e) => setDepartureTimeRange(e.target.value)} className="time-dropdown">
+            <select value={departureTimeRange} onChange={(e) => { const v = e.target.value; setDepartureTimeRange(v); trigger({ departureTimeRange: v }) }} className="time-dropdown">
               <option value="00:00--24:00">00:00--24:00</option>
               <option value="00:00--06:00">00:00--06:00</option>
               <option value="06:00--12:00">06:00--12:00</option>
@@ -139,7 +140,7 @@ const TrainFilterPanel: React.FC<Props> = ({ onFilterChange, departureStations, 
         </div>
         <div className="filter-summary">
           <button className="clear-filters-btn" onClick={() => { setSelectedTrainTypes([]); setSelectedDepartureStations([]); setSelectedArrivalStations([]); setSelectedSeatTypes([]); trigger({ trainTypes: [], departureStations: [], arrivalStations: [], seatTypes: [] }) }}>
-            <span className="clear-icon">↻</span> 筛选
+            <span className="clear-icon">▼</span> 筛选
           </button>
         </div>
       </div>

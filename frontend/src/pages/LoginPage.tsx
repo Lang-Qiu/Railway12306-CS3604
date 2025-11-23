@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PATHS } from '../constants/routes'
-import { login as apiLogin, verifyLogin as apiVerifyLogin } from '../api/auth'
+import { login as apiLogin, verifyLogin as apiVerifyLogin, getPublicKey as apiGetPublicKey, getCsrfToken as apiGetCsrfToken } from '../api/auth'
 import LoginForm from '../components/LoginForm'
 import SmsVerificationModal from '../components/SmsVerificationModal'
-import '../components/LoginPage.css'
+import * as forge from 'node-forge';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate()
@@ -14,14 +14,51 @@ const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [smsError, setSmsError] = useState('')
   const [smsSuccess, setSmsSuccess] = useState('')
+  const [publicKey, setPublicKey] = useState('')
+  const [csrfToken, setCsrfToken] = useState('')
+
+  useEffect(() => {
+    const fetchPublicKey = async () => {
+      try {
+        const response = await apiGetPublicKey();
+        if (response.success) {
+          setPublicKey(response.publicKey);
+        }
+      } catch (error) {
+        console.error('Failed to fetch public key', error);
+      }
+    };
+
+    const fetchCsrf = async () => {
+      try {
+        const res = await apiGetCsrfToken();
+        if (res.success) {
+          setCsrfToken(res.token);
+        }
+      } catch (error) {
+        console.error('Failed to fetch CSRF token', error);
+      }
+    };
+
+    fetchPublicKey();
+    fetchCsrf();
+  }, []);
 
   const handleLoginSuccess = async (data: { identifier?: string; username?: string; password: string }) => {
     setIsLoading(true)
     setError('')
     
     try {
+      if (!publicKey) {
+        setError('无法获取加密密钥，请刷新页面重试');
+        return;
+      }
+
+      const publicKeyFromPem = forge.pki.publicKeyFromPem(publicKey);
+      const encryptedPassword = forge.util.encode64(publicKeyFromPem.encrypt(data.password, 'RSA-OAEP'));
+
       // 调用登录API（支持identifier或username）
-      const response = await apiLogin({ identifier: data.identifier, username: data.username, password: data.password })
+      const response = await apiLogin({ identifier: data.identifier, username: data.username, password: encryptedPassword }, csrfToken)
       if (response.success) {
         setSessionId(response.sessionId)
         setShowSmsModal(true)
@@ -71,7 +108,7 @@ const LoginPage: React.FC = () => {
         setTimeout(() => {
           setShowSmsModal(false)
           // TODO: 跳转到首页或用户中心
-          // navigate('/')
+          navigate('/')
         }, 2000)
       }
     } catch (error: any) {

@@ -93,16 +93,7 @@ const TrainListPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date()
-      const timeDiff = now.getTime() - queryTimestamp.getTime()
-      if (timeDiff > 5 * 60 * 1000 && trains.length > 0) {
-        setError('页面内容已过期，请重新查询！')
-      }
-    }, 60000)
-    return () => clearInterval(timer)
-  }, [queryTimestamp, trains])
+  
 
   const handleNavigateToLogin = () => navigate('/login')
   const handleNavigateToRegister = () => navigate('/register')
@@ -127,6 +118,18 @@ const TrainListPage: React.FC = () => {
 
   const handleFilterChange = (filters: any) => {
     const strategies: Record<string, (xs: any[]) => any[]> = {}
+    if (filters.departureTimeRange) {
+      const [start,end] = String(filters.departureTimeRange).split('--')
+      const [sh,sm] = start.split(':').map(Number)
+      const [eh,em] = end.split(':').map(Number)
+      const sMin = sh*60+sm
+      const eMin = eh*60+em
+      strategies.departureTimeRange = (xs) => xs.filter((t) => {
+        const [h,m] = String(t.departureTime||'00:00').split(':').map(Number)
+        const val = h*60+m
+        return val>=sMin && val<=eMin
+      })
+    }
     if (filters.trainTypes?.length) {
       const tt = new Set<string>(filters.trainTypes)
       strategies.trainTypes = (xs) => xs.filter((t) => tt.has(String(t.trainNo || '').charAt(0)))

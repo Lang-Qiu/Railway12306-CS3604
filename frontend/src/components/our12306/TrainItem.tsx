@@ -11,6 +11,7 @@ const TrainItem: React.FC<Props> = ({ train, onReserve, isLoggedIn, queryTimesta
     secondClass: train.availableSeats?.['二等座'] ?? null,
     softSleeper: train.availableSeats?.['软卧'] ?? null,
     hardSleeper: train.availableSeats?.['硬卧'] ?? null,
+    noSeat: train.availableSeats?.['无座'] ?? null,
   }
   const fmtStatus = (n: number | null | undefined) => { if (n==null) return '--'; if (n===0) return '无'; if (n>=20) return '有'; return String(n) }
   const cls = (n: number | null | undefined) => { if (n==null) return 'not-available'; if (n===0) return 'sold-out'; if (n>=20) return 'available'; return 'limited' }
@@ -60,7 +61,7 @@ const TrainItem: React.FC<Props> = ({ train, onReserve, isLoggedIn, queryTimesta
       <div className="train-item-cell"><div className={`seat-info ${cls(seats.hardSleeper)}`}>{fmtStatus(seats.hardSleeper)}</div></div>
       <div className="train-item-cell"><div className="seat-info">--</div></div>
       <div className="train-item-cell"><div className="seat-info">--</div></div>
-      <div className="train-item-cell"><div className="seat-info">--</div></div>
+      <div className="train-item-cell"><div className={`seat-info ${cls(seats.noSeat)}`}>{fmtStatus(seats.noSeat)}</div></div>
       <div className="train-item-cell"><div className="seat-info">--</div></div>
       <div className="train-item-cell train-reserve-cell">
         <ReserveButton trainNo={train.trainNo} departureStation={train.departureStation} arrivalStation={train.arrivalStation} departureDate={train.departureDate} departureTime={train.departureTime} hasSoldOut={false} isLoggedIn={isLoggedIn} onReserve={onReserve} queryTimestamp={queryTimestamp} />

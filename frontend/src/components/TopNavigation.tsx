@@ -73,7 +73,7 @@ const TopNavigation: React.FC<TopNavigationProps> = ({ onLogoClick, showWelcomeL
                   </ul>
                 </div>
               </div>
-              <a className="search-btn" href="javascript:;" aria-label="点击搜索" onMouseDown={(e)=>{e.preventDefault(); handleSearch()}}>
+              <a className="search-btn" aria-label="点击搜索" onMouseDown={(e)=>{e.preventDefault(); handleSearch()}}>
                 <i className="hdr-icon hdr-search"></i>
               </a>
             </div>

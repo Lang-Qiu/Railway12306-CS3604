@@ -1,15 +1,16 @@
 import { Routes, Route, useLocation } from 'react-router-dom'
-import LoginPage from './pages/LoginPage'
-import RegisterPage from './pages/RegisterPage'
-import HomePage from './pages/HomePage'
-import TrainListPage from './pages/TrainListPage'
-import OrderPage from './pages/OrderPage'
-import OrderHistoryPage from './pages/OrderHistoryPage'
-import PassengerManagementPage from './pages/PassengerManagementPage'
+import { Suspense, lazy } from 'react'
+const LoginPage = lazy(() => import('./pages/LoginPage'))
+const RegisterPage = lazy(() => import('./pages/RegisterPage'))
+const HomePage = lazy(() => import('./pages/HomePage'))
+const TrainsPage = lazy(() => import('./pages/TrainsPage'))
+const OrderPage = lazy(() => import('./pages/OrderPage'))
+const OrderHistoryPage = lazy(() => import('./pages/OrderHistoryPage'))
 import TopNavigation from './components/TopNavigation'
 import MainNavigation from './components/MainNavigation'
 import BottomNavigation from './components/BottomNavigation'
 import './App.css'
+const PassengersPage = lazy(() => import('./pages/PassengersPage'))
 
 function App() {
   const location = useLocation()
@@ -19,15 +20,17 @@ function App() {
     <div className="App">
       <TopNavigation showWelcomeLogin={isLogin || isTrains} />
       <MainNavigation />
+      <Suspense fallback={<div style={{padding:16}}>页面加载中…</div>}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/" element={<HomePage />} />
-        <Route path="/trains" element={<TrainListPage />} />
+        <Route path="/trains" element={<TrainsPage />} />
         <Route path="/orders" element={<OrderPage />} />
         <Route path="/orders/history" element={<OrderHistoryPage />} />
-        <Route path="/passengers" element={<PassengerManagementPage />} />
+        <Route path="/passengers" element={<PassengersPage />} />
       </Routes>
+      </Suspense>
       <BottomNavigation />
     </div>
   )

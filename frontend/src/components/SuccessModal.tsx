@@ -35,7 +35,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
       <div 
         data-testid="success-modal"
         role="dialog"
-        className="modal-30-percent centered fade-in"
+        className="modal-30-percent centered fade-in-alt"
       >
         <div className="modal-content">
           <p>{message}</p>

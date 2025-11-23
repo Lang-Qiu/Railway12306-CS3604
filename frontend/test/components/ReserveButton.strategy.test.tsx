@@ -14,15 +14,16 @@ describe('ReserveButton 策略管线', () => {
     expect(screen.getByText('请先登录！')).toBeTruthy()
   })
 
-  test('页面内容过期时弹出过期提示', () => {
+  test('过期时间不再阻止预订流程', () => {
     const ts = new Date(Date.now() - 6 * 60 * 1000).toISOString()
+    const onReserve = vi.fn()
     render(
       <MemoryRouter>
-        <ReserveButton trainNo="G101" departureStation="北京" arrivalStation="上海" departureDate="2025-11-20" departureTime="08:00" hasSoldOut={false} isLoggedIn={true} onReserve={vi.fn()} queryTimestamp={ts} />
+        <ReserveButton trainNo="G101" departureStation="北京" arrivalStation="上海" departureDate="2025-11-20" departureTime="08:00" hasSoldOut={false} isLoggedIn={true} onReserve={onReserve} queryTimestamp={ts} />
       </MemoryRouter>
     )
     fireEvent.click(screen.getByText('预订'))
-    expect(screen.getByText('页面内容已过期，请重新查询！')).toBeTruthy()
+    expect(onReserve).toHaveBeenCalledWith('G101')
   })
 
   test('临近发车弹出温馨提示并确认后触发预订', () => {

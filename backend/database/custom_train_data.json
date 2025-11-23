@@ -1,0 +1,1890 @@
+[
+  {
+    "train_no": "G6239",
+    "train_type": "G",
+    "route": {
+      "origin": "广州南",
+      "destination": "深圳北",
+      "departure_time": "06:38",
+      "arrival_time": "07:07",
+      "planned_duration_min": 29
+    },
+    "fares": {
+      "business_price": 218,
+      "first_class_price": 99.5,
+      "second_class_price": 74.5
+    }
+  },
+  {
+    "train_no": "G6241",
+    "train_type": "G",
+    "route": {
+      "origin": "广州南",
+      "destination": "深圳北",
+      "departure_time": "07:00",
+      "arrival_time": "07:35",
+      "planned_duration_min": 35
+    },
+    "fares": {
+      "business_price": 218,
+      "first_class_price": 99.5,
+      "second_class_price": 74.5
+    }
+  },
+  {
+    "train_no": "G6243",
+    "train_type": "G",
+    "route": {
+      "origin": "广州南",
+      "destination": "深圳北",
+      "departure_time": "08:00",
+      "arrival_time": "08:30",
+      "planned_duration_min": 30
+    },
+    "fares": {
+      "business_price": 218,
+      "first_class_price": 99.5,
+      "second_class_price": 74.5
+    }
+  },
+  {
+    "train_no": "G6245",
+    "train_type": "G",
+    "route": {
+      "origin": "广州南",
+      "destination": "深圳北",
+      "departure_time": "09:00",
+      "arrival_time": "09:32",
+      "planned_duration_min": 32
+    },
+    "fares": {
+      "business_price": 218,
+      "first_class_price": 99.5,
+      "second_class_price": 74.5
+    }
+  },
+  {
+    "train_no": "G6247",
+    "train_type": "G",
+    "route": {
+      "origin": "广州南",
+      "destination": "深圳北",
+      "departure_time": "10:00",
+      "arrival_time": "10:31",
+      "planned_duration_min": 31
+    },
+    "fares": {
+      "business_price": 218,
+      "first_class_price": 99.5,
+      "second_class_price": 74.5
+    }
+  },
+  {
+    "train_no": "G6249",
+    "train_type": "G",
+    "route": {
+      "origin": "广州南",
+      "destination": "深圳北",
+      "departure_time": "11:00",
+      "arrival_time": "11:33",
+      "planned_duration_min": 33
+    },
+    "fares": {
+      "business_price": 218,
+      "first_class_price": 99.5,
+      "second_class_price": 74.5
+    }
+  },
+  {
+    "train_no": "G6251",
+    "train_type": "G",
+    "route": {
+      "origin": "广州南",
+      "destination": "深圳北",
+      "departure_time": "12:00",
+      "arrival_time": "12:30",
+      "planned_duration_min": 30
+    },
+    "fares": {
+      "business_price": 218,
+      "first_class_price": 99.5,
+      "second_class_price": 74.5
+    }
+  },
+  {
+    "train_no": "G6253",
+    "train_type": "G",
+    "route": {
+      "origin": "广州南",
+      "destination": "深圳北",
+      "departure_time": "13:00",
+      "arrival_time": "13:35",
+      "planned_duration_min": 35
+    },
+    "fares": {
+      "business_price": 218,
+      "first_class_price": 99.5,
+      "second_class_price": 74.5
+    }
+  },
+  {
+    "train_no": "G6255",
+    "train_type": "G",
+    "route": {
+      "origin": "广州南",
+      "destination": "深圳北",
+      "departure_time": "14:00",
+      "arrival_time": "14:30",
+      "planned_duration_min": 30
+    },
+    "fares": {
+      "business_price": 218,
+      "first_class_price": 99.5,
+      "second_class_price": 74.5
+    }
+  },
+  {
+    "train_no": "G6257",
+    "train_type": "G",
+    "route": {
+      "origin": "广州南",
+      "destination": "深圳北",
+      "departure_time": "15:00",
+      "arrival_time": "15:32",
+      "planned_duration_min": 32
+    },
+    "fares": {
+      "business_price": 218,
+      "first_class_price": 99.5,
+      "second_class_price": 74.5
+    }
+  },
+  {
+    "train_no": "D7551",
+    "train_type": "D",
+    "route": {
+      "origin": "广州东",
+      "destination": "深圳",
+      "departure_time": "08:30",
+      "arrival_time": "09:50",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "first_class_price": 99.5,
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "D7553",
+    "train_type": "D",
+    "route": {
+      "origin": "广州东",
+      "destination": "深圳",
+      "departure_time": "10:30",
+      "arrival_time": "11:50",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "first_class_price": 99.5,
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "D7555",
+    "train_type": "D",
+    "route": {
+      "origin": "广州东",
+      "destination": "深圳",
+      "departure_time": "12:30",
+      "arrival_time": "13:50",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "first_class_price": 99.5,
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "D7557",
+    "train_type": "D",
+    "route": {
+      "origin": "广州东",
+      "destination": "深圳",
+      "departure_time": "14:30",
+      "arrival_time": "15:50",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "first_class_price": 99.5,
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "D7559",
+    "train_type": "D",
+    "route": {
+      "origin": "广州东",
+      "destination": "深圳",
+      "departure_time": "16:30",
+      "arrival_time": "17:50",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "first_class_price": 99.5,
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "D7561",
+    "train_type": "D",
+    "route": {
+      "origin": "广州东",
+      "destination": "深圳",
+      "departure_time": "18:30",
+      "arrival_time": "19:50",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "first_class_price": 99.5,
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "D7563",
+    "train_type": "D",
+    "route": {
+      "origin": "广州东",
+      "destination": "深圳",
+      "departure_time": "20:30",
+      "arrival_time": "21:50",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "first_class_price": 99.5,
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "D7565",
+    "train_type": "D",
+    "route": {
+      "origin": "广州东",
+      "destination": "深圳",
+      "departure_time": "22:30",
+      "arrival_time": "23:50",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "first_class_price": 99.5,
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "C7001",
+    "train_type": "C",
+    "route": {
+      "origin": "广州",
+      "destination": "深圳",
+      "departure_time": "09:00",
+      "arrival_time": "10:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "C7003",
+    "train_type": "C",
+    "route": {
+      "origin": "广州",
+      "destination": "深圳",
+      "departure_time": "10:00",
+      "arrival_time": "11:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "C7005",
+    "train_type": "C",
+    "route": {
+      "origin": "广州",
+      "destination": "深圳",
+      "departure_time": "11:00",
+      "arrival_time": "12:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "C7007",
+    "train_type": "C",
+    "route": {
+      "origin": "广州",
+      "destination": "深圳",
+      "departure_time": "12:00",
+      "arrival_time": "13:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "C7009",
+    "train_type": "C",
+    "route": {
+      "origin": "广州",
+      "destination": "深圳",
+      "departure_time": "13:00",
+      "arrival_time": "14:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "C7011",
+    "train_type": "C",
+    "route": {
+      "origin": "广州",
+      "destination": "深圳",
+      "departure_time": "14:00",
+      "arrival_time": "15:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "C7013",
+    "train_type": "C",
+    "route": {
+      "origin": "广州",
+      "destination": "深圳",
+      "departure_time": "15:00",
+      "arrival_time": "16:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "C7015",
+    "train_type": "C",
+    "route": {
+      "origin": "广州",
+      "destination": "深圳",
+      "departure_time": "16:00",
+      "arrival_time": "17:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "C7017",
+    "train_type": "C",
+    "route": {
+      "origin": "广州",
+      "destination": "深圳",
+      "departure_time": "17:00",
+      "arrival_time": "18:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "C7019",
+    "train_type": "C",
+    "route": {
+      "origin": "广州",
+      "destination": "深圳",
+      "departure_time": "18:00",
+      "arrival_time": "19:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "C7021",
+    "train_type": "C",
+    "route": {
+      "origin": "广州",
+      "destination": "深圳",
+      "departure_time": "19:00",
+      "arrival_time": "20:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "C7023",
+    "train_type": "C",
+    "route": {
+      "origin": "广州",
+      "destination": "深圳",
+      "departure_time": "20:00",
+      "arrival_time": "21:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "C7025",
+    "train_type": "C",
+    "route": {
+      "origin": "广州",
+      "destination": "深圳",
+      "departure_time": "21:00",
+      "arrival_time": "22:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "C7027",
+    "train_type": "C",
+    "route": {
+      "origin": "广州",
+      "destination": "深圳",
+      "departure_time": "22:00",
+      "arrival_time": "23:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "C7029",
+    "train_type": "C",
+    "route": {
+      "origin": "广州",
+      "destination": "深圳",
+      "departure_time": "23:00",
+      "arrival_time": "00:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "second_class_price": 79.5
+    }
+  },
+  {
+    "train_no": "G8601",
+    "train_type": "G",
+    "route": {
+      "origin": "成都东",
+      "destination": "重庆北",
+      "departure_time": "07:30",
+      "arrival_time": "08:50",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "business_price": 468,
+      "first_class_price": 249,
+      "second_class_price": 155
+    }
+  },
+  {
+    "train_no": "G8603",
+    "train_type": "G",
+    "route": {
+      "origin": "成都东",
+      "destination": "重庆北",
+      "departure_time": "08:30",
+      "arrival_time": "09:50",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "business_price": 468,
+      "first_class_price": 249,
+      "second_class_price": 155
+    }
+  },
+  {
+    "train_no": "G8605",
+    "train_type": "G",
+    "route": {
+      "origin": "成都东",
+      "destination": "重庆北",
+      "departure_time": "09:30",
+      "arrival_time": "10:50",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "business_price": 468,
+      "first_class_price": 249,
+      "second_class_price": 155
+    }
+  },
+  {
+    "train_no": "G8607",
+    "train_type": "G",
+    "route": {
+      "origin": "成都东",
+      "destination": "重庆北",
+      "departure_time": "10:30",
+      "arrival_time": "11:50",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "business_price": 468,
+      "first_class_price": 249,
+      "second_class_price": 155
+    }
+  },
+  {
+    "train_no": "G8609",
+    "train_type": "G",
+    "route": {
+      "origin": "成都东",
+      "destination": "重庆北",
+      "departure_time": "11:30",
+      "arrival_time": "12:50",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "business_price": 468,
+      "first_class_price": 249,
+      "second_class_price": 155
+    }
+  },
+  {
+    "train_no": "G8611",
+    "train_type": "G",
+    "route": {
+      "origin": "成都东",
+      "destination": "重庆北",
+      "departure_time": "12:30",
+      "arrival_time": "13:50",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "business_price": 468,
+      "first_class_price": 249,
+      "second_class_price": 155
+    }
+  },
+  {
+    "train_no": "D633",
+    "train_type": "D",
+    "route": {
+      "origin": "成都东",
+      "destination": "重庆西",
+      "departure_time": "09:15",
+      "arrival_time": "11:05",
+      "planned_duration_min": 110,
+      "stops": ["内江北", "永川东"]
+    },
+    "fares": {
+      "first_class_price": 174,
+      "second_class_price": 109
+    }
+  },
+  {
+    "train_no": "D635",
+    "train_type": "D",
+    "route": {
+      "origin": "成都东",
+      "destination": "重庆西",
+      "departure_time": "10:15",
+      "arrival_time": "12:05",
+      "planned_duration_min": 110,
+      "stops": ["内江北", "永川东"]
+    },
+    "fares": {
+      "first_class_price": 174,
+      "second_class_price": 109
+    }
+  },
+  {
+    "train_no": "D637",
+    "train_type": "D",
+    "route": {
+      "origin": "成都东",
+      "destination": "重庆西",
+      "departure_time": "11:15",
+      "arrival_time": "13:05",
+      "planned_duration_min": 110
+    },
+    "fares": {
+      "first_class_price": 174,
+      "second_class_price": 109
+    }
+  },
+  {
+    "train_no": "D639",
+    "train_type": "D",
+    "route": {
+      "origin": "成都东",
+      "destination": "重庆西",
+      "departure_time": "12:15",
+      "arrival_time": "14:05",
+      "planned_duration_min": 110
+    },
+    "fares": {
+      "first_class_price": 174,
+      "second_class_price": 109
+    }
+  },
+  {
+    "train_no": "D641",
+    "train_type": "D",
+    "route": {
+      "origin": "成都东",
+      "destination": "重庆西",
+      "departure_time": "13:15",
+      "arrival_time": "15:05",
+      "planned_duration_min": 110
+    },
+    "fares": {
+      "first_class_price": 174,
+      "second_class_price": 109
+    }
+  },
+  {
+    "train_no": "D643",
+    "train_type": "D",
+    "route": {
+      "origin": "成都东",
+      "destination": "重庆西",
+      "departure_time": "14:15",
+      "arrival_time": "16:05",
+      "planned_duration_min": 110
+    },
+    "fares": {
+      "first_class_price": 174,
+      "second_class_price": 109
+    }
+  },
+  {
+    "train_no": "D645",
+    "train_type": "D",
+    "route": {
+      "origin": "成都东",
+      "destination": "重庆西",
+      "departure_time": "15:15",
+      "arrival_time": "17:05",
+      "planned_duration_min": 110
+    },
+    "fares": {
+      "first_class_price": 174,
+      "second_class_price": 109
+    }
+  },
+  {
+    "train_no": "D647",
+    "train_type": "D",
+    "route": {
+      "origin": "成都东",
+      "destination": "重庆西",
+      "departure_time": "16:15",
+      "arrival_time": "18:05",
+      "planned_duration_min": 110
+    },
+    "fares": {
+      "first_class_price": 174,
+      "second_class_price": 109
+    }
+  },
+  {
+    "train_no": "D649",
+    "train_type": "D",
+    "route": {
+      "origin": "成都东",
+      "destination": "重庆西",
+      "departure_time": "17:15",
+      "arrival_time": "19:05",
+      "planned_duration_min": 110
+    },
+    "fares": {
+      "first_class_price": 174,
+      "second_class_price": 109
+    }
+  },
+  {
+    "train_no": "D651",
+    "train_type": "D",
+    "route": {
+      "origin": "成都东",
+      "destination": "重庆西",
+      "departure_time": "18:15",
+      "arrival_time": "20:05",
+      "planned_duration_min": 110
+    },
+    "fares": {
+      "first_class_price": 174,
+      "second_class_price": 109
+    }
+  },
+  {
+    "train_no": "K588",
+    "train_type": "K",
+    "route": {
+      "origin": "成都",
+      "destination": "重庆",
+      "departure_time": "10:00",
+      "arrival_time": "14:30",
+      "planned_duration_min": 270,
+      "stops": ["遂宁", "合川"]
+    },
+    "fares": {
+      "hard_sleeper_price": 108,
+      "hard_seat_price": 54.5
+    }
+  },
+  {
+    "train_no": "K590",
+    "train_type": "K",
+    "route": {
+      "origin": "成都",
+      "destination": "重庆",
+      "departure_time": "12:00",
+      "arrival_time": "16:30",
+      "planned_duration_min": 270
+    },
+    "fares": {
+      "hard_sleeper_price": 108,
+      "hard_seat_price": 54.5
+    }
+  },
+  {
+    "train_no": "K592",
+    "train_type": "K",
+    "route": {
+      "origin": "成都",
+      "destination": "重庆",
+      "departure_time": "14:00",
+      "arrival_time": "18:30",
+      "planned_duration_min": 270
+    },
+    "fares": {
+      "hard_sleeper_price": 108,
+      "hard_seat_price": 54.5
+    }
+  },
+  {
+    "train_no": "K594",
+    "train_type": "K",
+    "route": {
+      "origin": "成都",
+      "destination": "重庆",
+      "departure_time": "16:00",
+      "arrival_time": "20:30",
+      "planned_duration_min": 270
+    },
+    "fares": {
+      "hard_sleeper_price": 108,
+      "hard_seat_price": 54.5
+    }
+  },
+  {
+    "train_no": "K596",
+    "train_type": "K",
+    "route": {
+      "origin": "成都",
+      "destination": "重庆",
+      "departure_time": "18:00",
+      "arrival_time": "22:30",
+      "planned_duration_min": 270
+    },
+    "fares": {
+      "hard_sleeper_price": 108,
+      "hard_seat_price": 54.5
+    }
+  },
+  {
+    "train_no": "T888",
+    "train_type": "T",
+    "route": {
+      "origin": "成都",
+      "destination": "重庆",
+      "departure_time": "08:00",
+      "arrival_time": "12:00",
+      "planned_duration_min": 240
+    },
+    "fares": {
+      "soft_sleeper_price": 163.5,
+      "hard_sleeper_price": 108,
+      "hard_seat_price": 54.5
+    }
+  },
+  {
+    "train_no": "T890",
+    "train_type": "T",
+    "route": {
+      "origin": "成都",
+      "destination": "重庆",
+      "departure_time": "11:00",
+      "arrival_time": "15:00",
+      "planned_duration_min": 240
+    },
+    "fares": {
+      "soft_sleeper_price": 163.5,
+      "hard_sleeper_price": 108,
+      "hard_seat_price": 54.5
+    }
+  },
+  {
+    "train_no": "T892",
+    "train_type": "T",
+    "route": {
+      "origin": "成都",
+      "destination": "重庆",
+      "departure_time": "13:00",
+      "arrival_time": "17:00",
+      "planned_duration_min": 240
+    },
+    "fares": {
+      "soft_sleeper_price": 163.5,
+      "hard_sleeper_price": 108,
+      "hard_seat_price": 54.5
+    }
+  },
+  {
+    "train_no": "T894",
+    "train_type": "T",
+    "route": {
+      "origin": "成都",
+      "destination": "重庆",
+      "departure_time": "15:00",
+      "arrival_time": "19:00",
+      "planned_duration_min": 240
+    },
+    "fares": {
+      "soft_sleeper_price": 163.5,
+      "hard_sleeper_price": 108,
+      "hard_seat_price": 54.5
+    }
+  },
+  {
+    "train_no": "T896",
+    "train_type": "T",
+    "route": {
+      "origin": "成都",
+      "destination": "重庆",
+      "departure_time": "17:00",
+      "arrival_time": "21:00",
+      "planned_duration_min": 240
+    },
+    "fares": {
+      "soft_sleeper_price": 163.5,
+      "hard_sleeper_price": 108,
+      "hard_seat_price": 54.5
+    }
+  },
+  {
+    "train_no": "G501",
+    "train_type": "G",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "08:00",
+      "arrival_time": "09:20",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "business_price": 529.5,
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "G503",
+    "train_type": "G",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "10:00",
+      "arrival_time": "11:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "business_price": 529.5,
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "G1892",
+    "train_type": "G",
+    "route": {
+      "origin": "西安北",
+      "destination": "郑州东",
+      "departure_time": "09:00",
+      "arrival_time": "11:30",
+      "planned_duration_min": 150
+    },
+    "fares": {
+      "business_price": 718,
+      "first_class_price": 383,
+      "second_class_price": 239
+    }
+  },
+  {
+    "train_no": "G1896",
+    "train_type": "G",
+    "route": {
+      "origin": "西安北",
+      "destination": "郑州东",
+      "departure_time": "11:00",
+      "arrival_time": "13:30",
+      "planned_duration_min": 150
+    },
+    "fares": {
+      "business_price": 718,
+      "first_class_price": 383,
+      "second_class_price": 239
+    }
+  },
+  {
+    "train_no": "G505",
+    "train_type": "G",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "12:00",
+      "arrival_time": "13:22",
+      "planned_duration_min": 82
+    },
+    "fares": {
+      "business_price": 529.5,
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "G507",
+    "train_type": "G",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "14:00",
+      "arrival_time": "15:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "business_price": 529.5,
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "G509",
+    "train_type": "G",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "16:00",
+      "arrival_time": "17:20",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "business_price": 529.5,
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "G511",
+    "train_type": "G",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "18:00",
+      "arrival_time": "19:28",
+      "planned_duration_min": 88
+    },
+    "fares": {
+      "business_price": 529.5,
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "G513",
+    "train_type": "G",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "20:00",
+      "arrival_time": "21:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "business_price": 529.5,
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+    {
+    "train_no": "G515",
+    "train_type": "G",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "07:00",
+      "arrival_time": "08:20",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "business_price": 529.5,
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "G517",
+    "train_type": "G",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "09:00",
+      "arrival_time": "10:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "business_price": 529.5,
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "G519",
+    "train_type": "G",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "11:00",
+      "arrival_time": "12:22",
+      "planned_duration_min": 82
+    },
+    "fares": {
+      "business_price": 529.5,
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "G521",
+    "train_type": "G",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "13:00",
+      "arrival_time": "14:25",
+      "planned_duration_min": 85
+    },
+    "fares": {
+      "business_price": 529.5,
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "G523",
+    "train_type": "G",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "15:00",
+      "arrival_time": "16:20",
+      "planned_duration_min": 80
+    },
+    "fares": {
+      "business_price": 529.5,
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "D2101",
+    "train_type": "D",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "08:30",
+      "arrival_time": "10:10",
+      "planned_duration_min": 100
+    },
+    "fares": {
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "D2103",
+    "train_type": "D",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "10:30",
+      "arrival_time": "12:15",
+      "planned_duration_min": 105
+    },
+    "fares": {
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "D2105",
+    "train_type": "D",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "12:30",
+      "arrival_time": "14:10",
+      "planned_duration_min": 100
+    },
+    "fares": {
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "D2107",
+    "train_type": "D",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "14:30",
+      "arrival_time": "16:15",
+      "planned_duration_min": 105
+    },
+    "fares": {
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "D2109",
+    "train_type": "D",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "16:30",
+      "arrival_time": "18:10",
+      "planned_duration_min": 100
+    },
+    "fares": {
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "D2111",
+    "train_type": "D",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "18:30",
+      "arrival_time": "20:15",
+      "planned_duration_min": 105
+    },
+    "fares": {
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "D2113",
+    "train_type": "D",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "19:30",
+      "arrival_time": "21:10",
+      "planned_duration_min": 100
+    },
+    "fares": {
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "D2115",
+    "train_type": "D",
+    "route": {
+      "origin": "武汉",
+      "destination": "长沙南",
+      "departure_time": "21:30",
+      "arrival_time": "23:15",
+      "planned_duration_min": 105
+    },
+    "fares": {
+      "first_class_price": 282.5,
+      "second_class_price": 164.5
+    }
+  },
+  {
+    "train_no": "G1900",
+    "train_type": "G",
+    "route": {
+      "origin": "西安北",
+      "destination": "郑州东",
+      "departure_time": "14:00",
+      "arrival_time": "16:30",
+      "planned_duration_min": 150
+    },
+    "fares": {
+      "business_price": 718,
+      "first_class_price": 383,
+      "second_class_price": 239
+    }
+  },
+  {
+    "train_no": "G1902",
+    "train_type": "G",
+    "route": {
+      "origin": "西安北",
+      "destination": "郑州东",
+      "departure_time": "16:00",
+      "arrival_time": "18:30",
+      "planned_duration_min": 150
+    },
+    "fares": {
+      "business_price": 718,
+      "first_class_price": 383,
+      "second_class_price": 239
+    }
+  },
+  {
+    "train_no": "G1904",
+    "train_type": "G",
+    "route": {
+      "origin": "西安北",
+      "destination": "郑州东",
+      "departure_time": "18:00",
+      "arrival_time": "20:30",
+      "planned_duration_min": 150
+    },
+    "fares": {
+      "business_price": 718,
+      "first_class_price": 383,
+      "second_class_price": 239
+    }
+  },
+  {
+    "train_no": "G1906",
+    "train_type": "G",
+    "route": {
+      "origin": "西安北",
+      "destination": "郑州东",
+      "departure_time": "08:00",
+      "arrival_time": "10:30",
+      "planned_duration_min": 150
+    },
+    "fares": {
+      "business_price": 718,
+      "first_class_price": 383,
+      "second_class_price": 239
+    }
+  },
+  {
+    "train_no": "G1908",
+    "train_type": "G",
+    "route": {
+      "origin": "西安北",
+      "destination": "郑州东",
+      "departure_time": "10:00",
+      "arrival_time": "12:30",
+      "planned_duration_min": 150
+    },
+    "fares": {
+      "business_price": 718,
+      "first_class_price": 383,
+      "second_class_price": 239
+    }
+  },
+  {
+    "train_no": "D310",
+    "train_type": "D",
+    "route": {
+      "origin": "西安北",
+      "destination": "郑州东",
+      "departure_time": "09:30",
+      "arrival_time": "12:00",
+      "planned_duration_min": 150
+    },
+    "fares": {
+      "first_class_price": 383,
+      "second_class_price": 239
+    }
+  },
+  {
+    "train_no": "D312",
+    "train_type": "D",
+    "route": {
+      "origin": "西安北",
+      "destination": "郑州东",
+      "departure_time": "11:30",
+      "arrival_time": "14:00",
+      "planned_duration_min": 150
+    },
+    "fares": {
+      "first_class_price": 383,
+      "second_class_price": 239
+    }
+  },
+  {
+    "train_no": "D314",
+    "train_type": "D",
+    "route": {
+      "origin": "西安北",
+      "destination": "郑州东",
+      "departure_time": "13:30",
+      "arrival_time": "16:00",
+      "planned_duration_min": 150
+    },
+    "fares": {
+      "first_class_price": 383,
+      "second_class_price": 239
+    }
+  },
+  {
+    "train_no": "D316",
+    "train_type": "D",
+    "route": {
+      "origin": "西安北",
+      "destination": "郑州东",
+      "departure_time": "15:30",
+      "arrival_time": "18:00",
+      "planned_duration_min": 150
+    },
+    "fares": {
+      "first_class_price": 383,
+      "second_class_price": 239
+    }
+  },
+  {
+    "train_no": "D318",
+    "train_type": "D",
+    "route": {
+      "origin": "西安北",
+      "destination": "郑州东",
+      "departure_time": "17:30",
+      "arrival_time": "20:00",
+      "planned_duration_min": 150
+    },
+    "fares": {
+      "first_class_price": 383,
+      "second_class_price": 239
+    }
+  },
+  {
+    "train_no": "D320",
+    "train_type": "D",
+    "route": {
+      "origin": "西安北",
+      "destination": "郑州东",
+      "departure_time": "19:30",
+      "arrival_time": "22:00",
+      "planned_duration_min": 150
+    },
+    "fares": {
+      "first_class_price": 383,
+      "second_class_price": 239
+    }
+  },
+  {
+    "train_no": "K82",
+    "train_type": "K",
+    "route": {
+      "origin": "西安",
+      "destination": "郑州",
+      "departure_time": "10:00",
+      "arrival_time": "15:00",
+      "planned_duration_min": 300
+    },
+    "fares": {
+      "hard_sleeper_price": 138.5,
+      "hard_seat_price": 81.5
+    }
+  },
+  {
+    "train_no": "K84",
+    "train_type": "K",
+    "route": {
+      "origin": "西安",
+      "destination": "郑州",
+      "departure_time": "12:00",
+      "arrival_time": "17:00",
+      "planned_duration_min": 300
+    },
+    "fares": {
+      "hard_sleeper_price": 138.5,
+      "hard_seat_price": 81.5
+    }
+  },
+  {
+    "train_no": "T140",
+    "train_type": "T",
+    "route": {
+      "origin": "西安",
+      "destination": "郑州",
+      "departure_time": "14:00",
+      "arrival_time": "18:30",
+      "planned_duration_min": 270
+    },
+    "fares": {
+      "soft_sleeper_price": 212.5,
+      "hard_sleeper_price": 138.5,
+      "hard_seat_price": 81.5
+    }
+  },
+  {
+    "train_no": "T142",
+    "train_type": "T",
+    "route": {
+      "origin": "西安",
+      "destination": "郑州",
+      "departure_time": "16:00",
+      "arrival_time": "20:30",
+      "planned_duration_min": 270
+    },
+    "fares": {
+      "soft_sleeper_price": 212.5,
+      "hard_sleeper_price": 138.5,
+      "hard_seat_price": 81.5
+    }
+  },
+  {
+    "train_no": "G80",
+    "train_type": "G",
+    "route": {
+      "origin": "广州南",
+      "destination": "北京西",
+      "departure_time": "10:00",
+      "arrival_time": "18:00",
+      "planned_duration_min": 480
+    },
+    "fares": {
+      "business_price": 2724,
+      "first_class_price": 1380,
+      "second_class_price": 862
+    }
+  },
+  {
+    "train_no": "D354",
+    "train_type": "D",
+    "route": {
+      "origin": "成都东",
+      "destination": "上海虹桥",
+      "departure_time": "08:00",
+      "arrival_time": "22:00",
+      "planned_duration_min": 840
+    },
+    "fares": {
+      "soft_sleeper_price": 909,
+      "hard_sleeper_price": 568.5
+    }
+  },
+  {
+    "train_no": "G85",
+    "train_type": "G",
+    "route": {
+      "origin": "广州南",
+      "destination": "上海虹桥",
+      "departure_time": "08:00",
+      "arrival_time": "16:00",
+      "planned_duration_min": 480
+    },
+    "fares": {
+      "business_price": 2497.5,
+      "first_class_price": 1302.5,
+      "second_class_price": 793
+    }
+  },
+  {
+    "train_no": "D378",
+    "train_type": "D",
+    "route": {
+      "origin": "广州南",
+      "destination": "上海虹桥",
+      "departure_time": "19:00",
+      "arrival_time": "07:00",
+      "planned_duration_min": 720
+    },
+    "fares": {
+      "soft_sleeper_price": 710,
+      "hard_sleeper_price": 450
+    }
+  },
+  {
+    "train_no": "G350",
+    "train_type": "G",
+    "route": {
+      "origin": "成都东",
+      "destination": "北京西",
+      "departure_time": "07:00",
+      "arrival_time": "15:00",
+      "planned_duration_min": 480
+    },
+    "fares": {
+      "business_price": 2453.5,
+      "first_class_price": 1251.5,
+      "second_class_price": 778.5
+    }
+  },
+  {
+    "train_no": "D1826",
+    "train_type": "D",
+    "route": {
+      "origin": "成都东",
+      "destination": "广州南",
+      "departure_time": "08:00",
+      "arrival_time": "18:00",
+      "planned_duration_min": 600
+    },
+    "fares": {
+      "first_class_price": 767.5,
+      "second_class_price": 479.5
+    }
+  },
+  {
+    "train_no": "G79",
+    "train_type": "G",
+    "route": {
+      "origin": "武汉",
+      "destination": "北京西",
+      "departure_time": "14:00",
+      "arrival_time": "18:30",
+      "planned_duration_min": 270
+    },
+    "fares": {
+      "business_price": 1647.5,
+      "first_class_price": 879.5,
+      "second_class_price": 521.5
+    }
+  },
+  {
+    "train_no": "D3054",
+    "train_type": "D",
+    "route": {
+      "origin": "武汉",
+      "destination": "上海虹桥",
+      "departure_time": "22:00",
+      "arrival_time": "06:00",
+      "planned_duration_min": 480
+    },
+    "fares": {
+      "soft_sleeper_price": 450,
+      "hard_sleeper_price": 280
+    }
+  },
+  {
+    "train_no": "G656",
+    "train_type": "G",
+    "route": {
+      "origin": "西安北",
+      "destination": "北京西",
+      "departure_time": "08:00",
+      "arrival_time": "12:30",
+      "planned_duration_min": 270
+    },
+    "fares": {
+      "business_price": 1625.5,
+      "first_class_price": 824.5,
+      "second_class_price": 515.5
+    }
+  },
+  {
+    "train_no": "G362",
+    "train_type": "G",
+    "route": {
+      "origin": "西安北",
+      "destination": "上海虹桥",
+      "departure_time": "09:00",
+      "arrival_time": "15:00",
+      "planned_duration_min": 360
+    },
+    "fares": {
+      "business_price": 2079.5,
+      "first_class_price": 1055.5,
+      "second_class_price": 669.5
+    }
+  },
+  {
+    "train_no": "G77",
+    "train_type": "G",
+    "route": {
+      "origin": "北京西",
+      "destination": "广州南",
+      "departure_time": "10:00",
+      "arrival_time": "18:00",
+      "planned_duration_min": 480
+    },
+    "fares": {
+      "business_price": 2724,
+      "first_class_price": 1380,
+      "second_class_price": 862
+    }
+  },
+  {
+    "train_no": "G86",
+    "train_type": "G",
+    "route": {
+      "origin": "上海虹桥",
+      "destination": "广州南",
+      "departure_time": "08:00",
+      "arrival_time": "16:00",
+      "planned_duration_min": 480
+    },
+    "fares": {
+      "business_price": 2497.5,
+      "first_class_price": 1302.5,
+      "second_class_price": 793
+    }
+  },
+  {
+    "train_no": "G349",
+    "train_type": "G",
+    "route": {
+      "origin": "北京西",
+      "destination": "成都东",
+      "departure_time": "07:00",
+      "arrival_time": "15:00",
+      "planned_duration_min": 480
+    },
+    "fares": {
+      "business_price": 2453.5,
+      "first_class_price": 1251.5,
+      "second_class_price": 778.5
+    }
+  },
+  {
+    "train_no": "D1825",
+    "train_type": "D",
+    "route": {
+      "origin": "广州南",
+      "destination": "成都东",
+      "departure_time": "08:00",
+      "arrival_time": "18:00",
+      "planned_duration_min": 600
+    },
+    "fares": {
+      "first_class_price": 767.5,
+      "second_class_price": 479.5
+    }
+  },
+  {
+    "train_no": "G80",
+    "train_type": "G",
+    "route": {
+      "origin": "北京西",
+      "destination": "武汉",
+      "departure_time": "14:00",
+      "arrival_time": "18:30",
+      "planned_duration_min": 270
+    },
+    "fares": {
+      "business_price": 1647.5,
+      "first_class_price": 879.5,
+      "second_class_price": 521.5
+    }
+  },
+  {
+    "train_no": "D3053",
+    "train_type": "D",
+    "route": {
+      "origin": "上海虹桥",
+      "destination": "武汉",
+      "departure_time": "22:00",
+      "arrival_time": "06:00",
+      "planned_duration_min": 480
+    },
+    "fares": {
+      "soft_sleeper_price": 450,
+      "hard_sleeper_price": 280
+    }
+  },
+  {
+    "train_no": "G655",
+    "train_type": "G",
+    "route": {
+      "origin": "北京西",
+      "destination": "西安北",
+      "departure_time": "08:00",
+      "arrival_time": "12:30",
+      "planned_duration_min": 270
+    },
+    "fares": {
+      "business_price": 1625.5,
+      "first_class_price": 824.5,
+      "second_class_price": 515.5
+    }
+  },
+  {
+    "train_no": "G361",
+    "train_type": "G",
+    "route": {
+      "origin": "上海虹桥",
+      "destination": "西安北",
+      "departure_time": "09:00",
+      "arrival_time": "15:00",
+      "planned_duration_min": 360
+    },
+    "fares": {
+      "business_price": 2079.5,
+      "first_class_price": 1055.5,
+      "second_class_price": 669.5
+    }
+  },
+  {
+    "train_no": "G834",
+    "train_type": "G",
+    "route": {
+      "origin": "广州南",
+      "destination": "西安北",
+      "departure_time": "08:00",
+      "arrival_time": "17:00",
+      "planned_duration_min": 540
+    },
+    "fares": {
+      "business_price": 2668.5,
+      "first_class_price": 1353.5,
+      "second_class_price": 813.5
+    }
+  },
+  {
+    "train_no": "G833",
+    "train_type": "G",
+    "route": {
+      "origin": "西安北",
+      "destination": "广州南",
+      "departure_time": "08:00",
+      "arrival_time": "17:00",
+      "planned_duration_min": 540
+    },
+    "fares": {
+      "business_price": 2668.5,
+      "first_class_price": 1353.5,
+      "second_class_price": 813.5
+    }
+  },
+  {
+    "train_no": "D634",
+    "train_type": "D",
+    "route": {
+      "origin": "成都东",
+      "destination": "武汉",
+      "departure_time": "07:00",
+      "arrival_time": "15:00",
+      "planned_duration_min": 480
+    },
+    "fares": {
+      "first_class_price": 628.5,
+      "second_class_price": 392.5
+    }
+  },
+  {
+    "train_no": "D633",
+    "train_type": "D",
+    "route": {
+      "origin": "武汉",
+      "destination": "成都东",
+      "departure_time": "07:00",
+      "arrival_time": "15:00",
+      "planned_duration_min": 480
+    },
+    "fares": {
+      "first_class_price": 628.5,
+      "second_class_price": 392.5
+    }
+  },
+  {
+    "train_no": "G6023",
+    "train_type": "G",
+    "route": {
+      "origin": "长沙南",
+      "destination": "深圳北",
+      "departure_time": "08:00",
+      "arrival_time": "11:00",
+      "planned_duration_min": 180
+    },
+    "fares": {
+      "business_price": 1207.5,
+      "first_class_price": 603.5,
+      "second_class_price": 388.5
+    }
+  },
+  {
+    "train_no": "G821",
+    "train_type": "G",
+    "route": {
+      "origin": "郑州东",
+      "destination": "深圳北",
+      "departure_time": "09:00",
+      "arrival_time": "15:00",
+      "planned_duration_min": 360
+    },
+    "fares": {
+      "business_price": 2867.5,
+      "first_class_price": 1463.5,
+      "second_class_price": 917.5
+    }
+  }
+
+      "departure_time": "14:00",
+      "arrival_time": "16:45",
+      "planned_duration_min": 165
+    },
+    "fares": {
+      "business_price": 718,
+      "first_class_price": 383,
+      "second_class_price": 239
+    }
+  },
+  {
+    "train_no": "G80",
+    "train_type": "G",
+    "route": {
+      "origin": "广州南",
+      "destination": "北京西",
+      "departure_time": "10:00",
+      "arrival_time": "18:00",
+      "planned_duration_min": 480
+    },
+    "fares": {
+      "business_price": 2724,
+      "first_class_price": 1380,
+      "second_class_price": 862
+    }
+  },
+  {
+    "train_no": "D354",
+    "train_type": "D",
+    "route": {
+      "origin": "成都东",
+      "destination": "上海虹桥",
+      "departure_time": "07:00",
+      "arrival_time": "21:00",
+      "planned_duration_min": 840
+    },
+    "fares": {
+      "first_class_price": 1137,
+      "second_class_price": 711
+    }
+  }
+]

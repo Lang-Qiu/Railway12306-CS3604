@@ -1,9 +1,16 @@
-function loadTrainData() {
-  throw new Error('not implemented')
-}
+const dbService = require('./dbService');
 
 function listTrainsByRoute(origin, destination, date) {
-  throw new Error('not implemented')
+  const db = dbService.getDb();
+  const sql = 'SELECT * FROM trains WHERE origin = ? AND destination = ?';
+  const stmt = db.prepare(sql);
+  stmt.bind([origin, destination]);
+  const results = [];
+  while (stmt.step()) {
+    results.push(stmt.getAsObject());
+  }
+  stmt.free();
+  return results;
 }
 
 function filterTrainsByType(list, types) {
@@ -23,7 +30,6 @@ function computeSeatAvailability(trainNo, seatType, origin, destination) {
 }
 
 module.exports = {
-  loadTrainData,
   listTrainsByRoute,
   filterTrainsByType,
   getTrainDetail,

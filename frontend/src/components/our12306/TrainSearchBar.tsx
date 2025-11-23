@@ -37,7 +37,13 @@ const TrainSearchBar: React.FC<Props> = ({ initialDepartureStation, initialArriv
           <StationInput value={departureStation} placeholder="北京北" type="departure" onChange={setDepartureStation} onSelect={setDepartureStation} />
           {errors.departureStation && (<div className="field-error">{errors.departureStation}</div>)}
         </div>
-        <button className="swap-stations-btn" onClick={handleSwapStations} aria-label="交换出发地和到达地"><img src="/images/转换2.svg" alt="交换" className="swap-icon" /></button>
+        <button className="swap-stations-btn" onClick={handleSwapStations} aria-label="交换出发地和到达地">
+          <svg className="swap-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M3 12 L21 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path d="M8 7 L3 12 L8 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M16 7 L21 12 L16 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
         <div className="search-field-inline">
           <label className="search-field-label-inline">目的地</label>
           <StationInput value={arrivalStation} placeholder="上海" type="arrival" onChange={setArrivalStation} onSelect={setArrivalStation} />

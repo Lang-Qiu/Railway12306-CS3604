@@ -22,7 +22,7 @@
   font-size: 18px !important;
   color: #333333 !important;
   cursor: pointer !important;
-  transition: all 0.3s ease !important;
+  transition: all 0.35s ease !important;
   border-bottom: 3px solid transparent !important;
 }
 
@@ -69,7 +69,7 @@
   border: 1px solid #d9d9d9 !important;
   border-radius: 0 !important;
   font-size: 14px !important;
-  transition: border-color 0.3s ease !important;
+  transition: border-color 0.35s ease !important;
   box-sizing: border-box !important;
   background: #ffffff !important;
 }
@@ -104,7 +104,7 @@
   font-size: 14px !important;
   cursor: pointer !important;
   white-space: nowrap !important;
-  transition: background-color 0.3s ease !important;
+  transition: background-color 0.35s ease !important;
 }
 .login-form-container .sms-button:hover {
   background: var(--color-primary-hover) !important;
@@ -145,7 +145,7 @@
   font-size: 16px !important;
   font-weight: 500 !important;
   cursor: pointer !important;
-  transition: background-color 0.3s ease !important;
+  transition: background-color 0.35s ease !important;
   margin-bottom: 20px !important;
   text-align: center !important;
 }
@@ -173,7 +173,7 @@
   font-size: 14px !important;
   cursor: pointer !important;
   text-decoration: none !important;
-  transition: color 0.3s ease !important;
+  transition: color 0.35s ease !important;
 }
 .login-form-container .link-button:hover {
   color: var(--color-primary-hover) !important;

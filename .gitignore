@@ -205,3 +205,20 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Node/JS project ignores
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+coverage/
+frontend/coverage/
+backend/coverage/
+dist/
+frontend/dist/
+backend/dist/
+build/
+*.log
+.eslintcache
+.vite
+Thumbs.db
+*.DS_Store

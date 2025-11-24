@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 
+process.env.JSON_DB_INMEMORY = process.env.JSON_DB_INMEMORY || '1';
+
 const authRoutes = require('./route-manifests/auth');
 const registerRoutes = require('../modules/register-migrated/routes/register');
 const orderRoutes = require('./route-manifests/orders');
@@ -14,6 +16,7 @@ const queryStatsRoutes = require('./route-manifests/queryStats');
 const trainRoutes = require('./route-manifests/trains');
 const dbService = require('./domain-providers/dbService');
 const errorHandler = require('./request-interceptors/errorHandler');
+const jsonDbService = require('./domain-providers/jsonDbService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -52,6 +55,7 @@ app.use('*', (req, res) => {
 const databaseManager = require('./infra-config/database');
 
 async function startServer() {
+  await jsonDbService.connect();
   await databaseManager.initDatabase();
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

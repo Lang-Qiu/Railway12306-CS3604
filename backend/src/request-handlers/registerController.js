@@ -5,8 +5,7 @@
  * 处理所有注册相关的业务逻辑
  */
 
-const registrationDbService = require('../domain-providers/registrationDbService');
-const sessionService = require('../domain-providers/sessionService');
+const jsonDbService = require('../domain-providers/jsonDbService');
 const messages = require('../message-catalog/messages');
 const { v4: uuidv4 } = require('uuid');
 
@@ -16,11 +15,12 @@ class RegisterController {
    */
   async validateUsername(req, res) {
     try {
+      console.log('[Register] validateUsername called')
       const { username } = req.body;
       if (!username || username.length < 6) return res.status(400).json({ valid: false, error: '用户名长度不能少于6个字符！' });
       if (username.length > 30) return res.status(400).json({ valid: false, error: '用户名长度不能超过30个字符！' });
       if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(username)) return res.status(400).json({ valid: false, error: '用户名只能由字母、数字和_组成，须以字母开头！' });
-      const existingUser = await registrationDbService.findUserByUsername(username);
+      const existingUser = await jsonDbService.findUserBy(username, 'username');
       if (existingUser) return res.status(409).json({ valid: false, error: '该用户名已经占用，请重新选择用户名！' });
       return res.status(200).json({ valid: true, message: '用户名可用' });
     } catch (error) {
@@ -113,17 +113,20 @@ class RegisterController {
    */
   async register(req, res) {
     try {
+      console.log('[Register] register called')
       const { username, password, confirmPassword, idCardType, name, idCardNumber, discountType, email, phone, agreedToTerms } = req.body;
       if (!username || !password || !confirmPassword || !idCardType || !name || !idCardNumber || !discountType || !phone) return res.status(400).json({ error: messages.register.fillAll });
       if (password !== confirmPassword) return res.status(400).json({ error: messages.register.passwordMismatch });
       if (!agreedToTerms) return res.status(400).json({ error: messages.register.termsRequired });
-      if (await registrationDbService.findUserByUsername(username)) return res.status(409).json({ error: '该用户名已经占用，请重新选择用户名！' });
-      if (await registrationDbService.findUserByIdCardNumber(idCardType, idCardNumber)) return res.status(409).json({ error: '该证件号码已经被注册过，请确认是否您本人注册，"是"请使用原账号登录，"不是"请通过铁路12306App办理抢注或持该证件到就近的办理客运业务的铁路车站办理被抢注处理，完成后即可继续注册，或致电12306客服咨询。' });
-      if (await registrationDbService.findUserByPhone(phone)) return res.status(409).json({ error: '您输入的手机号码已被其他注册用户使用，请确认是否本人注册。如果此手机号是本人注册，您可使用此手机号进行登录，或返回登录页点击忘记密码进行重置密码;如果手机号不是您注册的，您可更换手机号码或致电12306客服协助处理。' });
+      if (await jsonDbService.findUserBy(username, 'username')) return res.status(409).json({ error: '该用户名已经占用，请重新选择用户名！' });
+      if (await jsonDbService.findUserByIdCard(idCardType, idCardNumber)) return res.status(409).json({ error: '该证件号码已经被注册过，请确认是否您本人注册，"是"请使用原账号登录，"不是"请通过铁路12306App办理抢注或持该证件到就近的办理客运业务的铁路车站办理被抢注处理，完成后即可继续注册，或致电12306客服咨询。' });
+      if (await jsonDbService.findUserBy(phone, 'phone')) return res.status(409).json({ error: '您输入的手机号码已被其他注册用户使用，请确认是否本人注册。如果此手机号是本人注册，您可使用此手机号进行登录，或返回登录页点击忘记密码进行重置密码;如果手机号不是您注册的，您可更换手机号码或致电12306客服协助处理。' });
       if (email) {
-        if (await registrationDbService.findUserByEmail(email)) return res.status(409).json({ error: '您输入的邮箱已被其他注册用户使用，请确认是否本人注册。如果此邮箱是本人注册，您可使用此邮箱进行登录，或返回登录页点击忘记密码进行重置密码;如果邮箱不是您注册的，您可更换邮箱或致电12306客服协助处理。' });
+        if (await jsonDbService.findUserBy(email, 'email')) return res.status(409).json({ error: '您输入的邮箱已被其他注册用户使用，请确认是否本人注册。如果此邮箱是本人注册，您可使用此邮箱进行登录，或返回登录页点击忘记密码进行重置密码;如果邮箱不是您注册的，您可更换邮箱或致电12306客服协助处理。' });
       }
-      const sessionId = await sessionService.createSession({ username, password, idCardType, name, idCardNumber, discountType, email, phone });
+      const sessionId = uuidv4();
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+      await jsonDbService.createSession(sessionId, { user_data: { username, password, idCardType, name, idCardNumber, discountType, email, phone } }, expiresAt);
       return res.status(201).json({ message: '注册信息已提交，请进行验证', sessionId });
     } catch (error) {
       console.error('Register error:', error);
@@ -136,24 +139,30 @@ class RegisterController {
    */
   async sendRegistrationVerificationCode(req, res) {
     try {
+      console.log('[Register] sendRegistrationVerificationCode called')
       const { sessionId, phone: reqPhone, email: reqEmail } = req.body;
-      const session = await sessionService.getSession(sessionId);
+      const session = await jsonDbService.getSession(sessionId);
       if (!session) return res.status(400).json({ error: messages.session.invalid });
       const sessionData = session.user_data;
       const phone = reqPhone || sessionData.phone;
       const email = reqEmail || sessionData.email;
       if (email) {
-        const canSendEmail = await sessionService.checkEmailSendFrequency(email);
+        const canSendEmail = await jsonDbService.tryRateLimit(`email_send:${email}`, 60);
         if (!canSendEmail) return res.status(429).json({ error: messages.sms.tooFrequent });
       }
       if (phone) {
-        const canSendSms = await sessionService.checkSmsSendFrequency(phone);
+        const canSendSms = await jsonDbService.tryRateLimit(`sms_send:${phone}`, 60);
         if (!canSendSms) return res.status(429).json({ error: messages.sms.tooFrequent });
       }
-      if (email) await registrationDbService.createEmailVerificationCode(email);
+      let emailCode = null;
+      if (email) {
+        emailCode = Math.floor(100000 + Math.random() * 900000).toString();
+        await jsonDbService.createVerificationCode(`email_code:register:${email}`, emailCode, 300);
+      }
       let smsCode = null;
       if (phone) {
-        smsCode = await registrationDbService.createSmsVerificationCode(phone);
+        smsCode = Math.floor(100000 + Math.random() * 900000).toString();
+        await jsonDbService.createVerificationCode(`sms_code:register:${phone}`, smsCode, 300);
         console.log(`\n=================================`);
         console.log(`📱 注册验证码已生成`);
         console.log(`手机号: ${phone}`);
@@ -173,21 +182,22 @@ class RegisterController {
    */
   async completeRegistration(req, res) {
     try {
+      console.log('[Register] completeRegistration called')
       const { sessionId, smsCode, emailCode } = req.body;
-      const session = await sessionService.getSession(sessionId);
+      const session = await jsonDbService.getSession(sessionId);
       if (!session) return res.status(400).json({ error: messages.session.invalid });
       const userData = session.user_data;
       if (smsCode) {
-        const verifyResult = await registrationDbService.verifySmsCode(userData.phone, smsCode);
-        if (!verifyResult.success) return res.status(400).json({ error: verifyResult.error });
+        const stored = await jsonDbService.getVerificationCode(`sms_code:register:${userData.phone}`);
+        if (stored !== smsCode) return res.status(400).json({ error: '验证码错误或已过期' });
       }
       if (emailCode) {
-        const ok = await registrationDbService.verifyEmailCode(userData.email, emailCode);
-        if (!ok) return res.status(400).json({ error: '验证码错误或已过期' });
+        const storedEmail = await jsonDbService.getVerificationCode(`email_code:register:${userData.email}`);
+        if (storedEmail !== emailCode) return res.status(400).json({ error: '验证码错误或已过期' });
       }
       try {
-        const userId = await registrationDbService.createUser(userData);
-        await sessionService.deleteSession(sessionId);
+        const userId = await jsonDbService.createUser(userData);
+        await jsonDbService.deleteSession(sessionId);
         return res.status(201).json({ message: '恭喜您注册成功，请到登录页面进行登录！', userId });
       } catch (error) {
         if (error.message && (error.message.includes('已被注册') || error.message === 'User already exists')) {

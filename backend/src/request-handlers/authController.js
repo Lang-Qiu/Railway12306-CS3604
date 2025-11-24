@@ -246,6 +246,210 @@ class AuthController {
     }
   }
 
+  // 发送忘记密码验证码
+  async sendResetPasswordCode(req, res) {
+    const { identifier, idNumber } = req.body;
+    console.log(`[Reset Password] Send code request for: ${identifier}`);
+
+    try {
+      if (!identifier || identifier.trim() === '') {
+        return res.status(400).json({ success: false, error: '请输入手机号或邮箱' });
+      }
+
+      if (!idNumber || idNumber.trim() === '') {
+        return res.status(400).json({ success: false, error: '请输入证件号码' });
+      }
+
+      const registrationDbService = require('../domain-providers/registrationDbService');
+      const sessionService = require('../domain-providers/sessionService');
+
+      // 判断是手机号还是邮箱
+      const isPhone = /^1[3-9]\d{9}$/.test(identifier);
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+
+      if (!isPhone && !isEmail) {
+        return res.status(400).json({ success: false, error: '请输入有效的手机号或邮箱' });
+      }
+
+      // 查找用户
+      let user = null;
+      if (isPhone) {
+        user = await registrationDbService.findUserByPhone(identifier);
+      } else {
+        user = await registrationDbService.findUserByEmail(identifier);
+      }
+
+      if (!user) {
+        return res.status(404).json({ success: false, error: '该账号不存在' });
+      }
+
+      // 验证证件号码是否匹配
+      if (!user.id_card || user.id_card !== idNumber) {
+        console.log(`[Reset Password] ID card mismatch for ${identifier}. Expected: ${user.id_card}, Got: ${idNumber}`);
+        return res.status(400).json({ success: false, error: '证件号码不匹配，请确认您的身份信息' });
+      }
+
+      // 检查发送频率
+      if (isPhone) {
+        const canSend = await sessionService.checkSmsSendFrequency(identifier);
+        if (!canSend) {
+          return res.status(429).json({ success: false, error: messages.sms.tooFrequent });
+        }
+      } else {
+        const canSend = await sessionService.checkEmailSendFrequency(identifier);
+        if (!canSend) {
+          return res.status(429).json({ success: false, error: '邮件发送过于频繁，请稍后再试' });
+        }
+      }
+
+      // 生成验证码
+      let code;
+      if (isPhone) {
+        code = await registrationDbService.createSmsVerificationCode(identifier);
+        console.log(`[Reset Password] SMS code sent to ${identifier}: ${code}`);
+      } else {
+        const result = await registrationDbService.createEmailVerificationCode(identifier);
+        code = result.code;
+        console.log(`[Reset Password] Email code sent to ${identifier}: ${code}`);
+      }
+
+      // 创建重置密码会话
+      const sessionId = await sessionService.createSession({
+        userId: user.id,
+        username: user.username,
+        identifier: identifier,
+        type: 'reset_password'
+      });
+
+      return res.status(200).json({ 
+        success: true, 
+        message: '验证码已发送', 
+        sessionId,
+        verificationCode: code // 开发环境返回，生产环境应删除
+      });
+    } catch (error) {
+      console.error('Send reset password code error:', error);
+      return res.status(500).json({ success: false, message: '服务器内部错误' });
+    }
+  }
+
+  // 验证重置密码验证码
+  async verifyResetPasswordCode(req, res) {
+    const { sessionId, verificationCode } = req.body;
+    console.log(`[Reset Password] Verify code for session: ${sessionId}`);
+
+    try {
+      if (!sessionId || !verificationCode) {
+        return res.status(400).json({ success: false, error: '缺少必要参数' });
+      }
+
+      if (!/^\d{6}$/.test(verificationCode)) {
+        return res.status(400).json({ success: false, error: '验证码必须为6位数字' });
+      }
+
+      const sessionService = require('../domain-providers/sessionService');
+      const registrationDbService = require('../domain-providers/registrationDbService');
+
+      // 获取会话
+      const session = await sessionService.getSession(sessionId);
+      if (!session) {
+        return res.status(400).json({ success: false, error: '会话无效或已过期' });
+      }
+
+      const sessionData = session.user_data;
+      if (sessionData.type !== 'reset_password') {
+        return res.status(400).json({ success: false, error: '无效的会话类型' });
+      }
+
+      const identifier = sessionData.identifier;
+      const isPhone = /^1[3-9]\d{9}$/.test(identifier);
+
+      // 验证验证码
+      let verifyResult;
+      if (isPhone) {
+        verifyResult = await registrationDbService.verifySmsCode(identifier, verificationCode);
+      } else {
+        const ok = await registrationDbService.verifyEmailCode(identifier, verificationCode);
+        verifyResult = { success: ok, error: ok ? null : '验证码错误或已过期' };
+      }
+
+      if (!verifyResult.success) {
+        return res.status(401).json({ success: false, error: verifyResult.error || '验证码错误' });
+      }
+
+      // 验证成功，更新会话状态
+      await sessionService.createSession(sessionId, {
+        ...sessionData,
+        verified: true
+      }, new Date(Date.now() + 10 * 60 * 1000)); // 10分钟有效期
+
+      console.log(`[Reset Password] Code verified for session: ${sessionId}`);
+      return res.status(200).json({ success: true, message: '验证成功', sessionId });
+    } catch (error) {
+      console.error('Verify reset password code error:', error);
+      return res.status(500).json({ success: false, message: '服务器内部错误' });
+    }
+  }
+
+  // 重置密码
+  async resetPassword(req, res) {
+    const { sessionId, newPassword } = req.body;
+    console.log(`[Reset Password] Reset password for session: ${sessionId}`);
+
+    try {
+      if (!sessionId || !newPassword) {
+        return res.status(400).json({ success: false, error: '缺少必要参数' });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ success: false, error: '密码长度不能少于6位' });
+      }
+
+      const sessionService = require('../domain-providers/sessionService');
+      const dbService = require('../domain-providers/dbService');
+      const crypto = require('../utils/crypto');
+      const bcrypt = require('bcryptjs');
+
+      // 获取会话
+      const session = await sessionService.getSession(sessionId);
+      if (!session) {
+        return res.status(400).json({ success: false, error: '会话无效或已过期' });
+      }
+
+      const sessionData = session.user_data;
+      if (sessionData.type !== 'reset_password' || !sessionData.verified) {
+        return res.status(400).json({ success: false, error: '请先完成验证' });
+      }
+
+      // 解密密码
+      let decryptedPassword;
+      try {
+        decryptedPassword = crypto.decryptPassword(newPassword);
+      } catch (e) {
+        console.error('[Reset Password] Password decryption failed:', e);
+        return res.status(400).json({ success: false, error: '密码格式错误' });
+      }
+
+      // 更新密码
+      const hashedPassword = await bcrypt.hash(decryptedPassword, 10);
+      await dbService.init();
+      const db = dbService.getDb();
+      await db.run(
+        'UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [hashedPassword, sessionData.userId]
+      );
+
+      // 删除会话
+      await sessionService.deleteSession(sessionId);
+
+      console.log(`[Reset Password] Password reset successful for user: ${sessionData.username}`);
+      return res.status(200).json({ success: true, message: '密码重置成功，请使用新密码登录' });
+    } catch (error) {
+      console.error('Reset password error:', error);
+      return res.status(500).json({ success: false, message: '服务器内部错误' });
+    }
+  }
+
   async getPublicKey(req, res) {
     try {
       const publicKey = crypto.getPublicKey();

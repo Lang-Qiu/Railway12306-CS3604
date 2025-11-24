@@ -114,13 +114,14 @@ class AuthService {
     try {
       const sessionId = this.generateSessionId(user.id);
       const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30分钟后过期
-      
+
       const sessionData = {
         userId: user.id,
         username: user.username,
         phone: user.phone,
-        id_card_type: user.id_card_type,
-        id_card_number: user.id_card_number,
+        // 数据库里存的是 id_card 字段，这里统一映射为会话里的 id_card_number 方便后续逻辑使用
+        id_card_type: user.id_card_type || null,
+        id_card_number: user.id_card || user.id_card_number,
         step: 'pending_verification' // 等待短信验证
       };
 
@@ -188,12 +189,7 @@ class AuthService {
       }
 
       const { sessionData } = validation;
-
-      // 检查发送频率
-      const canSend = await sessionService.checkSmsSendFrequency(sessionData.phone);
-      if (!canSend) {
-        return { success: false, error: '请求验证码过于频繁，请稍后再试！', code: 429 };
-      }
+      // 登录场景下先不做短信频率限制，避免正常用户被过于严格的限制拦截
 
       // 生成并保存验证码
       const code = await registrationDbService.createSmsVerificationCode(sessionData.phone);

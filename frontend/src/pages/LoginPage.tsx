@@ -76,8 +76,7 @@ const LoginPage: React.FC = () => {
   }
 
   const handleNavigateToForgotPassword = () => {
-    // TODO: 实现跳转到忘记密码页面
-    console.log('Navigate to forgot password')
+    navigate('/forgot-password')
   }
 
   // const handleSmsVerificationSuccess = () => {
@@ -103,13 +102,16 @@ const LoginPage: React.FC = () => {
       
       if (response.success) {
         console.log('SMS verification success:', response)
+        // 持久化登录态（供全站读取）
+        if (response.token) localStorage.setItem('authToken', response.token)
+        if (response.user?.username) localStorage.setItem('username', response.user.username)
+        if (response.user?.id) localStorage.setItem('userId', String(response.user.id))
+        // 通知其它组件登录状态已更新（同 Tab 场景下不会触发 storage 事件）
+        window.dispatchEvent(new Event('auth-updated'))
         setSmsSuccess('登录成功！')
-        // 2秒后关闭弹窗并跳转
-        setTimeout(() => {
-          setShowSmsModal(false)
-          // TODO: 跳转到首页或用户中心
-          navigate('/')
-        }, 2000)
+        // 立即关闭弹窗并跳转首页
+        setShowSmsModal(false)
+        navigate('/')
       }
     } catch (error: any) {
       console.error('SMS verification error:', error)

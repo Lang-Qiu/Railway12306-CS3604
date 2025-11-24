@@ -19,6 +19,15 @@ router.get('/homepage', authController.getHomePage);
 // API-GET-ForgotPassword: 忘记密码页面接口
 router.get('/forgot-password', authController.getForgotPassword);
 
+// API-POST-SendResetPasswordCode: 发送重置密码验证码
+router.post('/send-reset-password-code', authController.sendResetPasswordCode);
+
+// API-POST-VerifyResetPasswordCode: 验证重置密码验证码
+router.post('/verify-reset-password-code', authController.verifyResetPasswordCode);
+
+// API-POST-ResetPassword: 重置密码
+router.post('/reset-password', authController.resetPassword);
+
 // API-GET-PublicKey: 获取公钥接口
 router.get('/public-key', authController.getPublicKey);
 router.get('/csrf-token', authController.getCsrfToken);

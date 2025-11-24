@@ -8,7 +8,8 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        // Backend server runs on port 3000 (see backend/src/app.js)
+        target: 'http://localhost:3000',
         changeOrigin: true,
       }
     }

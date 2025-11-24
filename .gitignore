@@ -206,6 +206,7 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
+<<<<<<< HEAD
 # Node/JS project ignores
 node_modules/
 frontend/node_modules/
@@ -222,3 +223,11 @@ build/
 .vite
 Thumbs.db
 *.DS_Store
+=======
+# Node.js
+node_modules/
+dist/
+npm-debug.log
+yarn-error.log
+.DS_Store
+>>>>>>> d94b542b (chore: update .gitignore to exclude node_modules)

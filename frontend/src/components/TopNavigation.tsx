@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import './TopNavigation.css'
 
 interface TopNavigationProps {
@@ -9,6 +9,7 @@ interface TopNavigationProps {
 
 const TopNavigation: React.FC<TopNavigationProps> = ({ onLogoClick, showWelcomeLogin = false }) => {
   const navigate = useNavigate()
+  const location = useLocation()
   const handleLogoClick = () => { if (onLogoClick) onLogoClick() }
   // 变更说明：集成来源项目的头部搜索与顶部菜单（无障碍/敬老版/English/我的12306/登录注册），保留原组件接口与登录逻辑
   const [searchKeyword, setSearchKeyword] = useState('')
@@ -25,6 +26,31 @@ const TopNavigation: React.FC<TopNavigationProps> = ({ onLogoClick, showWelcomeL
   const applyHistory = (kw: string) => { setSearchKeyword(kw); handleSearch() }
   const applySuggestion = (kw: string) => { setSearchKeyword(kw); handleSearch() }
   const clearHistory = () => setSearchHistory([])
+  // 登录状态
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(!!localStorage.getItem('authToken'))
+  const [username, setUsername] = useState<string>(localStorage.getItem('username') || '')
+  useEffect(() => {
+    const refreshAuth = () => {
+      setIsLoggedIn(!!localStorage.getItem('authToken'))
+      setUsername(localStorage.getItem('username') || '')
+    }
+    const onAuthUpdated = () => refreshAuth()
+    const onStorage = (e: StorageEvent) => { if (e.key === 'authToken' || e.key === 'username') refreshAuth() }
+    refreshAuth()
+    window.addEventListener('auth-updated', onAuthUpdated as EventListener)
+    window.addEventListener('storage', onStorage)
+    return () => {
+      window.removeEventListener('auth-updated', onAuthUpdated as EventListener)
+      window.removeEventListener('storage', onStorage)
+    }
+  }, [location.pathname])
+  const handleLogout = () => {
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('username')
+    localStorage.removeItem('userId')
+    window.dispatchEvent(new Event('auth-updated'))
+    navigate('/login')
+  }
 
   return (
     <div className="top-navigation" data-testid="top-navigation" onClick={() => console.log('Logo clicked')}>
@@ -115,10 +141,17 @@ const TopNavigation: React.FC<TopNavigationProps> = ({ onLogoClick, showWelcomeL
                 </ul>
               </li>
               <li className="menu-item menu-line">|</li>
-              <li className="menu-item menu-login" role="menuitem">
-                <a href="/login">登录</a>
-                <a href="/register" className="ml">注册</a>
-              </li>
+              {!isLoggedIn ? (
+                <li className="menu-item menu-login" role="menuitem">
+                  <a href="/login">登录</a>
+                  <a href="/register" className="ml">注册</a>
+                </li>
+              ) : (
+                <li className="menu-item menu-login" role="menuitem">
+                  <span style={{ marginRight: 8 }}>您好，{username || '用户'}</span>
+                  <a href="javascript:;" onClick={(e)=>{e.preventDefault(); handleLogout()}}>退出</a>
+                </li>
+              )}
             </ul>
           </div>
         )}

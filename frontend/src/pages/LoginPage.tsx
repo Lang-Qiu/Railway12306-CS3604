@@ -49,13 +49,11 @@ const LoginPage: React.FC = () => {
     setError('')
     
     try {
-      if (!publicKey) {
-        setError('无法获取加密密钥，请刷新页面重试');
-        return;
+      let encryptedPassword = data.password
+      if (publicKey) {
+        const publicKeyFromPem = forge.pki.publicKeyFromPem(publicKey)
+        encryptedPassword = forge.util.encode64(publicKeyFromPem.encrypt(data.password, 'RSA-OAEP'))
       }
-
-      const publicKeyFromPem = forge.pki.publicKeyFromPem(publicKey);
-      const encryptedPassword = forge.util.encode64(publicKeyFromPem.encrypt(data.password, 'RSA-OAEP'));
 
       // 调用登录API（支持identifier或username）
       const response = await apiLogin({ identifier: data.identifier, username: data.username, password: encryptedPassword }, csrfToken)
@@ -65,7 +63,7 @@ const LoginPage: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Login error:', error)
-      setError(error.response?.data?.error || '登录失败，请重试')
+      setError(error.response?.data?.error || '登录失败，请稍后重试')
     } finally {
       setIsLoading(false)
     }
@@ -115,7 +113,7 @@ const LoginPage: React.FC = () => {
       console.error('SMS verification error:', error)
       console.log('错误响应数据:', error.response?.data)
       console.log('错误状态码:', error.response?.status)
-      const errorMsg = error.response?.data?.error || '验证失败，请重试'
+      const errorMsg = error.response?.data?.error || '验证码校验失败，请重试'
       console.log('最终显示的错误信息:', errorMsg)
       // 直接显示后端返回的错误信息
       setSmsError(errorMsg)

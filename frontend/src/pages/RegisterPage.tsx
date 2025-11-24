@@ -64,7 +64,7 @@ const RegisterPage: React.FC = () => {
         setShowVerificationModal(true)
       } catch (verifyError: any) {
         console.error('Send verification code error:', verifyError)
-        setPageError(verifyError.response?.data?.error || '发送验证码失败')
+        setPageError(verifyError.response?.data?.error || '验证码发送失败，请稍后重试')
       }
     } catch (error: any) {
       console.error('Registration error:', error)

@@ -133,7 +133,7 @@ describe('跨组件交互：注册表单验证流程', () => {
     await user.tab()
 
     await waitFor(() => {
-      expect(screen.getByText(/用户名长度不能少于6个字符/i)).toBeInTheDocument()
+      expect(screen.getByText(/用户名至少6个字符/i)).toBeInTheDocument()
     })
 
     // 清空并测试用户名以数字开头
@@ -142,7 +142,7 @@ describe('跨组件交互：注册表单验证流程', () => {
     await user.tab()
 
     await waitFor(() => {
-      expect(screen.getByText(/用户名只能由字母、数字和_组成，须以字母开头/i)).toBeInTheDocument()
+      expect(screen.getByText(/用户名以字母开头，含字母\/数字\/下划线/i)).toBeInTheDocument()
     })
   })
 
@@ -167,7 +167,7 @@ describe('跨组件交互：注册表单验证流程', () => {
     await user.tab()
 
     await waitFor(() => {
-      expect(screen.getByText(/密码长度不能少于6个字符/i)).toBeInTheDocument()
+      expect(screen.getByText(/密码至少6个字符/i)).toBeInTheDocument()
     })
 
     // 清空并测试只包含数字
@@ -176,7 +176,7 @@ describe('跨组件交互：注册表单验证流程', () => {
     await user.tab()
 
     await waitFor(() => {
-      expect(screen.getByText(/格式错误，必须且只能包含字母、数字和下划线中的两种或两种以上/i)).toBeInTheDocument()
+      expect(screen.getByText(/密码仅含字母\/数字\/下划线，至少两种组合/i)).toBeInTheDocument()
     })
   })
 
@@ -206,7 +206,7 @@ describe('跨组件交互：注册表单验证流程', () => {
     await user.tab()
 
     await waitFor(() => {
-      expect(screen.getByText(/确认密码与密码不一致/i)).toBeInTheDocument()
+      expect(screen.getByText(/两次输入的密码不一致/i)).toBeInTheDocument()
     })
   })
 
@@ -231,7 +231,7 @@ describe('跨组件交互：注册表单验证流程', () => {
     await user.tab()
 
     await waitFor(() => {
-      expect(screen.getByText(/您输入的手机号码不是有效的格式/i)).toBeInTheDocument()
+      expect(screen.getByText(/手机号码格式不正确/i)).toBeInTheDocument()
     })
   })
 
@@ -264,7 +264,7 @@ describe('跨组件交互：注册表单验证流程', () => {
 
     // 应该显示错误提示
     await waitFor(() => {
-      expect(screen.getByText(/请确认服务条款/i)).toBeInTheDocument()
+      expect(screen.getByText(/请勾选并同意服务条款/i)).toBeInTheDocument()
     })
   })
 
@@ -289,7 +289,7 @@ describe('跨组件交互：注册表单验证流程', () => {
     await user.tab()
 
     await waitFor(() => {
-      expect(screen.getByText(/请输入有效的电子邮件地址/i)).toBeInTheDocument()
+      expect(screen.getByText(/邮箱格式不正确/i)).toBeInTheDocument()
     })
 
     // 清空邮箱，验证不填写邮箱是可以的
@@ -298,7 +298,7 @@ describe('跨组件交互：注册表单验证流程', () => {
 
     // 不应该显示错误（邮箱是选填）
     await waitFor(() => {
-      expect(screen.queryByText(/请输入有效的电子邮件地址/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/邮箱格式不正确/i)).not.toBeInTheDocument()
     })
   })
 })

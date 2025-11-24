@@ -86,7 +86,7 @@ describe('跨页流程：注册页 → 验证页 → 登录页', () => {
 
     // 应该显示错误提示
     await waitFor(() => {
-      expect(screen.getByText(/请填写完整信息/i)).toBeInTheDocument()
+      expect(screen.getByText(/请填写所有必填项/i)).toBeInTheDocument()
     })
   })
 
@@ -125,7 +125,7 @@ describe('跨页流程：注册页 → 验证页 → 登录页', () => {
 
     // 应该显示用户名错误提示
     await waitFor(() => {
-      expect(screen.getByText(/用户名长度不能少于6个字符/i)).toBeInTheDocument()
+      expect(screen.getByText(/用户名至少6个字符/i)).toBeInTheDocument()
     })
   })
 

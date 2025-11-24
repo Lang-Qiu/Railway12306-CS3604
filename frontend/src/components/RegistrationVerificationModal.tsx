@@ -33,12 +33,12 @@ const RegistrationVerificationModal: React.FC<RegistrationVerificationModalProps
     setError('');
 
     if (!verificationCode) {
-      setError('请输入验证码');
+      setError('请填写验证码');
       return;
     }
 
     if (verificationCode.length !== 6) {
-      setError('验证码应为6位数字');
+      setError('验证码需为6位数字');
       return;
     }
 

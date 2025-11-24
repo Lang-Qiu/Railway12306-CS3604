@@ -164,7 +164,7 @@ describe('LoginForm', () => {
 
   // ============ 补充测试：表单验证 ============
   describe('表单验证', () => {
-    it('应该在用户名为空时显示"请输入用户名！"', async () => {
+    it('应该在用户名为空时显示"请填写用户名"', async () => {
       const onSubmitMock = vi.fn()
       render(<LoginForm {...mockProps} onSubmit={onSubmitMock} />)
       
@@ -177,11 +177,11 @@ describe('LoginForm', () => {
       
       // 应该显示错误信息
       await waitFor(() => {
-        expect(screen.getByText(/请输入用户名/i)).toBeInTheDocument()
+        expect(screen.getByText(/请填写用户名/i)).toBeInTheDocument()
       })
     })
 
-    it('应该在密码为空时显示"请输入密码！"', async () => {
+    it('应该在密码为空时显示"请填写密码"', async () => {
       const onSubmitMock = vi.fn()
       render(<LoginForm {...mockProps} onSubmit={onSubmitMock} />)
       
@@ -194,11 +194,11 @@ describe('LoginForm', () => {
       
       // 应该显示错误信息
       await waitFor(() => {
-        expect(screen.getByText(/请输入密码/i)).toBeInTheDocument()
+        expect(screen.getByText(/请填写密码/i)).toBeInTheDocument()
       })
     })
 
-    it('应该在密码<6位时显示"密码长度不能少于6位！"', async () => {
+    it('应该在密码<6位时显示"密码至少6位"', async () => {
       const onSubmitMock = vi.fn()
       render(<LoginForm {...mockProps} onSubmit={onSubmitMock} />)
       
@@ -212,7 +212,7 @@ describe('LoginForm', () => {
       
       // 应该显示错误信息
       await waitFor(() => {
-        expect(screen.getByText(/密码长度不能少于6位/i)).toBeInTheDocument()
+        expect(screen.getByText(/密码至少6位/i)).toBeInTheDocument()
       })
     })
 

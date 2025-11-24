@@ -22,10 +22,12 @@ const LoginPage: React.FC = () => {
       try {
         const response = await apiGetPublicKey();
         if (response.success) {
-          setPublicKey(response.publicKey);
+          setPublicKey(response.publicKey || '');
+        } else {
+          setPublicKey('');
         }
       } catch (error) {
-        console.error('Failed to fetch public key', error);
+        setPublicKey('');
       }
     };
 
@@ -62,8 +64,27 @@ const LoginPage: React.FC = () => {
         setShowSmsModal(true)
       }
     } catch (error: any) {
-      console.error('Login error:', error)
-      setError(error.response?.data?.error || '登录失败，请稍后重试')
+      const status = error?.response?.status
+      const errMsg = error?.response?.data?.error
+      let msg = '登录失败，请稍后重试'
+      if (!error?.response) {
+        msg = '网络异常，请检查连接'
+      } else if (status === 403 && errMsg && /CSRF/i.test(errMsg)) {
+        msg = '页面安全校验失败，请刷新后重试'
+        try {
+          const res = await apiGetCsrfToken()
+          if (res.success) setCsrfToken(res.token)
+        } catch {}
+      } else if (status === 401) {
+        msg = errMsg || '用户名或密码错误'
+      } else if (status === 429) {
+        msg = errMsg || '请求过于频繁，请稍后再试'
+      } else if (status === 500) {
+        msg = '服务器繁忙，请稍后重试'
+      } else if (errMsg) {
+        msg = errMsg
+      }
+      setError(msg)
     } finally {
       setIsLoading(false)
     }

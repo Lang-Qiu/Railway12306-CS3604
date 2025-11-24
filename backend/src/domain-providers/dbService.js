@@ -7,9 +7,12 @@ class DatabaseService {
 
   async init() {
     if (!this.db) {
-      // The database is now initialized and managed by DatabaseManager
-      // We just need to get the instance from it.
-      this.db = databaseManager.getDatabase();
+      try {
+        this.db = databaseManager.getDatabase();
+      } catch (_) {
+        await databaseManager.initDatabase();
+        this.db = databaseManager.getDatabase();
+      }
     }
   }
 
@@ -19,6 +22,42 @@ class DatabaseService {
       this.db = databaseManager.getDatabase();
     }
     return this.db;
+  }
+
+  close() {
+    this.db = null;
+  }
+
+  async run(sql, params = []) {
+    await this.init();
+    const stmt = this.db.prepare(sql);
+    if (params && params.length) stmt.bind(params);
+    stmt.step();
+    stmt.free();
+  }
+
+  async get(sql, params = []) {
+    await this.init();
+    const stmt = this.db.prepare(sql);
+    if (params && params.length) stmt.bind(params);
+    let row = null;
+    if (stmt.step()) {
+      row = stmt.getAsObject();
+    }
+    stmt.free();
+    return row;
+  }
+
+  async all(sql, params = []) {
+    await this.init();
+    const stmt = this.db.prepare(sql);
+    if (params && params.length) stmt.bind(params);
+    const rows = [];
+    while (stmt.step()) {
+      rows.push(stmt.getAsObject());
+    }
+    stmt.free();
+    return rows;
   }
 }
 

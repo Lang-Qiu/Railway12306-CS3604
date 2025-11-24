@@ -23,4 +23,10 @@ router.get('/forgot-password', authController.getForgotPassword);
 router.get('/public-key', authController.getPublicKey);
 router.get('/csrf-token', authController.getCsrfToken);
 
+// Dev-only registration and user query
+router.post('/dev/register', authController.devRegister);
+router.get('/dev/user', authController.devGetUser);
+router.post('/dev/json-register', authController.devJsonRegister);
+router.get('/dev/json-user', authController.devJsonUser);
+
 module.exports = router;

@@ -1,7 +1,11 @@
 
 const redis = require('redis');
+process.env.JSON_DB_INMEMORY = process.env.JSON_DB_INMEMORY || '1';
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
+const STORE_FILE = path.join(__dirname, '../../.data/jsondb_store.json');
 
 class JsonDbService {
   constructor() {
@@ -50,7 +54,7 @@ class JsonDbService {
    */
   async createUser(userData) {
     await this.connect();
-    const { username, email, phone, password } = userData;
+    const { username, email, phone, password, ...rest } = userData;
 
     // 1. Check for existing username, email, or phone
     if (await this.client.exists(`username_to_id:${username}`)) {
@@ -79,7 +83,7 @@ class JsonDbService {
       email,
       phone,
       passwordHash,
-      ...userData, // include other fields like name, id_card_type, etc.
+      ...rest,
       registrationDate: new Date().toISOString(),
       loginInfo: {
         lastLogin: null,
@@ -278,6 +282,36 @@ class InMemoryClient {
     this.store = new Map();
     this.ttl = new Map();
     this.isOpen = true;
+    this.ttlExpiry = new Map();
+    try {
+      const dir = path.dirname(STORE_FILE);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      if (fs.existsSync(STORE_FILE)) {
+        const raw = fs.readFileSync(STORE_FILE, 'utf-8');
+        const data = JSON.parse(raw || '{}');
+        const s = data.store || {};
+        const t = data.ttlExpiry || {};
+        for (const k of Object.keys(s)) this.store.set(k, s[k]);
+        const now = Date.now();
+        for (const k of Object.keys(t)) {
+          const exp = Number(t[k] || 0);
+          if (exp > now) {
+            const remain = exp - now;
+            if (this.ttl.has(k)) clearTimeout(this.ttl.get(k));
+            const timer = setTimeout(() => {
+              this.store.delete(k);
+              this.ttl.delete(k);
+              this.ttlExpiry.delete(k);
+              this.save();
+            }, remain);
+            this.ttl.set(k, timer);
+            this.ttlExpiry.set(k, exp);
+          } else {
+            this.store.delete(k);
+          }
+        }
+      }
+    } catch (_) {}
   }
   async connect() {}
   async quit() { this.isOpen = false; }
@@ -286,22 +320,40 @@ class InMemoryClient {
     this.store.set(key, value);
     if (options.EX && Number.isFinite(options.EX)) {
       if (this.ttl.has(key)) clearTimeout(this.ttl.get(key));
+      const exp = Date.now() + options.EX * 1000;
       const t = setTimeout(() => {
         this.store.delete(key);
         this.ttl.delete(key);
+        this.ttlExpiry.delete(key);
+        this.save();
       }, options.EX * 1000);
       this.ttl.set(key, t);
+      this.ttlExpiry.set(key, exp);
+    } else {
+      if (this.ttl.has(key)) { clearTimeout(this.ttl.get(key)); this.ttl.delete(key); this.ttlExpiry.delete(key); }
     }
+    this.save();
   }
-  async del(...keys) { for (const k of keys) { if (k) { this.store.delete(k); if (this.ttl.has(k)) { clearTimeout(this.ttl.get(k)); this.ttl.delete(k); } } } }
+  async del(...keys) { for (const k of keys) { if (k) { this.store.delete(k); if (this.ttl.has(k)) { clearTimeout(this.ttl.get(k)); this.ttl.delete(k); this.ttlExpiry.delete(k); } } } this.save(); }
   async exists(key) { return this.store.has(key) ? 1 : 0; }
   multi() {
     const ops = [];
     return {
       set: (key, value) => ops.push({ type: 'set', key, value }),
       del: (key) => ops.push({ type: 'del', key }),
-      exec: async () => { for (const op of ops) { if (op.type === 'set') { await this.set(op.key, op.value); } else if (op.type === 'del') { await this.del(op.key); } } }
+      exec: async () => { for (const op of ops) { if (op.type === 'set') { await this.set(op.key, op.value); } else if (op.type === 'del') { await this.del(op.key); } } this.save(); }
     };
   }
   on() {}
+  save() {
+    try {
+      const dir = path.dirname(STORE_FILE);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const payload = {
+        store: Object.fromEntries(this.store.entries()),
+        ttlExpiry: Object.fromEntries(this.ttlExpiry.entries()),
+      };
+      fs.writeFileSync(STORE_FILE, JSON.stringify(payload));
+    } catch (_) {}
+  }
 }

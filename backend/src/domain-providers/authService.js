@@ -1,7 +1,8 @@
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
-const jsonDbService = require('./jsonDbService'); // <-- Replaced old DB services
+const jsonDbService = require('./jsonDbService');
+const dbService = require('./dbService');
 const crypto = require('../utils/crypto');
 
 class AuthService {
@@ -18,48 +19,74 @@ class AuthService {
         return { success: false, error: '用户名或密码错误' };
       }
 
-      let decryptedPassword;
-      try {
-        decryptedPassword = crypto.decryptPassword(password);
-      } catch (e) {
-        console.error('[Validate Credentials] Password decryption failed:', e);
-        throw new Error('Password decryption failed');
-      }
+      const decryptedPassword = crypto.decryptPassword(password);
 
-      const user = await jsonDbService.findUserBy(identifier, type);
-      console.log('[Validate Credentials] User found:', user ? { id: user.userId, username: user.username } : null);
+      await dbService.init();
+      let user = null;
+      if (type === 'username') {
+        user = await dbService.get('SELECT * FROM users WHERE username = ?', [identifier]);
+      } else if (type === 'email') {
+        user = await dbService.get('SELECT * FROM users WHERE email = ?', [identifier]);
+      } else if (type === 'phone') {
+        user = await dbService.get('SELECT * FROM users WHERE phone = ?', [identifier]);
+      }
+      console.log('[Validate Credentials] User found:', user ? { id: user.id, username: user.username } : null);
 
       if (!user) {
-        return { success: false, error: '用户名或密码错误' };
+        const jUser = await jsonDbService.findUserBy(identifier, type);
+        console.log('[Validate Credentials] JSON user found:', jUser ? { userId: jUser.userId, username: jUser.username } : null);
+        if (!jUser) {
+          return { success: false, error: '用户名或密码错误' };
+        }
+
+        const jLock = jUser.loginInfo?.lockoutUntil;
+        if (jLock && new Date(jLock) > new Date()) {
+          return { success: false, error: '账户已被锁定，请稍后再试' };
+        }
+
+        const jHashed = jUser.passwordHash;
+        const jMatch = jHashed ? await bcrypt.compare(decryptedPassword, jHashed) : false;
+        console.log('[Validate Credentials] JSON user password match:', jMatch);
+        if (!jMatch) {
+          const newAttempts = (jUser.loginInfo?.failedLoginAttempts || 0) + 1;
+          let lockoutUntil = null;
+          let error = '用户名或密码错误';
+          if (newAttempts >= 5) {
+            lockoutUntil = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+            error = '登录失败次数过多，账户已锁定15分钟';
+          }
+          await jsonDbService.updateUser(jUser.userId, { loginInfo: { failedLoginAttempts: newAttempts % 5, lockoutUntil } });
+          return { success: false, error };
+        }
+
+        await jsonDbService.updateUser(jUser.userId, { loginInfo: { failedLoginAttempts: 0, lockoutUntil: null, lastLogin: new Date().toISOString() } });
+        console.log('[Validate Credentials] Validation successful (JSON store).');
+        return { success: true, user: jUser };
       }
 
-      if (user.loginInfo.lockoutUntil && new Date(user.loginInfo.lockoutUntil) > new Date()) {
+      if (user.lockout_until && new Date(user.lockout_until) > new Date()) {
         return { success: false, error: '账户已被锁定，请稍后再试' };
       }
 
-      const passwordMatch = await bcrypt.compare(decryptedPassword, user.passwordHash);
+      const hashed = user.password || user.password_hash;
+      const passwordMatch = hashed ? await bcrypt.compare(decryptedPassword, hashed) : false;
       console.log('[Validate Credentials] Password match result:', passwordMatch);
 
       if (!passwordMatch) {
-        const newAttempts = (user.loginInfo.failedLoginAttempts || 0) + 1;
-        let loginInfo = { failedLoginAttempts: newAttempts };
+        const currentAttempts = Number(user.failed_login_attempts || 0);
+        const newAttempts = currentAttempts + 1;
+        let lockoutUntil = null;
         let error = '用户名或密码错误';
 
         if (newAttempts >= 5) {
-          const lockoutUntil = new Date(Date.now() + 15 * 60 * 1000);
-          loginInfo.lockoutUntil = lockoutUntil.toISOString();
-          loginInfo.failedLoginAttempts = 0; // Reset after locking
+          lockoutUntil = new Date(Date.now() + 15 * 60 * 1000).toISOString();
           error = '登录失败次数过多，账户已锁定15分钟';
         }
-        
-        await jsonDbService.updateUser(user.userId, { loginInfo });
+        await dbService.run('UPDATE users SET failed_login_attempts = ?, lockout_until = ? WHERE id = ?', [newAttempts % 5, lockoutUntil, user.id]);
         return { success: false, error };
       }
 
-      // 登录成功，重置失败尝试次数
-      await jsonDbService.updateUser(user.userId, { 
-        loginInfo: { failedLoginAttempts: 0, lockoutUntil: null, lastLogin: new Date().toISOString() }
-      });
+      await dbService.run('UPDATE users SET failed_login_attempts = 0, lockout_until = NULL, last_login = CURRENT_TIMESTAMP WHERE id = ?', [user.id]);
 
       console.log('[Validate Credentials] Validation successful.');
       return { success: true, user };
@@ -74,16 +101,16 @@ class AuthService {
   // 创建登录会话 (Refactored)
   async createLoginSession(user) {
     try {
-      const sessionId = this.generateSessionId(user.userId);
+      const sessionId = this.generateSessionId(user.id || user.userId);
       const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30分钟后过期
       
       const sessionData = {
-        userId: user.userId,
+        userId: user.id || user.userId,
         username: user.username,
         phone: user.phone,
-        id_card_type: user.id_card_type,
-        id_card_number: user.id_card_number,
-        step: 'pending_verification' // 等待短信验证
+        id_card_type: user.id_card_type || 'ID',
+        id_card_number: user.id_card_number || user.id_card || '',
+        step: 'pending_verification'
       };
 
       await jsonDbService.createSession(sessionId, sessionData, expiresAt);
@@ -93,6 +120,10 @@ class AuthService {
       console.error('Create login session error:', error);
       throw error;
     }
+  }
+
+  generateSessionId(userId) {
+    return uuidv4();
   }
 
   // 验证证件号后4位 (Refactored)
@@ -176,14 +207,24 @@ class AuthService {
     }
   }
 
+  refreshToken(token) {
+    try {
+      const secret = process.env.JWT_SECRET || 'your-default-secret';
+      const decoded = jwt.verify(token, secret);
+      return this.generateJwtToken(decoded.id, decoded.username);
+    } catch (_) {
+      return null;
+    }
+  }
+
   // 识别标识符类型 (No changes needed)
   identifyIdentifierType(identifier) {
-    if (/^[a-zA-Z0-9_]{3,20}$/.test(identifier)) {
-      return 'username';
+    if (/^\d{11}$/.test(identifier)) {
+      return 'phone';
     } else if (/^\S+@\S+\.\S+$/.test(identifier)) {
       return 'email';
-    } else if (/^\d{11}$/.test(identifier)) {
-      return 'phone';
+    } else if (/^[a-zA-Z0-9_]{3,20}$/.test(identifier)) {
+      return 'username';
     } else {
       return 'invalid';
     }

@@ -48,9 +48,9 @@ class AuthController {
         return res.status(400).json({ success: false, errors: missing });
       }
 
-      if (password.length < 6) {
-        console.log(`[Login Failed] Password too short for identifier: ${identifier}`);
-        return res.status(400).json({ success: false, error: messages.login.passwordTooShort });
+      if (typeof password !== 'string' || password.trim() === '') {
+        console.log(`[Login Failed] Password missing for identifier: ${identifier}`);
+        return res.status(400).json({ success: false, error: messages.login.missingPassword });
       }
 
       const result = await authService.validateCredentials(identifier, password);
@@ -60,7 +60,7 @@ class AuthController {
       }
 
       const sessionId = await authService.createLoginSession(result.user);
-      const token = authService.generateToken({ userId: result.user.id, username: result.user.username, step: 'pending_verification' });
+      const token = authService.generateJwtToken(result.user.userId, result.user.username);
 
       console.log(`[Login Success] Session created for user: ${result.user.username} (ID: ${result.user.id})`);
       return res.status(200).json({ success: true, sessionId, token, message: messages.login.pendingVerification });
@@ -88,7 +88,13 @@ class AuthController {
           return res.status(400).json({ success: false, error: '证件号后4位格式不正确' });
         }
 
-        const result = await authService.generateAndSendSmsCode(sessionId, idCardLast4);
+        const idCheck = await authService.validateIdCardLast4(sessionId, idCardLast4);
+        if (!idCheck.success) {
+          console.log(`[SMS Code Failed] ID card check failed for SID: ${sessionId}`);
+          return res.status(400).json({ success: false, error: idCheck.error });
+        }
+
+        const result = await authService.generateAndSendSmsCode(sessionId);
         if (result.code === 429) {
           console.log(`[SMS Code Failed] Rate limit exceeded for SID: ${sessionId}`);
           return res.status(429).json({ success: false, error: result.error });
@@ -98,7 +104,7 @@ class AuthController {
           return res.status(400).json({ success: false, error: result.error });
         }
         console.log(`[SMS Code Success] Code sent for SID: ${sessionId}`);
-        return res.status(200).json({ success: true, message: result.message, verificationCode: result.verificationCode, phone: result.phone });
+        return res.status(200).json({ success: true, message: '验证码已发送', verificationCode: undefined, phone: idCheck.phone });
       }
 
       if (phoneNumber) {
@@ -179,7 +185,7 @@ class AuthController {
         }
 
         const newSessionId = authService.generateSessionId(user.id);
-        const token = authService.generateToken({ userId: user.id, username: user.username, step: 'verified' });
+        const token = authService.generateJwtToken(user.id, user.username);
         await db.run('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', [user.id]);
 
         console.log(`[Verify Login Success] Login successful for phone: ${phoneNumber}`);
@@ -263,7 +269,7 @@ class AuthController {
       res.cookie('XSRF-TOKEN', token, {
         httpOnly: false,
         sameSite: 'lax',
-        secure: false
+        secure: req.secure === true
       });
       return res.status(200).json({ success: true, token });
     } catch (error) {
@@ -279,6 +285,110 @@ class AuthController {
         return res.status(401).json({ success: false, error: '令牌无效或已过期' });
       }
       return res.status(200).json({ success: true, token: newToken });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: '服务器内部错误' });
+    }
+  }
+
+  async devRegister(req, res) {
+    try {
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(404).json({ success: false, error: 'Not found' });
+      }
+      const { username, password, name, email, phone, id_card_type, id_card_number, discount_type } = req.body || {};
+      if (!username || !password) {
+        return res.status(400).json({ success: false, error: '用户名和密码不能为空' });
+      }
+      const registrationDbService = require('../domain-providers/registrationDbService');
+      const userId = await registrationDbService.createUser({
+        username,
+        password,
+        name,
+        email,
+        phone,
+        id_card_type: id_card_type || 'ID',
+        id_card_number,
+        discount_type,
+      });
+      return res.status(201).json({ success: true, userId });
+    } catch (error) {
+      const message = error && error.message ? error.message : '注册失败';
+      return res.status(400).json({ success: false, error: message });
+    }
+  }
+
+  async devGetUser(req, res) {
+    try {
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(404).json({ success: false, error: 'Not found' });
+      }
+      const { username, email, phone } = req.query || {};
+      if (!username && !email && !phone) {
+        return res.status(400).json({ success: false, error: '缺少查询参数' });
+      }
+      const dbService = require('../domain-providers/dbService');
+      await dbService.init();
+      let user = null;
+      if (username) {
+        user = await dbService.get('SELECT id, username, email, phone, name, id_card_type, id_card_number, created_at FROM users WHERE username = ?', [username]);
+      } else if (email) {
+        user = await dbService.get('SELECT id, username, email, phone, name, id_card_type, id_card_number, created_at FROM users WHERE email = ?', [email]);
+      } else if (phone) {
+        user = await dbService.get('SELECT id, username, email, phone, name, id_card_type, id_card_number, created_at FROM users WHERE phone = ?', [phone]);
+      }
+      if (!user) {
+        return res.status(404).json({ success: false, error: '用户不存在' });
+      }
+      return res.status(200).json({ success: true, user });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: '服务器内部错误' });
+    }
+  }
+
+  async devJsonRegister(req, res) {
+    try {
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(404).json({ success: false, error: 'Not found' });
+      }
+      const { username, password, name, email, phone, id_card_type, id_card_number, discount_type } = req.body || {};
+      if (!username || !password) {
+        return res.status(400).json({ success: false, error: '用户名和密码不能为空' });
+      }
+      const jsonDbService = require('../domain-providers/jsonDbService');
+      const userId = await jsonDbService.createUser({
+        username,
+        password,
+        name,
+        email,
+        phone,
+        id_card_type: id_card_type || 'ID',
+        id_card_number,
+        discount_type,
+      });
+      return res.status(201).json({ success: true, userId });
+    } catch (error) {
+      const message = error && error.message ? error.message : '注册失败';
+      return res.status(400).json({ success: false, error: message });
+    }
+  }
+
+  async devJsonUser(req, res) {
+    try {
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(404).json({ success: false, error: 'Not found' });
+      }
+      const { username, email, phone } = req.query || {};
+      const jsonDbService = require('../domain-providers/jsonDbService');
+      let user = null;
+      if (username) {
+        user = await jsonDbService.findUserBy(username, 'username');
+      } else if (email) {
+        user = await jsonDbService.findUserBy(email, 'email');
+      } else if (phone) {
+        user = await jsonDbService.findUserBy(phone, 'phone');
+      }
+      if (!user) return res.status(404).json({ success: false, error: '用户不存在' });
+      return res.status(200).json({ success: true, user });
     } catch (error) {
       return res.status(500).json({ success: false, message: '服务器内部错误' });
     }

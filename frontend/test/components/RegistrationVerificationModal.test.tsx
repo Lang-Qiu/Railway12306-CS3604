@@ -193,7 +193,7 @@ describe('RegistrationVerificationModal Component Tests', () => {
 
       // Then: 应该显示错误
       await waitFor(() => {
-        expect(screen.getByText('请输入验证码')).toBeInTheDocument()
+        expect(screen.getByText('请填写验证码')).toBeInTheDocument()
       })
 
       // When: 开始输入验证码
@@ -202,7 +202,7 @@ describe('RegistrationVerificationModal Component Tests', () => {
 
       // Then: 错误应该消失
       await waitFor(() => {
-        expect(screen.queryByText('请输入验证码')).not.toBeInTheDocument()
+        expect(screen.queryByText('请填写验证码')).not.toBeInTheDocument()
       })
     })
   })
@@ -226,7 +226,7 @@ describe('RegistrationVerificationModal Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('请输入验证码')).toBeInTheDocument()
+        expect(screen.getByText('请填写验证码')).toBeInTheDocument()
       })
       expect(mockOnComplete).not.toHaveBeenCalled()
     })
@@ -250,7 +250,7 @@ describe('RegistrationVerificationModal Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('验证码应为6位数字')).toBeInTheDocument()
+        expect(screen.getByText('验证码需为6位数字')).toBeInTheDocument()
       })
       expect(mockOnComplete).not.toHaveBeenCalled()
     })
@@ -276,8 +276,8 @@ describe('RegistrationVerificationModal Component Tests', () => {
       await waitFor(() => {
         expect(mockOnComplete).toHaveBeenCalledWith('123456')
       })
-      expect(screen.queryByText('请输入验证码')).not.toBeInTheDocument()
-      expect(screen.queryByText('验证码应为6位数字')).not.toBeInTheDocument()
+      expect(screen.queryByText('请填写验证码')).not.toBeInTheDocument()
+      expect(screen.queryByText('验证码需为6位数字')).not.toBeInTheDocument()
     })
 
     it('按Enter键应该提交表单', async () => {

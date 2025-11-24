@@ -27,8 +27,8 @@ const TrainSearchBar: React.FC<Props> = ({ value, onChange, onSearch }) => {
   const submit = () => {
     setFromErr('')
     setToErr('')
-    if (!from) setFromErr('请输入出发地')
-    if (!to) setToErr('请输入到达地')
+    if (!from) setFromErr('请填写出发地')
+    if (!to) setToErr('请填写到达地')
     onChange?.({ from, to, date })
     onSearch?.()
   }

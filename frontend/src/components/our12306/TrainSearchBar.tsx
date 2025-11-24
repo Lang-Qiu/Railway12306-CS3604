@@ -17,8 +17,8 @@ const TrainSearchBar: React.FC<Props> = ({ initialDepartureStation, initialArriv
 
   const handleSearch = async () => {
     const newErrors: Record<string,string> = {}
-    if (!departureStation?.trim()) { newErrors.departureStation = '请输入出发地'; setErrors(newErrors); return }
-    if (!arrivalStation?.trim()) { newErrors.arrivalStation = '请输入到达地'; setErrors(newErrors); return }
+    if (!departureStation?.trim()) { newErrors.departureStation = '请填写出发地'; setErrors(newErrors); return }
+    if (!arrivalStation?.trim()) { newErrors.arrivalStation = '请填写到达地'; setErrors(newErrors); return }
     setErrors({}); setIsLoading(true)
     try { onSearch({ departureStation, arrivalStation, departureDate }) } finally { setIsLoading(false) }
   }

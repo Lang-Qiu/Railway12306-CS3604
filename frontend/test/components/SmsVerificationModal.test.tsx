@@ -139,7 +139,7 @@ describe('SmsVerificationModal - 登录短信验证', () => {
 
   // ============ 补充测试：客户端验证 ============
   describe('客户端验证', () => {
-    it('应该在证件号为空点击确认时显示"请输入登录账号绑定的证件号后4位"', async () => {
+  it('应该在证件号为空点击确认时显示"请填写证件号后4位"', async () => {
       render(<SmsVerificationModal onClose={mockOnClose} onSubmit={mockOnSubmit} sessionId="test-session" />)
       
       const codeInput = screen.getByPlaceholderText('输入验证码')
@@ -150,11 +150,11 @@ describe('SmsVerificationModal - 登录短信验证', () => {
       
       // 应该显示错误信息
       await waitFor(() => {
-        expect(screen.getByText(/请输入登录账号绑定的证件号后4位/i)).toBeInTheDocument()
+        expect(screen.getByText(/请填写证件号后4位/i)).toBeInTheDocument()
       })
     })
 
-    it('应该在验证码为空点击确认时显示"请输入验证码"', async () => {
+  it('应该在验证码为空点击确认时显示"请填写验证码"', async () => {
       render(<SmsVerificationModal onClose={mockOnClose} onSubmit={mockOnSubmit} sessionId="test-session" />)
       
       const idCardInput = screen.getByPlaceholderText('请输入登录账号绑定的证件号后4位')
@@ -165,11 +165,11 @@ describe('SmsVerificationModal - 登录短信验证', () => {
       
       // 应该显示错误信息
       await waitFor(() => {
-        expect(screen.getByText(/请输入验证码/i)).toBeInTheDocument()
+        expect(screen.getByText(/请填写验证码/i)).toBeInTheDocument()
       })
     })
 
-    it('应该在验证码少于6位点击确认时显示"请输入正确的验证码"', async () => {
+  it('应该在验证码少于6位点击确认时显示"验证码格式不正确"', async () => {
       render(<SmsVerificationModal onClose={mockOnClose} onSubmit={mockOnSubmit} sessionId="test-session" />)
       
       const idCardInput = screen.getByPlaceholderText('请输入登录账号绑定的证件号后4位')
@@ -183,7 +183,7 @@ describe('SmsVerificationModal - 登录短信验证', () => {
       
       // 应该显示错误信息
       await waitFor(() => {
-        expect(screen.getByText(/请输入正确的验证码/i)).toBeInTheDocument()
+        expect(screen.getByText(/验证码格式不正确/i)).toBeInTheDocument()
       })
     })
 

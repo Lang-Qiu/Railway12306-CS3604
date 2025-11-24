@@ -68,18 +68,18 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
     }
 
     if (value.length < 6) {
-      setUsernameValidation({ isValid: false, errorMessage: '用户名长度不能少于6个字符！', showCheckmark: false });
+      setUsernameValidation({ isValid: false, errorMessage: '用户名至少6个字符', showCheckmark: false });
       return;
     }
 
     if (value.length > 30) {
-      setUsernameValidation({ isValid: false, errorMessage: '用户名长度不能超过30个字符！', showCheckmark: false });
+      setUsernameValidation({ isValid: false, errorMessage: '用户名不超过30个字符', showCheckmark: false });
       return;
     }
 
     const usernameRegex = /^[a-zA-Z][a-zA-Z0-9_]*$/;
     if (!usernameRegex.test(value)) {
-      setUsernameValidation({ isValid: false, errorMessage: '用户名只能由字母、数字和_组成，须以字母开头！', showCheckmark: false });
+      setUsernameValidation({ isValid: false, errorMessage: '用户名以字母开头，含字母/数字/下划线', showCheckmark: false });
       return;
     }
 
@@ -105,13 +105,13 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
     }
 
     if (value.length < 6) {
-      setPasswordValidation({ isValid: false, errorMessage: '密码长度不能少于6个字符！', showCheckmark: false });
+      setPasswordValidation({ isValid: false, errorMessage: '密码至少6个字符', showCheckmark: false });
       return;
     }
 
     const passwordRegex = /^[a-zA-Z0-9_]+$/;
     if (!passwordRegex.test(value)) {
-      setPasswordValidation({ isValid: false, errorMessage: '格式错误，必须且只能包含字母、数字和下划线中的两种或两种以上！', showCheckmark: false });
+      setPasswordValidation({ isValid: false, errorMessage: '密码仅含字母/数字/下划线，至少两种组合', showCheckmark: false });
       return;
     }
 
@@ -121,7 +121,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
     const typeCount = (hasLetter ? 1 : 0) + (hasNumber ? 1 : 0) + (hasUnderscore ? 1 : 0);
 
     if (typeCount < 2) {
-      setPasswordValidation({ isValid: false, errorMessage: '格式错误，必须且只能包含字母、数字和下划线中的两种或两种以上！', showCheckmark: false });
+      setPasswordValidation({ isValid: false, errorMessage: '密码仅含字母/数字/下划线，至少两种组合', showCheckmark: false });
       return;
     }
 
@@ -136,7 +136,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
     }
 
     if (value !== password) {
-      setConfirmPasswordValidation({ isValid: false, errorMessage: '确认密码与密码不一致！', showCheckmark: false });
+      setConfirmPasswordValidation({ isValid: false, errorMessage: '两次输入的密码不一致', showCheckmark: false });
       return;
     }
 
@@ -156,14 +156,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
     }, 0);
 
     if (charLength < 3 || charLength > 30) {
-      setNameValidation({ isValid: false, errorMessage: '允许输入的字符串在3-30个字符之间！', showCheckmark: false });
+      setNameValidation({ isValid: false, errorMessage: '姓名长度需在3–30字符', showCheckmark: false });
       return;
     }
 
     // 验证只包含中英文字符、点和单空格
     const nameRegex = /^[\u4e00-\u9fa5a-zA-Z.\s]+$/;
     if (!nameRegex.test(value)) {
-      setNameValidation({ isValid: false, errorMessage: '请输入姓名！', showCheckmark: false });
+      setNameValidation({ isValid: false, errorMessage: '姓名格式不正确', showCheckmark: false });
       return;
     }
 
@@ -211,18 +211,18 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
     // 先验证格式，后验证长度
     const idCardRegex = /^[a-zA-Z0-9]+$/;
     if (!idCardRegex.test(value)) {
-      setIdCardValidation({ isValid: false, errorMessage: '输入的证件编号中包含中文信息或特殊字符！', showCheckmark: false });
+      setIdCardValidation({ isValid: false, errorMessage: '证件号仅限字母或数字', showCheckmark: false });
       return;
     }
 
     if (value.length !== 18) {
-      setIdCardValidation({ isValid: false, errorMessage: '请正确输入18位证件号码！', showCheckmark: false });
+      setIdCardValidation({ isValid: false, errorMessage: '证件号需为18位且校验通过', showCheckmark: false });
       return;
     }
 
     // 验证身份证号码格式（前17位必须是数字，最后一位是校验码）
     if (!validateIdCardCheckCode(value)) {
-      setIdCardValidation({ isValid: false, errorMessage: '请正确输入18位证件号码！', showCheckmark: false });
+      setIdCardValidation({ isValid: false, errorMessage: '证件号需为18位且校验通过', showCheckmark: false });
       return;
     }
 
@@ -249,7 +249,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(value)) {
-      setEmailValidation({ isValid: false, errorMessage: '请输入有效的电子邮件地址！', showCheckmark: false });
+      setEmailValidation({ isValid: false, errorMessage: '邮箱格式不正确', showCheckmark: false });
       return;
     }
 
@@ -266,12 +266,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
     // 先检查是否包含非数字字符
     const phoneRegex = /^[0-9]+$/;
     if (!phoneRegex.test(value)) {
-      setPhoneValidation({ isValid: false, errorMessage: '您输入的手机号码不是有效的格式！', showCheckmark: false });
+      setPhoneValidation({ isValid: false, errorMessage: '手机号码格式不正确', showCheckmark: false });
       return;
     }
 
     if (value.length !== 11) {
-      setPhoneValidation({ isValid: false, errorMessage: '您输入的手机号码不是有效的格式！', showCheckmark: false });
+      setPhoneValidation({ isValid: false, errorMessage: '手机号码格式不正确', showCheckmark: false });
       return;
     }
 
@@ -291,7 +291,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
 
     // 检查用户协议
     if (!agreedToTerms) {
-      setGeneralError('请确认服务条款！');
+      setGeneralError('请勾选并同意服务条款');
       return;
     }
 
@@ -305,37 +305,37 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
     if (!phone) missingFields.push('手机号码');
     
     if (missingFields.length > 0) {
-      setGeneralError('请填写完整信息！');
+      setGeneralError('请填写所有必填项');
       return;
     }
 
     // 检查字段验证状态
     if (usernameValidation.errorMessage) {
-      setGeneralError('用户名验证失败，请检查并重新输入');
+      setGeneralError('用户名校验未通过，请检查后再试');
       return;
     }
     if (passwordValidation.errorMessage) {
-      setGeneralError('密码验证失败，请检查并重新输入');
+      setGeneralError('密码校验未通过，请检查后再试');
       return;
     }
     if (confirmPasswordValidation.errorMessage) {
-      setGeneralError('确认密码验证失败，请检查并重新输入');
+      setGeneralError('确认密码校验未通过，请检查后再试');
       return;
     }
     if (nameValidation.errorMessage) {
-      setGeneralError('姓名验证失败，请检查并重新输入');
+      setGeneralError('姓名校验未通过，请检查后再试');
       return;
     }
     if (idCardValidation.errorMessage) {
-      setGeneralError('证件号码验证失败，请检查并重新输入');
+      setGeneralError('证件号码校验未通过，请检查后再试');
       return;
     }
     if (phoneValidation.errorMessage) {
-      setGeneralError('手机号码验证失败，请检查并重新输入');
+      setGeneralError('手机号码校验未通过，请检查后再试');
       return;
     }
     if (emailValidation.errorMessage && email) {
-      setGeneralError('邮箱验证失败，请检查并重新输入');
+      setGeneralError('邮箱校验未通过，请检查后再试');
       return;
     }
 

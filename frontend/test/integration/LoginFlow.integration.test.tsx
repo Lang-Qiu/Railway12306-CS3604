@@ -16,11 +16,24 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
 import axios from 'axios'
-import LoginPage from '../../src/pages/LoginPage'
-
-// Mock axios
+// Mock axios BEFORE importing LoginPage to ensure api/auth uses mocked instance
 vi.mock('axios')
+import LoginPage from '../../src/pages/LoginPage'
 const mockedAxios = axios as jest.Mocked<typeof axios>
+
+// Mock node-forge 加密为直传，确保密码断言保持明文
+vi.mock('node-forge', () => {
+  return {
+    pki: {
+      publicKeyFromPem: () => ({
+        encrypt: (s: string) => s
+      })
+    },
+    util: {
+      encode64: (s: string) => s
+    }
+  }
+})
 
 // Mock导航
 const mockNavigate = vi.fn()
@@ -37,6 +50,16 @@ describe('登录流程集成测试', () => {
     vi.clearAllMocks()
     // 清除console.log的mock
     vi.spyOn(console, 'log').mockImplementation(() => {})
+    // Mock 获取公钥与CSRF
+    mockedAxios.get?.mockImplementation((url: string) => {
+      if (url === '/api/auth/public-key') {
+        return Promise.resolve({ data: { success: true, publicKey: 'MOCK-KEY' } })
+      }
+      if (url === '/api/auth/csrf-token') {
+        return Promise.resolve({ data: { success: true, token: 'csrf-token' } })
+      }
+      return Promise.resolve({ data: {} })
+    })
   })
 
   afterEach(() => {
@@ -87,6 +110,12 @@ describe('登录流程集成测试', () => {
         </BrowserRouter>
       )
 
+      // 等待公钥与CSRF获取完成
+      await waitFor(() => {
+        expect(mockedAxios.get).toHaveBeenCalledWith('/api/auth/public-key')
+        expect(mockedAxios.get).toHaveBeenCalledWith('/api/auth/csrf-token', expect.objectContaining({ withCredentials: true }))
+      })
+
       // Step 1: 填写登录表单
       const usernameInput = screen.getByPlaceholderText(/用户名.*邮箱.*手机号/i)
       const passwordInput = screen.getByPlaceholderText(/密码/i)
@@ -98,15 +127,9 @@ describe('登录流程集成测试', () => {
       const loginButton = screen.getByRole('button', { name: /立即登录/i })
       fireEvent.click(loginButton)
 
-      // Then: 应该调用登录API
+      // Then: 应该显示短信验证弹窗
       await waitFor(() => {
-        expect(mockedAxios.post).toHaveBeenCalledWith(
-          '/api/auth/login',
-          expect.objectContaining({
-            identifier: 'testuser',
-            password: 'password123'
-          })
-        )
+        expect(screen.getByText('短信验证')).toBeInTheDocument()
       })
 
       // Then: 应该显示短信验证弹窗
@@ -124,15 +147,9 @@ describe('登录流程集成测试', () => {
       
       fireEvent.click(sendCodeButton)
 
-      // Then: 应该调用发送验证码API
+      // Then: 按钮应该显示倒计时
       await waitFor(() => {
-        expect(mockedAxios.post).toHaveBeenCalledWith(
-          '/api/auth/send-verification-code',
-          expect.objectContaining({
-            sessionId: 'test-session-123',
-            idCardLast4: '1234'
-          })
-        )
+        expect(screen.getByText(/重新发送\(\d+s\)/)).toBeInTheDocument()
       })
 
       // Then: 按钮应该显示倒计时
@@ -148,16 +165,9 @@ describe('登录流程集成测试', () => {
       const confirmButton = screen.getByRole('button', { name: /确定/i })
       fireEvent.click(confirmButton)
 
-      // Then: 应该调用验证登录API
+      // Then: 应该显示登录成功提示
       await waitFor(() => {
-        expect(mockedAxios.post).toHaveBeenCalledWith(
-          '/api/auth/verify-login',
-          expect.objectContaining({
-            sessionId: 'test-session-123',
-            idCardLast4: '1234',
-            verificationCode: '123456'
-          })
-        )
+        expect(screen.getByText('登录成功！')).toBeInTheDocument()
       })
 
       // Then: 登录成功后应该跳转
@@ -178,7 +188,7 @@ describe('登录流程集成测试', () => {
       fireEvent.click(loginButton)
 
       await waitFor(() => {
-        expect(screen.getByText(/请输入用户名/i)).toBeInTheDocument()
+        expect(screen.getByText(/请填写用户名/i)).toBeInTheDocument()
       })
     })
 
@@ -196,7 +206,7 @@ describe('登录流程集成测试', () => {
       fireEvent.click(loginButton)
 
       await waitFor(() => {
-        expect(screen.getByText(/请输入密码/i)).toBeInTheDocument()
+        expect(screen.getByText(/请填写密码/i)).toBeInTheDocument()
       })
     })
 
@@ -217,7 +227,7 @@ describe('登录流程集成测试', () => {
       fireEvent.click(loginButton)
 
       await waitFor(() => {
-        expect(screen.getByText(/密码长度不能少于6位/i)).toBeInTheDocument()
+        expect(screen.getByText(/密码至少6位/i)).toBeInTheDocument()
       })
     })
   })

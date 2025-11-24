@@ -14,8 +14,8 @@ describe('UI-TrainSearchBar acceptance', () => {
     const btn = screen.queryByRole('button', { name: '查询' })
     if (btn) {
       fireEvent.click(btn)
-      const fromError = screen.queryByText('请输入出发地')
-      const toError = screen.queryByText('请输入到达地')
+      const fromError = screen.queryByText('请填写出发地')
+      const toError = screen.queryByText('请填写到达地')
       expect(fromError).toBeTruthy()
       expect(toError).toBeTruthy()
     } else {

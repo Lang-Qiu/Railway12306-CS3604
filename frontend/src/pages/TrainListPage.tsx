@@ -103,7 +103,7 @@ const TrainListPage: React.FC = () => {
   const handleNavigateToOrderPage = (trainNo: string) => {
     const train = trains.find((t) => t.trainNo === trainNo)
     if (!train) {
-      setError('找不到车次信息')
+      setError('未找到车次信息')
       return
     }
     navigate('/orders', {

@@ -35,7 +35,7 @@ const SmsVerificationModal: React.FC<SmsVerificationModalProps> = ({
 
   const handleSendCode = async () => {
     if (!idCardLast4 || idCardLast4.length !== 4) {
-      setValidationError('请输入证件号后4位')
+      setValidationError('请填写证件号后4位')
       return
     }
     setIsLoading(true)
@@ -62,10 +62,10 @@ const SmsVerificationModal: React.FC<SmsVerificationModalProps> = ({
         }
         setCountdown(60)
       } else {
-        setValidationError('发送验证码失败')
+        setValidationError('验证码发送失败')
       }
     } catch (error: any) {
-      const errorMsg = error.response?.data?.error || '发送验证码失败，请重试'
+      const errorMsg = error.response?.data?.error || '验证码发送失败，请稍后重试'
       setValidationError(errorMsg)
     } finally {
       setIsLoading(false)
@@ -80,22 +80,22 @@ const SmsVerificationModal: React.FC<SmsVerificationModalProps> = ({
     
     // 客户端验证
     if (!idCardLast4 || idCardLast4.trim() === '') {
-      setValidationError('请输入登录账号绑定的证件号后4位')
+      setValidationError('请填写证件号后4位')
       return
     }
     
     if (idCardLast4.length !== 4) {
-      setValidationError('请输入登录账号绑定的证件号后4位')
+      setValidationError('请填写证件号后4位')
       return
     }
     
     if (!code || code.trim() === '') {
-      setValidationError('请输入验证码')
+      setValidationError('请填写验证码')
       return
     }
     
     if (code.length < 6) {
-      setValidationError('请输入正确的验证码')
+      setValidationError('验证码格式不正确')
       return
     }
     

@@ -3,9 +3,9 @@ export function useValidation() {
   const minLen = (v: string, n: number) => v.length >= n
 
   const validateLogin = (username: string, password: string) => {
-    if (isEmpty(username)) return '请输入用户名！'
-    if (isEmpty(password)) return '请输入密码！'
-    if (!minLen(password, 6)) return '密码长度不能少于6位！'
+    if (isEmpty(username)) return '请填写用户名'
+    if (isEmpty(password)) return '请填写密码'
+    if (!minLen(password, 6)) return '密码至少6位'
     return ''
   }
 

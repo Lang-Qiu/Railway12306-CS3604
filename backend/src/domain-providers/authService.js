@@ -138,21 +138,20 @@ class AuthService {
     try {
       // 获取会话数据
       const session = await sessionService.getSession(sessionId);
-      
       if (!session) {
         console.log('❌ 会话无效或已过期, sessionId:', sessionId);
         return { success: false, error: '会话无效或已过期' };
       }
 
+      const sessionData = session.user_data;
 
-      
-      console.log('🔍 会话数据:', { 
-        userId: sessionData.userId, 
+      console.log('🔍 会话数据:', {
+        userId: sessionData.userId,
         username: sessionData.username,
         phone: sessionData.phone,
         id_card_number: sessionData.id_card_number ? '***' + sessionData.id_card_number.slice(-4) : 'undefined'
       });
-      
+
       // 验证证件号后4位
       if (!sessionData.id_card_number) {
         console.log('❌ 会话中没有证件号信息');
@@ -160,12 +159,12 @@ class AuthService {
       }
 
       const last4 = sessionData.id_card_number.slice(-4);
-      console.log('🔍 验证证件号后4位:', { 
-        expected: last4, 
-        provided: idCardLast4, 
-        match: last4 === idCardLast4 
+      console.log('🔍 验证证件号后4位:', {
+        expected: last4,
+        provided: idCardLast4,
+        match: last4 === idCardLast4
       });
-      
+
       if (last4 !== idCardLast4) {
         console.log('❌ 证件号后4位不匹配');
         return { success: false, error: '请输入正确的用户信息！' };

@@ -43,9 +43,10 @@ class SessionService {
         expireTime = new Date(Date.now() + 30 * 60 * 1000); // 30分钟后过期
       }
       
+      const userIdValue = sessionData && sessionData.userId != null ? sessionData.userId : 0;
       this.db.run(
         `INSERT OR REPLACE INTO sessions (id, session_id, user_id, user_data, expires_at, is_active) VALUES (?, ?, ?, ?, ?, 1)`,
-        [sessionId, sessionId, sessionData.userId, JSON.stringify(sessionData), expireTime.toISOString()]
+        [sessionId, sessionId, userIdValue, JSON.stringify(sessionData), expireTime.toISOString()]
       );
       
       return sessionId;

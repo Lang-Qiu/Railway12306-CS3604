@@ -54,7 +54,7 @@ const TopNavigation: React.FC<TopNavigationProps> = ({ onLogoClick, showWelcomeL
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch() } }}
                 />
                 <div className={searchActive ? 'search-down show' : 'search-down'}>
-                  <a href="javascript:;" className="close" onMouseDown={(e)=>{e.preventDefault(); setSearchActive(false)}}>关闭</a>
+                  <a role="button" className="close" onMouseDown={(e)=>{e.preventDefault(); setSearchActive(false)}}>关闭</a>
                   <ul className="search-down-list" role="listbox" aria-expanded="true">
                     {searchKeyword.trim() === '' && (<li>输入关键词以获取建议</li>)}
                     {searchKeyword.trim() !== '' && filteredSuggestions.length === 0 && (<li>无匹配项</li>)}
@@ -64,7 +64,7 @@ const TopNavigation: React.FC<TopNavigationProps> = ({ onLogoClick, showWelcomeL
                   </ul>
                 </div>
                 <div className={searchActive ? 'search-history show' : 'search-history'}>
-                  <a href="javascript:;" className="history-clear" onMouseDown={(e)=>{e.preventDefault(); clearHistory()}}>清除</a>
+                  <a role="button" className="history-clear" onMouseDown={(e)=>{e.preventDefault(); clearHistory()}}>清除</a>
                   <h3 className="search-history-tit">搜索历史</h3>
                   <ul className="search-history-list" role="listbox" aria-expanded="true">
                     {searchHistory.map((s, i) => (
@@ -79,39 +79,39 @@ const TopNavigation: React.FC<TopNavigationProps> = ({ onLogoClick, showWelcomeL
             </div>
             {/* 顶部菜单 */}
             <ul className="header-menu" role="menubar" id="topMenu">
-              <li className="menu-item"><a href="javascript:;" className="menu-nav-hd">无障碍</a></li>
+              <li className="menu-item"><a role="button" className="menu-nav-hd">无障碍</a></li>
               <li className="menu-item menu-line">|</li>
-              <li className="menu-item"><a href="javascript:;" className="menu-nav-hd">敬老版</a></li>
+              <li className="menu-item"><a role="button" className="menu-nav-hd">敬老版</a></li>
               <li className="menu-item menu-line">|</li>
               <li className="menu-item menu-nav" role="menuitem">
                 <a href="https://www.12306.cn/en/index.html" className="menu-nav-hd item" title="English"> English <i className="caret"></i></a>
                 <ul className="menu-nav-bd" role="menu">
-                  <li><a href="javascript:;" title="简体中文">简体中文</a></li>
+                  <li><a role="button" title="简体中文">简体中文</a></li>
                   <li><a href="https://www.12306.cn/en/index.html" title="English">English</a></li>
                 </ul>
               </li>
               <li className="menu-item menu-line">|</li>
               <li className="menu-item menu-nav" role="menuitem">
-                <a href="javascript:;" className="menu-nav-hd item" id="my12306" onClick={(e)=>{e.preventDefault(); navigate('/user/profile')}}> 我的12306 <i className="caret"></i></a>
+                <a role="button" className="menu-nav-hd item" id="my12306" onClick={(e)=>{e.preventDefault(); navigate('/user/profile')}}> 我的12306 <i className="caret"></i></a>
                 <ul className="menu-nav-bd" role="menu">
-                  <li><a href="javascript:;" onClick={(e)=>{e.preventDefault(); navigate('/orders')}}>火车票订单</a></li>
-                  <li><a href="javascript:;">候补订单</a></li>
-                  <li><a href="javascript:;">计次•定期票订单</a></li>
-                  <li><a href="javascript:;">约号订单</a></li>
-                  <li><a href="javascript:;">电子发票</a></li>
-                  <li><a href="javascript:;">本人车票</a></li>
+                  <li><a role="button" onClick={(e)=>{e.preventDefault(); navigate('/orders')}}>火车票订单</a></li>
+                  <li><a role="button">候补订单</a></li>
+                  <li><a role="button">计次•定期票订单</a></li>
+                  <li><a role="button">约号订单</a></li>
+                  <li><a role="button">电子发票</a></li>
+                  <li><a role="button">本人车票</a></li>
                   <li className="nav-line"></li>
-                  <li><a href="javascript:;">我的餐饮•特产</a></li>
-                  <li><a href="javascript:;">我的保险</a></li>
-                  <li><a href="javascript:;">我的会员</a></li>
+                  <li><a role="button">我的餐饮•特产</a></li>
+                  <li><a role="button">我的保险</a></li>
+                  <li><a role="button">我的会员</a></li>
                   <li className="nav-line"></li>
-                  <li><a href="javascript:;">查看个人信息</a></li>
-                  <li><a href="javascript:;">账户安全</a></li>
+                  <li><a role="button">查看个人信息</a></li>
+                  <li><a role="button">账户安全</a></li>
                   <li className="nav-line"></li>
-                  <li><a href="javascript:;" onClick={(e)=>{e.preventDefault(); navigate('/passengers')}}>乘车人</a></li>
-                  <li><a href="javascript:;">地址管理</a></li>
+                  <li><a role="button" onClick={(e)=>{e.preventDefault(); navigate('/passengers')}}>乘车人</a></li>
+                  <li><a role="button">地址管理</a></li>
                   <li className="nav-line"></li>
-                  <li><a href="javascript:;">温馨服务查询</a></li>
+                  <li><a role="button">温馨服务查询</a></li>
                 </ul>
               </li>
               <li className="menu-item menu-line">|</li>

@@ -1,16 +1,16 @@
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { Suspense, lazy } from 'react'
-const LoginPage = lazy(() => import('./pages/LoginPage'))
-const RegisterPage = lazy(() => import('./pages/RegisterPage'))
-const HomePage = lazy(() => import('./pages/HomePage'))
-const TrainsPage = lazy(() => import('./pages/TrainsPage'))
-const OrderPage = lazy(() => import('./pages/OrderPage'))
-const OrderHistoryPage = lazy(() => import('./pages/OrderHistoryPage'))
+const LoginPage = lazy(() => import('./pages/LoginPage.tsx'))
+const RegisterPage = lazy(() => import('./pages/RegisterPage.tsx'))
+const HomePage = lazy(() => import('./pages/HomePage.tsx'))
+const TrainsPage = lazy(() => import('./pages/TrainsPage.tsx'))
+const OrderPage = lazy(() => import('./pages/OrderPage.tsx'))
+const OrderHistoryPage = lazy(() => import('./pages/OrderHistoryPage.tsx'))
 import TopNavigation from './components/TopNavigation'
 import MainNavigation from './components/MainNavigation'
 import BottomNavigation from './components/BottomNavigation'
 import './App.css'
-const PassengersPage = lazy(() => import('./pages/PassengersPage'))
+const PassengersPage = lazy(() => import('./pages/PassengersPage.tsx'))
 
 function App() {
   const location = useLocation()

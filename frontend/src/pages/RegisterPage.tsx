@@ -137,7 +137,7 @@ const RegisterPage: React.FC = () => {
   return (
     <div className="register-page">
       <main className="register-main">
-        {/* 面包屑导航 */}
+        {/* 导航 */}
         <div className="breadcrumb">
           您现在的位置：<Link to="/">客运首页</Link>
           <span className="breadcrumb-separator">&gt;</span>

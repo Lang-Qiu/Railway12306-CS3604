@@ -3,6 +3,39 @@ const redis = require('redis');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
 
+class InMemoryClient {
+  constructor() {
+    this.store = new Map();
+    this.ttl = new Map();
+    this.isOpen = true;
+  }
+  async connect() {}
+  async quit() { this.isOpen = false; }
+  async get(key) { return this.store.has(key) ? this.store.get(key) : null; }
+  async set(key, value, options = {}) {
+    this.store.set(key, value);
+    if (options.EX && Number.isFinite(options.EX)) {
+      if (this.ttl.has(key)) clearTimeout(this.ttl.get(key));
+      const t = setTimeout(() => {
+        this.store.delete(key);
+        this.ttl.delete(key);
+      }, options.EX * 1000);
+      this.ttl.set(key, t);
+    }
+  }
+  async del(...keys) { for (const k of keys) { if (k) { this.store.delete(k); if (this.ttl.has(k)) { clearTimeout(this.ttl.get(k)); this.ttl.delete(k); } } } }
+  async exists(key) { return this.store.has(key) ? 1 : 0; }
+  multi() {
+    const ops = [];
+    return {
+      set: (key, value) => ops.push({ type: 'set', key, value }),
+      del: (key) => ops.push({ type: 'del', key }),
+      exec: async () => { for (const op of ops) { if (op.type === 'set') { await this.set(op.key, op.value); } else if (op.type === 'del') { await this.del(op.key); } } }
+    };
+  }
+  on() {}
+}
+
 class JsonDbService {
   constructor() {
     this.client = null;
@@ -273,35 +306,4 @@ class JsonDbService {
 }
 
 module.exports = new JsonDbService();
-class InMemoryClient {
-  constructor() {
-    this.store = new Map();
-    this.ttl = new Map();
-    this.isOpen = true;
-  }
-  async connect() {}
-  async quit() { this.isOpen = false; }
-  async get(key) { return this.store.has(key) ? this.store.get(key) : null; }
-  async set(key, value, options = {}) {
-    this.store.set(key, value);
-    if (options.EX && Number.isFinite(options.EX)) {
-      if (this.ttl.has(key)) clearTimeout(this.ttl.get(key));
-      const t = setTimeout(() => {
-        this.store.delete(key);
-        this.ttl.delete(key);
-      }, options.EX * 1000);
-      this.ttl.set(key, t);
-    }
-  }
-  async del(...keys) { for (const k of keys) { if (k) { this.store.delete(k); if (this.ttl.has(k)) { clearTimeout(this.ttl.get(k)); this.ttl.delete(k); } } } }
-  async exists(key) { return this.store.has(key) ? 1 : 0; }
-  multi() {
-    const ops = [];
-    return {
-      set: (key, value) => ops.push({ type: 'set', key, value }),
-      del: (key) => ops.push({ type: 'del', key }),
-      exec: async () => { for (const op of ops) { if (op.type === 'set') { await this.set(op.key, op.value); } else if (op.type === 'del') { await this.del(op.key); } } }
-    };
-  }
-  on() {}
-}
+

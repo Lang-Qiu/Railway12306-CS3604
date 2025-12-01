@@ -111,10 +111,10 @@ class RegistrationDbService {
         hashedPassword,
         userData.name,
         userData.email || null,
-        userData.phone || null,
-        userData.id_card_type || null,
-        userData.id_card_number || null,
-        userData.discount_type || null
+        userData.phone,
+        userData.id_card_type,
+        userData.id_card_number,
+        userData.discount_type
       ];
       console.log('📝 [createUser] 准备插入数据库，数据:', insertData);
 
@@ -332,3 +332,4 @@ class RegistrationDbService {
 }
 
 module.exports = new RegistrationDbService();
+

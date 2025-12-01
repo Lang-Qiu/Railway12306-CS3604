@@ -31,15 +31,6 @@ describe('SmsVerificationModal - 登录短信验证', () => {
     expect(idCardInput).toHaveValue('1234')
   })
 
-  it('应该允许输入X字符并自动转为大写', async () => {
-    render(<SmsVerificationModal onClose={mockOnClose} onSubmit={mockOnSubmit} />)
-    
-    const idCardInput = screen.getByPlaceholderText('请输入登录账号绑定的证件号后4位')
-    await userEvent.type(idCardInput, '12x3')
-    
-    expect(idCardInput).toHaveValue('12X3')
-  })
-
   it('应该处理验证码输入', async () => {
     render(<SmsVerificationModal onClose={mockOnClose} onSubmit={mockOnSubmit} />)
     
@@ -74,22 +65,6 @@ describe('SmsVerificationModal - 登录短信验证', () => {
     consoleSpy.mockRestore()
   })
 
-  it('点击发送验证码时应记录包含X的证件号', async () => {
-    const consoleSpy = vi.spyOn(console, 'log')
-    
-    render(<SmsVerificationModal onClose={mockOnClose} onSubmit={mockOnSubmit} />)
-    
-    const idCardInput = screen.getByPlaceholderText('请输入登录账号绑定的证件号后4位')
-    await userEvent.type(idCardInput, '123x')
-    
-    const sendButton = screen.getByText('获取验证码')
-    await userEvent.click(sendButton)
-    
-    expect(consoleSpy).toHaveBeenCalledWith('Sending SMS for ID card last 4:', '123X')
-    
-    consoleSpy.mockRestore()
-  })
-
   it('应该在信息完整时提交表单', async () => {
     render(<SmsVerificationModal onClose={mockOnClose} onSubmit={mockOnSubmit} />)
     
@@ -104,24 +79,6 @@ describe('SmsVerificationModal - 登录短信验证', () => {
     
     expect(mockOnSubmit).toHaveBeenCalledWith({
       idCardLast4: '1234',
-      code: '123456'
-    })
-  })
-
-  it('应该在证件号包含X时提交表单', async () => {
-    render(<SmsVerificationModal onClose={mockOnClose} onSubmit={mockOnSubmit} />)
-    
-    const idCardInput = screen.getByPlaceholderText('请输入登录账号绑定的证件号后4位')
-    const codeInput = screen.getByPlaceholderText('输入验证码')
-    
-    await userEvent.type(idCardInput, '123x')
-    await userEvent.type(codeInput, '123456')
-    
-    const submitButton = screen.getByText('确定')
-    await userEvent.click(submitButton)
-    
-    expect(mockOnSubmit).toHaveBeenCalledWith({
-      idCardLast4: '123X',
       code: '123456'
     })
   })
@@ -269,18 +226,6 @@ describe('SmsVerificationModal - 登录短信验证', () => {
       
       const idCardInput = screen.getByPlaceholderText('请输入登录账号绑定的证件号后4位')
       await userEvent.type(idCardInput, '1234')
-      
-      const sendButton = screen.getByText('获取验证码')
-      
-      // 验证按钮可用
-      expect(sendButton).not.toBeDisabled()
-    })
-
-    it('证件号包含X时发送按钮可用', async () => {
-      render(<SmsVerificationModal onClose={mockOnClose} onSubmit={mockOnSubmit} sessionId="test-session" />)
-      
-      const idCardInput = screen.getByPlaceholderText('请输入登录账号绑定的证件号后4位')
-      await userEvent.type(idCardInput, '123x')
       
       const sendButton = screen.getByText('获取验证码')
       

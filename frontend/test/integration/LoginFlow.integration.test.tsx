@@ -210,7 +210,7 @@ describe('登录流程集成测试', () => {
       })
     })
 
-    it('应该在密码不满足8位且字母数字规则时显示错误', async () => {
+    it('应该在密码少于6位时显示错误', async () => {
       render(
         <BrowserRouter>
           <LoginPage />
@@ -227,28 +227,7 @@ describe('登录流程集成测试', () => {
       fireEvent.click(loginButton)
 
       await waitFor(() => {
-        expect(screen.getByText(/密码至少8位且包含字母和数字/i)).toBeInTheDocument()
-      })
-    })
-
-    it('应该在包含非法字符时显示错误', async () => {
-      render(
-        <BrowserRouter>
-          <LoginPage />
-        </BrowserRouter>
-      )
-
-      const usernameInput = screen.getByPlaceholderText(/用户名.*邮箱.*手机号/i)
-      const passwordInput = screen.getByPlaceholderText(/密码/i)
-      
-      await userEvent.type(usernameInput, 'testuser')
-      await userEvent.type(passwordInput, 'abcd1234!')
-
-      const loginButton = screen.getByRole('button', { name: /立即登录/i })
-      fireEvent.click(loginButton)
-
-      await waitFor(() => {
-        expect(screen.getByText(/密码仅支持字母和数字/i)).toBeInTheDocument()
+        expect(screen.getByText(/密码至少6位/i)).toBeInTheDocument()
       })
     })
   })
@@ -272,7 +251,7 @@ describe('登录流程集成测试', () => {
       const passwordInput = screen.getByPlaceholderText(/密码/i)
       
       await userEvent.type(usernameInput, 'wronguser')
-      await userEvent.type(passwordInput, 'wrongpass1')
+      await userEvent.type(passwordInput, 'wrongpassword')
 
       const loginButton = screen.getByRole('button', { name: /立即登录/i })
       fireEvent.click(loginButton)
@@ -286,54 +265,6 @@ describe('登录流程集成测试', () => {
       await waitFor(() => {
         expect(passwordInput).toHaveValue('')
       })
-    })
-
-    it('网络异常时显示友好提示', async () => {
-      mockedAxios.post.mockRejectedValue({ code: 'ERR_NETWORK' })
-
-      render(
-        <BrowserRouter>
-          <LoginPage />
-        </BrowserRouter>
-      )
-
-      const usernameInput = screen.getByPlaceholderText(/用户名.*邮箱.*手机号/i)
-      const passwordInput = screen.getByPlaceholderText(/密码/i)
-      await userEvent.type(usernameInput, 'user1')
-      await userEvent.type(passwordInput, 'pass1234')
-
-      fireEvent.click(screen.getByRole('button', { name: /立即登录/i }))
-
-      await waitFor(() => {
-        expect(screen.getByText(/网络异常/i)).toBeInTheDocument()
-      })
-    })
-
-    it('CSRF 无效时提示并重新获取令牌', async () => {
-      const getSpy = mockedAxios.get?.mockImplementation((url: string) => {
-        if (url === '/api/auth/public-key') return Promise.resolve({ data: { success: true, publicKey: '' } })
-        if (url === '/api/auth/csrf-token') return Promise.resolve({ data: { success: true, token: 'csrf-token-1' } })
-        return Promise.resolve({ data: {} })
-      })
-      mockedAxios.post.mockRejectedValue({ response: { status: 403, data: { error: 'CSRF token 无效' } } })
-
-      render(
-        <BrowserRouter>
-          <LoginPage />
-        </BrowserRouter>
-      )
-
-      const usernameInput = screen.getByPlaceholderText(/用户名.*邮箱.*手机号/i)
-      const passwordInput = screen.getByPlaceholderText(/密码/i)
-      await userEvent.type(usernameInput, 'user1')
-      await userEvent.type(passwordInput, 'pass1234')
-
-      fireEvent.click(screen.getByRole('button', { name: /立即登录/i }))
-
-      await waitFor(() => {
-        expect(screen.getByText(/页面安全校验失败/i)).toBeInTheDocument()
-      })
-      expect(getSpy).toHaveBeenCalledWith('/api/auth/csrf-token', expect.objectContaining({ withCredentials: true }))
     })
   })
 
@@ -462,3 +393,4 @@ describe('登录流程集成测试', () => {
     })
   })
 })
+

@@ -1,102 +1,74 @@
-# 铁路12306系统 - CS3604课程项目
+# 12306 Railway Booking System Backend
 
-## 项目概述
+This is the backend service for the 12306 Railway Booking System, built with Node.js and Express.
 
-本项目是CS3604课程的铁路12306客票预订系统，包含完整的需求分析、技术架构设计和项目文档。
+## Prerequisites
 
-## 项目结构
+- **Node.js**: v16.0.0 or higher recommended.
+- **Redis**: Optional. Used for session and user data storage. If not available, the system falls back to an in-memory store (data will be lost on restart).
 
+## Project Structure
+
+- `backend/`: The main backend application code.
+- `backend/database/`: Contains `custom_train_data.json` used for train search.
+- `database/`: Root database folder containing reference data (GBK JSONs and SQLite DB).
+
+## Installation
+
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+## Configuration
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   # On Windows Command Prompt: copy .env.example .env
+   ```
+
+2. Edit `.env` to configure your environment (optional).
+   - `PORT`: Server port (default: 3000)
+   - `DB_PATH`: Path to SQLite DB (Note: Currently, the system uses an in-memory SQLite database for user data, so this path might not be actively used for persistence).
+   - `JSON_DB_INMEMORY`: Set to `1` to force in-memory mode even if Redis is available.
+
+## Running the Application
+
+To start the server in production mode:
+
+```bash
+npm start
 ```
-Railway12306/
-├── .trae/documents/           # 项目文档目录
-│   ├── 期中报告.md           # 期中报告文档
-│   ├── 铁路12306系统产品需求文档.md  # 产品需求文档(PRD)
-│   └── 铁路12306系统技术架构文档.md  # 技术架构文档
-├── 课程项目需求/              # 课程需求资料
-│   ├── 课程项目需求大纲_部分1_Page1.jpg
-│   ├── 课程项目需求大纲_部分1_Page2.jpg
-│   └── ... (共11页)
-├── 课程项目需求大纲_部分1.pdf  # 原始需求PDF
-├── 需求1.png                 # 需求图片1
-├── 需求2.png                 # 需求图片2
-├── prd.md                    # 初始PRD文件
-├── .gitignore               # Git忽略文件
-└── README.md                # 项目说明文档
+
+To start the server in development mode (with hot reload):
+
+```bash
+npm run dev
 ```
 
-## 核心文档
+The server will start on `http://localhost:3000` (or the port specified in `.env`).
 
-### 1. 产品需求文档 (PRD)
-- **文件位置**: `.trae/documents/铁路12306系统产品需求文档.md`
-- **内容**: 包含68个详细需求，6个核心页面设计
-- **功能模块**: 用户管理、车次查询、订票管理、个人中心等
+## Database Information
 
-### 2. 技术架构文档
-- **文件位置**: `.trae/documents/铁路12306系统技术架构文档.md`
-- **技术栈**: React + Supabase + TypeScript
-- **内容**: 系统架构、数据模型、API设计、安全策略等
+- **User Data**: Managed via `sql.js` (in-memory) or Redis (if configured).
+- **Train Data**: The system reads train schedules from `backend/database/custom_train_data.json`.
 
-### 3. 期中报告
-- **文件位置**: `.trae/documents/期中报告.md`
-- **内容**: 项目选择、需求提取、AI实现方案、进度规划等
+## Testing
 
-## 项目特点
+To run the test suite:
 
-- ✅ **需求完整**: 基于课程要求进行详细需求分析
-- ✅ **技术先进**: 采用现代化技术栈 React + Supabase
-- ✅ **文档规范**: 完整的PRD、技术架构和项目报告
-- ✅ **AI辅助**: 运用AI工具进行需求分析和文档生成
+```bash
+npm test
+```
 
-## 开发计划
+To run tests with coverage:
 
-### 第一阶段 (2周): 基础框架搭建
-- 项目初始化和环境配置
-- 数据库表结构创建
-- 基础组件库开发
-- 用户认证系统实现
-
-### 第二阶段 (3周): 核心功能开发
-- 车次查询功能实现
-- 订票流程开发
-- 用户管理功能
-- 订单管理系统
-
-### 第三阶段 (2周): 功能完善和优化
-- 支付系统集成
-- 性能优化
-- 异常处理完善
-- 用户体验优化
-
-### 第四阶段 (1周): 测试和部署
-- 功能测试和性能测试
-- 安全测试
-- 部署上线
-- 文档完善
-
-## 技术栈
-
-- **前端**: React 18 + TypeScript + Tailwind CSS
-- **后端**: Supabase (PostgreSQL + Auth + Storage)
-- **部署**: Vercel / Netlify
-- **开发工具**: Vite + ESLint + Prettier
-
-## 如何使用
-
-1. 克隆仓库到本地
-2. 查看 `.trae/documents/` 目录下的项目文档
-3. 根据技术架构文档进行开发环境搭建
-4. 按照开发计划逐步实现功能
-
-## 贡献者
-
-- **项目负责人**: 董孟哲
-- **开发团队**: 董孟哲、孟德轩
-
-## 许可证
-
-本项目仅用于CS3604课程学习，版权归项目团队所有。
-
----
-
-**最后更新**: 2025年11月
-**项目状态**: 需求分析和设计阶段完成，准备进入开发实现阶段
+```bash
+npm run test:coverage
+```

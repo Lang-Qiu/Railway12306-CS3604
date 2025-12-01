@@ -98,22 +98,7 @@ class RegisterController {
       }
       const sessionId = uuidv4()
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
-      await jsonDbService.createSession(
-        sessionId,
-        {
-          user_data: {
-            username,
-            password,
-            name,
-            discountType,
-            email,
-            phone,
-            id_card_type: idCardType,
-            id_card_number: idCardNumber
-          }
-        },
-        expiresAt
-      )
+      await jsonDbService.createSession(sessionId, { user_data: { username, password, idCardType, name, idCardNumber, discountType, email, phone } }, expiresAt)
       return res.status(201).json({ message: '注册信息已提交，请进行验证', sessionId })
     } catch (error) {
       console.error('Register error:', error)

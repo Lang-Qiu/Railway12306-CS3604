@@ -132,10 +132,7 @@ const SmsVerificationModal: React.FC<SmsVerificationModalProps> = ({
               placeholder="请输入登录账号绑定的证件号后4位"
               value={idCardLast4}
               onChange={(e) => {
-                const value = e.target.value
-                  .replace(/[^0-9xX]/g, '')
-                  .toUpperCase()
-                  .slice(0, 4)
+                const value = e.target.value.replace(/\D/g, '').slice(0, 4)
                 setIdCardLast4(value)
                 setValidationError('')
               }}

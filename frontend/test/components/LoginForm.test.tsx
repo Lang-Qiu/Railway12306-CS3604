@@ -198,7 +198,7 @@ describe('LoginForm', () => {
       })
     })
 
-    it('应该在密码不满足8位且字母数字规则时显示提示', async () => {
+    it('应该在密码<6位时显示"密码至少6位"', async () => {
       const onSubmitMock = vi.fn()
       render(<LoginForm {...mockProps} onSubmit={onSubmitMock} />)
       
@@ -210,8 +210,9 @@ describe('LoginForm', () => {
       fireEvent.change(passwordInput, { target: { value: '12345' } })
       fireEvent.click(submitButton)
       
+      // 应该显示错误信息
       await waitFor(() => {
-        expect(screen.getByText(/密码至少8位且包含字母和数字/i)).toBeInTheDocument()
+        expect(screen.getByText(/密码至少6位/i)).toBeInTheDocument()
       })
     })
 

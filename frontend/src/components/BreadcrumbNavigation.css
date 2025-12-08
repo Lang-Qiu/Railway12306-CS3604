@@ -1,0 +1,28 @@
+.breadcrumb-nav {
+  width: 1200px;
+  margin: 0 auto;
+  padding: 12px 0;
+  background-color: #fff;
+  font-size: 13px;
+  color: #666;
+}
+
+.breadcrumb-label {
+  color: #666;
+}
+
+.breadcrumb-item {
+  color: #666;
+  text-decoration: none;
+}
+
+.breadcrumb-separator {
+  margin: 0 3px;
+  color: #666;
+  font-family: sans-serif;
+}
+
+.breadcrumb-current {
+  color: #0099ff;
+  font-weight: 400;
+}

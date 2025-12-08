@@ -5,7 +5,7 @@ import ConfirmModal from './ConfirmModal'
 
 type Props = { trainNo: string; departureStation: string; arrivalStation: string; departureDate: string; departureTime: string; hasSoldOut: boolean; isLoggedIn: boolean; onReserve: (trainNo: string) => void; queryTimestamp: string }
 
-const ReserveButton: React.FC<Props> = ({ trainNo, departureStation: _ds, arrivalStation: _as, departureDate, departureTime, hasSoldOut, isLoggedIn, onReserve, queryTimestamp }) => {
+const ReserveButton: React.FC<Props> = ({ trainNo, departureStation: _ds, arrivalStation: _as, departureDate, departureTime, hasSoldOut, isLoggedIn, onReserve }) => {
   const navigate = useNavigate()
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)

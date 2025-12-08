@@ -11,6 +11,8 @@ import MainNavigation from './components/MainNavigation'
 import BottomNavigation from './components/BottomNavigation'
 import './App.css'
 const PassengersPage = lazy(() => import('./pages/PassengersPage.tsx'))
+const InformationPage = lazy(() => import('./pages/InformationPage.tsx'))
+const PhoneVerificationPage = lazy(() => import('./pages/PhoneVerificationPage.tsx'))
 
 function App() {
   const location = useLocation()
@@ -29,6 +31,8 @@ function App() {
         <Route path="/orders" element={<OrderPage />} />
         <Route path="/orders/history" element={<OrderHistoryPage />} />
         <Route path="/passengers" element={<PassengersPage />} />
+        <Route path="/information" element={<InformationPage />} />
+        <Route path="/phone-verification" element={<PhoneVerificationPage />} />
       </Routes>
       </Suspense>
       <BottomNavigation />

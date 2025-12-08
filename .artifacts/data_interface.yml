@@ -240,3 +240,55 @@
   changeLog:
     - date: "2025-11-15"
       description: "新增余票计算接口，遵循PRD 4.4余票规则。"
+
+- type: Database
+  id: DB-FindUserById
+  description: 根据用户ID查找用户信息
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 能够根据用户ID精确匹配查找用户记录
+    - 返回用户的完整信息包括密码、手机号、证件号、邮箱、优惠类型等
+    - 如果用户不存在，返回空结果
+  changeLog:
+    - date: "2025-12-08"
+      description: "初始创建，支持个人信息页获取当前用户信息。"
+
+- type: Database
+  id: DB-UpdateUserEmail
+  description: 更新用户邮箱地址
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 根据用户ID更新邮箱字段
+    - 验证邮箱格式
+    - 返回更新后的用户信息
+  changeLog:
+    - date: "2025-12-08"
+      description: "初始创建，支持个人信息页修改邮箱功能。"
+
+- type: Database
+  id: DB-UpdateUserPhone
+  description: 更新用户手机号码
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 根据用户ID更新手机号字段
+    - 确保新手机号未被其他用户绑定
+    - 返回更新后的用户信息
+  changeLog:
+    - date: "2025-12-08"
+      description: "初始创建，支持手机核验页修改手机号功能。"
+
+- type: Database
+  id: DB-UpdateUserDiscountType
+  description: 更新用户优惠(待)类型
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 根据用户ID更新优惠类型字段
+    - 验证类型值是否在允许范围内（学生、儿童、残疾军人、普通）
+    - 返回更新后的用户信息
+  changeLog:
+    - date: "2025-12-08"
+      description: "初始创建，支持个人信息页修改优惠类型功能。"

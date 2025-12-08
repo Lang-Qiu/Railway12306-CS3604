@@ -18,30 +18,48 @@ const LoginPage: React.FC = () => {
   const [csrfToken, setCsrfToken] = useState('')
 
   useEffect(() => {
-    const fetchPublicKey = async () => {
-      try {
-        const response = await apiGetPublicKey();
-        if (response.success) {
-          setPublicKey(response.publicKey);
+    const initConnection = async () => {
+      // 1. Connection Test & Public Key
+      let keyFetched = false;
+      for (let i = 0; i < 3; i++) {
+        try {
+          console.log(`[LoginFlow] Attempting to fetch public key (${i + 1}/3)...`);
+          const response = await apiGetPublicKey();
+          if (response.success) {
+            setPublicKey(response.publicKey);
+            console.log('[LoginFlow] Public key fetched successfully.');
+            keyFetched = true;
+            break;
+          }
+        } catch (error) {
+          console.error(`[LoginFlow] Failed to fetch public key (attempt ${i + 1}/3):`, error);
+          if (i < 2) await new Promise(resolve => setTimeout(resolve, 5000));
         }
-      } catch (error) {
-        console.error('Failed to fetch public key', error);
+      }
+
+      if (!keyFetched) {
+        setError('无法连接到服务器，请检查网络连接。');
+        return;
+      }
+
+      // 2. CSRF Token
+      for (let i = 0; i < 3; i++) {
+        try {
+          console.log(`[LoginFlow] Attempting to fetch CSRF token (${i + 1}/3)...`);
+          const res = await apiGetCsrfToken();
+          if (res.success) {
+            setCsrfToken(res.token);
+            console.log('[LoginFlow] CSRF token fetched successfully.');
+            break;
+          }
+        } catch (error) {
+          console.error(`[LoginFlow] Failed to fetch CSRF token (attempt ${i + 1}/3):`, error);
+          if (i < 2) await new Promise(resolve => setTimeout(resolve, 5000));
+        }
       }
     };
 
-    const fetchCsrf = async () => {
-      try {
-        const res = await apiGetCsrfToken();
-        if (res.success) {
-          setCsrfToken(res.token);
-        }
-      } catch (error) {
-        console.error('Failed to fetch CSRF token', error);
-      }
-    };
-
-    fetchPublicKey();
-    fetchCsrf();
+    initConnection();
   }, []);
 
   const handleLoginSuccess = async (data: { identifier?: string; username?: string; password: string }) => {
@@ -77,12 +95,6 @@ const LoginPage: React.FC = () => {
     // TODO: 实现跳转到忘记密码页面
     console.log('Navigate to forgot password')
   }
-
-  // const handleSmsVerificationSuccess = () => {
-  //   // TODO: 实现短信验证成功后的逻辑
-  //   console.log('SMS verification success')
-  //   setShowSmsModal(false)
-  // }
 
   const handleCloseSmsModal = () => {
     setShowSmsModal(false)

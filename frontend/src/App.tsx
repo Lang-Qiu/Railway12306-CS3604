@@ -13,6 +13,7 @@ import './App.css'
 const PassengersPage = lazy(() => import('./pages/PassengersPage.tsx'))
 const InformationPage = lazy(() => import('./pages/InformationPage.tsx'))
 const PhoneVerificationPage = lazy(() => import('./pages/PhoneVerificationPage.tsx'))
+const AddressManagementPage = lazy(() => import('./pages/AddressManagementPage.tsx'))
 
 function App() {
   const location = useLocation()
@@ -33,6 +34,7 @@ function App() {
         <Route path="/passengers" element={<PassengersPage />} />
         <Route path="/information" element={<InformationPage />} />
         <Route path="/phone-verification" element={<PhoneVerificationPage />} />
+        <Route path="/address-management" element={<AddressManagementPage />} />
       </Routes>
       </Suspense>
       <BottomNavigation />

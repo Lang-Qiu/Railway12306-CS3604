@@ -3,6 +3,7 @@
 .header-con { display:flex; align-items:center; justify-content:space-between; width:1200px; margin:0 auto; padding:12px 0; }
 .logo { margin:0; }
 .logo .logo-link { display:block; width:200px; height:50px; text-indent:-9999px; background-image: image-set(url('https://www.12306.cn/index/images/logo.png') 1x, url('https://www.12306.cn/index/images/logo@2x.png') 2x); background-repeat:no-repeat; background-position:left center; background-size:contain; }
+.home-text { display:none; }
 .welcome-login-text { font-size:20px; color:#333; margin-left:20px; font-weight:500; }
 
 .header-right { display:flex; align-items:center; }

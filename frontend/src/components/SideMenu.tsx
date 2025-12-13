@@ -3,9 +3,19 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import './SideMenu.css';
 
 const SideMenu: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const currentPath = location.pathname;
+  let navigate: (to: string) => void = () => {}
+  let currentPath = '/'
+  try {
+    navigate = useNavigate()
+  } catch {
+    navigate = (to: string) => { if (typeof window !== 'undefined') { window.location.hash = to } }
+  }
+  try {
+    const location = useLocation()
+    currentPath = location.pathname
+  } catch {
+    currentPath = '/'
+  }
 
   const menuItems = [
     {

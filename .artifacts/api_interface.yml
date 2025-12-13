@@ -675,3 +675,171 @@
   changeLog:
     - date: "2025-11-15"
       description: "新增车次详情接口。"
+
+- type: Backend
+  id: API-GET-RegionOptions
+  route: GET /api/regions
+  description: 获取省/市/区县/乡镇/附近区域选项，支持级联
+  input:
+    type: Query
+    params:
+      level: string  # province|city|district|town|area
+      parentCode: string  # 上一级代码，可选，未选择时返回空
+  output:
+    success:
+      statusCode: 200
+      body:
+        options: "array"  # [{ code, name }]
+    error:
+      - statusCode: 400
+        body: { error: "参数错误或层级无效" }
+  dependencies:
+    - DB-LoadRegionHierarchy
+    - DB-ListRegionsByParent
+  acceptanceCriteria:
+    - 在父级未选择时返回空集合，满足越级选择为空的逻辑
+    - 返回项包含唯一代码与显示名称
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增行政区划选项查询接口，支持级联选择。"
+
+- type: Backend
+  id: API-GET-UserAddresses
+  route: GET /api/user/addresses
+  description: 获取当前登录用户的车票快递地址列表
+  input:
+    type: Header
+    params:
+      Authorization: "Bearer token"
+  output:
+    success:
+      statusCode: 200
+      body:
+        addresses: "array" # [{ id, recipient, phone, addressText, createdAt, lockedUntil }]
+    error:
+      - statusCode: 401
+        body: { error: "未授权或Token失效" }
+  dependencies:
+    - DB-ListUserAddresses
+  acceptanceCriteria:
+    - 按创建时间倒序返回最多20条记录，最新在顶部
+    - addressText 为所在地址与详细地址的拼接
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增用户地址列表查询接口。"
+
+- type: Backend
+  id: API-POST-UserAddresses
+  route: POST /api/user/addresses
+  description: 创建新的车票快递地址
+  input:
+    type: JSON
+    body:
+      provinceCode: string
+      cityCode: string
+      districtCode: string
+      townCode: string
+      areaCode: string  # 可选
+      detailAddress: string
+      recipient: string
+      phone: string
+  output:
+    success:
+      statusCode: 201
+      body: { message: "添加成功", id: "uuid" }
+    error:
+      - statusCode: 400
+        body: { error: "请输入详细地址！" }
+      - statusCode: 400
+        body: { error: "请选择市！" }
+      - statusCode: 400
+        body: { error: "请选择区/县！" }
+      - statusCode: 400
+        body: { error: "请选择乡镇（周边地区）！" }
+      - statusCode: 400
+        body: { error: "您输入的地址中含有非法字符！" }
+      - statusCode: 400
+        body: { error: "只能包含中文或者英文！" }
+      - statusCode: 400
+        body: { error: "允许输入的字符串在2-30个字符之间！" }
+      - statusCode: 400
+        body: { error: "您输入的手机号码不是有效的格式！" }
+      - statusCode: 409
+        body: { error: "最多可添加20个地址" }
+  dependencies:
+    - DB-CountUserAddresses
+    - DB-CreateAddress
+  acceptanceCriteria:
+    - 验证所在地址级联选择完整（省/市/区县/乡镇）
+    - 验证详细地址、收件人、手机的格式与长度
+    - 当用户地址≥20条时返回409
+    - 保存成功后返回201，并可在列表中显示
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增创建地址接口，符合PRD表单校验与容量限制。"
+
+- type: Backend
+  id: API-PUT-UserAddress
+  route: PUT /api/user/addresses/:id
+  description: 更新既有地址
+  input:
+    type: JSON
+    body:
+      provinceCode: string
+      cityCode: string
+      districtCode: string
+      townCode: string
+      areaCode: string  # 可选
+      detailAddress: string
+      recipient: string
+      phone: string
+  output:
+    success:
+      statusCode: 200
+      body: { message: "更新成功" }
+    error:
+      - statusCode: 403
+        body: { error: "该地址在30天内不可修改" }
+      - statusCode: 400
+        body: { error: "校验失败或输入不合法" }
+      - statusCode: 404
+        body: { error: "地址不存在" }
+  dependencies:
+    - DB-GetAddressById
+    - DB-CheckAddressEditableWithin30Days
+    - DB-UpdateAddress
+  acceptanceCriteria:
+    - 当地址被锁定（近30天内用于已支付订单）时返回403
+    - 验证字段与创建接口一致
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增更新地址接口，遵守30天不可修改规则。"
+
+- type: Backend
+  id: API-DELETE-UserAddress
+  route: DELETE /api/user/addresses/:id
+  description: 删除既有地址
+  input:
+    type: Path
+    params:
+      id: string
+  output:
+    success:
+      statusCode: 200
+      body: { message: "删除成功" }
+    error:
+      - statusCode: 403
+        body: { error: "该地址在30天内不可删除" }
+      - statusCode: 404
+        body: { error: "地址不存在" }
+  dependencies:
+    - DB-GetAddressById
+    - DB-CheckAddressEditableWithin30Days
+    - DB-DeleteAddress
+  acceptanceCriteria:
+    - 显示删除确认后，确认删除调用该接口
+    - 当地址被锁定（近30天内用于已支付订单）时返回403
+    - 删除成功后从列表移除
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增删除地址接口，遵守30天不可删除规则。"

@@ -1,0 +1,48 @@
+/* 地址表单样式，复刻12306风格 */
+.address-form { background:#fff; border:1px solid #e6e6e6; padding:16px; max-width:1200px; margin-left:0; margin-right:auto; }
+.form-header { display:flex; align-items:baseline; gap:8px; margin-bottom:12px; }
+.form-title { font-size:16px; font-weight:700; color:#333; }
+.form-required { color:#f44336; font-size:14px; }
+
+.form-row { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.form-label { width:110px; text-align:right; color:#333; font-size:14px; }
+.required { color:#f44336; margin-right:4px; }
+
+.controls { display:flex; align-items:center; gap:12px; }
+.controls.controls-block { flex:1; justify-content:flex-start; }
+
+.form-select { height:36px; line-height:36px; padding:0 12px; border:1px solid #dedede; background:#fff; color:#666; outline:none; min-width:180px; }
+.form-select:focus { border-color:#3b99fc; box-shadow:0 0 0 2px rgba(59,153,252,0.2); }
+
+.form-input { height:36px; line-height:36px; padding:0 12px; border:1px solid #dedede; background:#fff; color:#333; outline:none; min-width:300px; }
+.form-input.detail { width:600px; max-width:100%; }
+.form-input::placeholder { color:#999; }
+.form-input:focus { border-color:#3b99fc; box-shadow:0 0 0 2px rgba(59,153,252,0.2); }
+
+.rule-text { color:#999; margin-left:8px; font-size:12px; }
+
+.error-inline { color:#f44336; font-size:12px; margin-left:8px; }
+.row-error { margin-left: calc(110px + 12px); margin-top:4px; margin-bottom:8px; }
+.row-error .error-inline { display:block; margin-left:0; }
+@media (max-width:768px) {
+  .row-error { margin-left: calc(96px + 12px); }
+}
+
+.checkbox-row .checkbox-label { color:#333; font-size:14px; }
+
+.form-actions { display:flex; justify-content:center; gap:12px; margin-top:8px; }
+.btn { height:36px; padding:0 20px; border-radius:4px; font-size:14px; cursor:pointer; border:1px solid transparent; }
+.btn-cancel { background:#fff; border-color:#dedede; color:#666; }
+.btn-cancel:hover { background:#f7f7f7; }
+.btn-save { background:#ff8c00; color:#fff; border-color:#ff8c00; }
+.btn-save:hover { background:#ff9a1f; border-color:#ff9a1f; }
+
+@media (max-width:768px) {
+  .form-label { width:96px; }
+  .form-select { min-width:150px; }
+}
+
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 3000; }
+.modal { background: #fff; border: 1px solid #dedede; border-radius: 4px; padding: 16px; min-width: 320px; box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+.modal-body { font-size: 14px; color: #333; text-align: center; margin-bottom: 12px; }
+.modal-actions { display: flex; justify-content: center; gap: 12px; }

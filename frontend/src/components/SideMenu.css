@@ -7,7 +7,7 @@
   border-right: 1px solid #eee; /* Optional visual separation */
 }
 
-.menu-header {
+.side-menu .menu-header {
   font-size: 16px;
   font-weight: 600;
   color: #333;
@@ -15,7 +15,7 @@
   background-color: #fff;
 }
 
-.menu-section-title {
+.side-menu .menu-section-title {
   font-size: 14px;
   font-weight: 600;
   color: #333;
@@ -24,11 +24,11 @@
   transition: color 0.3s;
 }
 
-.menu-section-title:hover {
+.side-menu .menu-section-title:hover {
   color: #3b99fc;
 }
 
-.menu-item {
+.side-menu .menu-item {
   display: block;
   font-size: 14px;
   color: #666;
@@ -39,11 +39,11 @@
   transition: all 0.3s;
 }
 
-.menu-item:hover {
+.side-menu .menu-item:hover {
   color: #3b99fc;
 }
 
-.menu-item.active {
+.side-menu .menu-item.active {
   background-color: #3b99fc;
   color: #fff;
   border-left: 3px solid #3b99fc;

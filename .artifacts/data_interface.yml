@@ -292,3 +292,123 @@
   changeLog:
     - date: "2025-12-08"
       description: "初始创建，支持个人信息页修改优惠类型功能。"
+
+- type: Database
+  id: DB-LoadRegionHierarchy
+  description: 加载省/市/区县/乡镇/附近区域的行政区划层级数据
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 能够加载五级行政区划层级数据并提供查询
+    - 数据包含唯一代码与显示名称，支持级联查询
+    - 当上级未选择时，下级查询返回空集合
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增地址管理所需的行政区划层级数据加载接口。"
+
+- type: Database
+  id: DB-ListRegionsByParent
+  description: 根据层级与父级代码列出下一级行政区划选项
+  dependencies:
+    - DB-LoadRegionHierarchy
+  acceptanceCriteria:
+    - 输入包含 level（province/city/district/town/area）与 parentCode
+    - 在父级未选择时返回空集合
+    - 返回项包含 { code, name }
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增按父级代码列出行政区划选项接口。"
+
+- type: Database
+  id: DB-ListUserAddresses
+  description: 列出用户的车票快递地址，按创建时间倒序
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 输入为用户ID
+    - 返回最多20条地址记录，按 createdAt 倒序
+    - 每条记录包含 { id, recipient, phone, regionPath, detailAddress, createdAt, lockedUntil }
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增用户地址列表查询接口。"
+
+- type: Database
+  id: DB-GetAddressById
+  description: 根据地址ID获取地址详情
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 能够根据地址ID精确匹配查找地址记录
+    - 返回完整地址对象
+    - 地址不存在时返回空结果
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增按ID获取地址详情接口。"
+
+- type: Database
+  id: DB-CountUserAddresses
+  description: 统计用户已保存的地址数量
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 输入为用户ID
+    - 返回整数数量，用于校验最多20条限制
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增用户地址数量统计接口。"
+
+- type: Database
+  id: DB-CheckAddressEditableWithin30Days
+  description: 检查地址在近30天内是否因已支付订单而被锁定不可编辑/删除
+  dependencies:
+    - DB-GetAddressById
+  acceptanceCriteria:
+    - 输入为地址ID
+    - 若该地址被用于已支付订单且在30天有效期内，返回不可编辑/删除状态
+    - 返回 { editable: boolean, deletable: boolean, lockedUntil: datetime }
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增地址30天锁定状态检查接口。"
+
+- type: Database
+  id: DB-CreateAddress
+  description: 在数据库中创建新的车票快递地址记录
+  dependencies:
+    - DB-CountUserAddresses
+  acceptanceCriteria:
+    - 当用户地址数量已达20条时操作失败并返回唯一性/容量限制错误
+    - 验证必填字段：省/市/区县/乡镇、详细地址、收件人、手机
+    - 详细地址仅允许数字、英文、汉字
+    - 收件人仅允许中文或英文，长度2-30个字符（英文≥2，中文≥1）
+    - 手机号必须为11位纯数字
+    - 成功执行后新增记录并返回创建的地址对象
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增创建地址接口，含字段校验与20条限制。"
+
+- type: Database
+  id: DB-UpdateAddress
+  description: 更新既有的车票快递地址记录
+  dependencies:
+    - DB-GetAddressById
+    - DB-CheckAddressEditableWithin30Days
+  acceptanceCriteria:
+    - 在地址被锁定（近30天内用于已支付订单）时拒绝修改
+    - 验证必填字段与格式要求与创建一致
+    - 返回更新后的地址对象
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增更新地址接口，遵守30天不可修改规则。"
+
+- type: Database
+  id: DB-DeleteAddress
+  description: 删除既有的车票快递地址记录
+  dependencies:
+    - DB-GetAddressById
+    - DB-CheckAddressEditableWithin30Days
+  acceptanceCriteria:
+    - 在地址被锁定（近30天内用于已支付订单）时拒绝删除
+    - 删除成功后不再出现在列表中
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增删除地址接口，遵守30天不可删除规则。"

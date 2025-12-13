@@ -3,6 +3,7 @@ const trainController = require('../request-handlers/trainController');
 
 const router = express.Router();
 
-router.get('/', trainController.getTrains);
+router.get('/search', trainController.searchTrains);
+router.get('/:trainNo/detail', trainController.getTrainDetail);
 
 module.exports = router;

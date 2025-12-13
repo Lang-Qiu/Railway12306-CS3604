@@ -1,0 +1,28 @@
+/* 地址列表（像素级复刻风格） */
+.address-list { font-size:14px; color:#333; max-width:1200px; margin-left:0; margin-right:auto; }
+.list-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.list-title { font-weight:700; }
+.add-btn { display:inline-flex; align-items:center; gap:8px; height:32px; padding:0 12px; border:1px solid #7cc388; background:#e9f7ee; color:#2e7d32; border-radius:4px; cursor:pointer; }
+.add-btn .plus { width:18px; height:18px; border-radius:50%; background:#34a853; display:inline-block; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='12' fill='%2334a853'/><path d='M12 6v12M6 12h12' stroke='white' stroke-width='2' stroke-linecap='round'/></svg>"); background-size:contain; background-repeat:no-repeat; }
+.add-btn:hover { background:#def3e6; border-color:#6bb97a; }
+
+.addr-table { width:100%; border-collapse:collapse; border:1px solid #e6e6e6; }
+.addr-table thead th { background:#f7fbff; text-align:left; padding:8px 12px; border-bottom:1px solid #e6e6e6; font-weight:600; color:#333; }
+.addr-table tbody td { padding:8px 12px; border-bottom:1px solid #f0f0f0; color:#333; }
+.addr-table tbody tr:hover { background:#fafafa; }
+
+.add-row td { background:#eef7ff; padding:8px 12px; }
+.add-row .add-btn { margin:0; }
+
+.actions { display:flex; align-items:center; gap:12px; }
+.default-link { color:#3b99fc; cursor:pointer; }
+.default-link:hover { text-decoration:underline; }
+
+.icon-btn { width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; border:none; background:transparent; cursor:pointer; padding:0; }
+.icon-btn.delete { color:#e53935; }
+.icon-btn.edit { color:#3b99fc; }
+.icon { width:18px; height:18px; display:block; background-size:contain; background-repeat:no-repeat; }
+.icon.delete { background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23e53935' d='M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v8h-2V9zm4 0h2v8h-2V9zM7 9h2v8H7V9z'/></svg>"); }
+.icon.edit { background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%233b99fc' d='M3 17.25V21h3.75l11-11.03-3.75-3.75L3 17.25zm14.71-9.04a1.003 1.003 0 0 0 0-1.42l-1.5-1.5a1.003 1.003 0 0 0-1.42 0l-1.13 1.13 3.75 3.75 1.3-1.46z'/></svg>"); }
+
+.vh { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }

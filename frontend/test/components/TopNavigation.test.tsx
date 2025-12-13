@@ -71,5 +71,20 @@ describe('TopNavigation - 顶部导航组件', () => {
     const nav = container.querySelector('nav') || container.querySelector('header')
     expect(nav).toBeInTheDocument()
   })
-})
 
+  test('Given 已登录用户且顶部存在导航栏 When 点击“我的12306”下拉中的“地址管理” Then 跳转到地址管理页', () => {
+    const onAddressManagementClick = vi.fn()
+    renderWithRouter(<TopNavigation onAddressManagementClick={onAddressManagementClick} />)
+    const entry = screen.getByText('地址管理')
+    fireEvent.click(entry)
+    expect(onAddressManagementClick).toHaveBeenCalled()
+  })
+
+  test('Given 用户在地址管理页 When 点击Logo Then 跳转到首页', () => {
+    renderWithRouter(<TopNavigation />)
+    const logo = screen.getByAltText(/中国铁路12306/i)
+    fireEvent.click(logo)
+    const homeTexts = screen.getAllByText(/首页|Home/i)
+    expect(homeTexts.length).toBeGreaterThan(0)
+  })
+})

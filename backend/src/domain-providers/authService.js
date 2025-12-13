@@ -26,11 +26,39 @@ class AuthService {
         throw new Error('Password decryption failed');
       }
 
-      const user = await jsonDbService.findUserBy(identifier, type);
+      let user = await jsonDbService.findUserBy(identifier, type);
       console.log('[Validate Credentials] User found:', user ? { id: user.userId, username: user.username } : null);
 
       if (!user) {
-        return { success: false, error: '用户名或密码错误' };
+        // Fallback: query SQLite users table for compatibility
+        try {
+          const registrationDbService = require('./registrationDbService');
+          let dbUser = null;
+          if (type === 'username') {
+            dbUser = await registrationDbService.findUserByUsername(identifier);
+          } else if (type === 'email') {
+            dbUser = await registrationDbService.findUserByEmail(identifier);
+          } else if (type === 'phone') {
+            dbUser = await registrationDbService.findUserByPhone(identifier);
+          }
+          if (!dbUser) {
+            return { success: false, error: '用户名或密码错误' };
+          }
+          user = {
+            id: dbUser.id,
+            userId: dbUser.id,
+            username: dbUser.username,
+            email: dbUser.email,
+            phone: dbUser.phone,
+            id_card_type: dbUser.id_card_type,
+            id_card_number: dbUser.id_card_number,
+            passwordHash: dbUser.password,
+            loginInfo: { failedLoginAttempts: 0, lockoutUntil: null }
+          };
+        } catch (e) {
+          console.error('[Validate Credentials] Fallback to DB failed:', e);
+          return { success: false, error: '用户名或密码错误' };
+        }
       }
 
       if (user.loginInfo.lockoutUntil && new Date(user.loginInfo.lockoutUntil) > new Date()) {
@@ -57,9 +85,13 @@ class AuthService {
       }
 
       // 登录成功，重置失败尝试次数
-      await jsonDbService.updateUser(user.userId, { 
-        loginInfo: { failedLoginAttempts: 0, lockoutUntil: null, lastLogin: new Date().toISOString() }
-      });
+      try {
+        await jsonDbService.updateUser(user.userId, { 
+          loginInfo: { failedLoginAttempts: 0, lockoutUntil: null, lastLogin: new Date().toISOString() }
+        });
+      } catch (_) {
+        // if user comes from SQLite fallback, JSON store may not have the record; ignore
+      }
 
       console.log('[Validate Credentials] Validation successful.');
       return { success: true, user };
@@ -70,6 +102,14 @@ class AuthService {
   }
 
   // ... (generateSessionId remains the same)
+  generateSessionId(userId) {
+    try {
+      return uuidv4();
+    } catch (error) {
+      console.error('Generate session id error:', error);
+      throw error;
+    }
+  }
 
   // 创建登录会话 (Refactored)
   async createLoginSession(user) {
@@ -81,9 +121,9 @@ class AuthService {
         userId: user.userId,
         username: user.username,
         phone: user.phone,
-        id_card_type: user.id_card_type,
-        id_card_number: user.id_card_number,
-        step: 'pending_verification' // 等待短信验证
+        id_card_type: user.id_card_type || user.idCardType,
+        id_card_number: user.id_card_number || user.idCardNumber,
+        step: 'pending_verification'
       };
 
       await jsonDbService.createSession(sessionId, sessionData, expiresAt);
@@ -102,17 +142,16 @@ class AuthService {
       if (!session) {
         return { success: false, error: '会话无效或已过期' };
       }
-
-      if (session.id_card_number.slice(-4) === idCardLast4) {
+      const last4 = (session.id_card_number || '').slice(-4);
+      if (last4 && last4 === idCardLast4) {
         session.step = 'pending_sms_verification';
-        await jsonDbService.createSession(sessionId, session, new Date(session.expiresAt)); // Update session
+        await jsonDbService.createSession(sessionId, session, new Date(session.expiresAt));
         return { success: true, phone: session.phone };
-      } else {
-        return { success: false, error: '证件号验证失败' };
       }
+      return { success: false, error: '证件号验证失败' };
     } catch (error) {
       console.error('Validate ID card error:', error);
-      throw error;
+      return { success: false, error: '会话无效或已过期' };
     }
   }
 
@@ -176,16 +215,42 @@ class AuthService {
     }
   }
 
+  // 兼容旧接口：生成简化令牌
+  generateToken(user) {
+    try {
+      const tokenData = {
+        userId: user.userId,
+        username: user.username,
+        timestamp: Date.now()
+      };
+      return Buffer.from(JSON.stringify(tokenData)).toString('base64');
+    } catch (error) {
+      console.error('Generate token error:', error);
+      throw error;
+    }
+  }
+
   // 识别标识符类型 (No changes needed)
   identifyIdentifierType(identifier) {
+    if (/^\S+@\S+\.\S+$/.test(identifier)) {
+      return 'email';
+    }
+    if (/^\d{11}$/.test(identifier)) {
+      return 'phone';
+    }
     if (/^[a-zA-Z0-9_]{3,20}$/.test(identifier)) {
       return 'username';
-    } else if (/^\S+@\S+\.\S+$/.test(identifier)) {
-      return 'email';
-    } else if (/^\d{11}$/.test(identifier)) {
-      return 'phone';
-    } else {
-      return 'invalid';
+    }
+    return 'invalid';
+  }
+
+  validatePhone(phone) {
+    try {
+      if (!phone || typeof phone !== 'string') return false;
+      if (!/^\d{11}$/.test(phone)) return false;
+      return true;
+    } catch (_) {
+      return false;
     }
   }
 }

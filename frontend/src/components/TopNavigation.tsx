@@ -5,15 +5,23 @@ import './TopNavigation.css'
 interface TopNavigationProps {
   onLogoClick?: () => void
   showWelcomeLogin?: boolean
+  onAddressManagementClick?: () => void
+  showAddressLink?: boolean
 }
 
-const TopNavigation: React.FC<TopNavigationProps> = ({ showWelcomeLogin = false }) => {
-  const navigate = useNavigate()
+const TopNavigation: React.FC<TopNavigationProps> = ({ showWelcomeLogin = false, onAddressManagementClick, showAddressLink = true }) => {
+  let navigate: (to: string) => void = () => {}
+  try {
+    navigate = useNavigate()
+  } catch {
+    navigate = (to: string) => { if (typeof window !== 'undefined') { window.location.hash = to } }
+  }
   // const handleLogoClick = () => { if (onLogoClick) onLogoClick() }
   // 变更说明：集成来源项目的头部搜索与顶部菜单（无障碍/敬老版/English/我的12306/登录注册），保留原组件接口与登录逻辑
   const [searchKeyword, setSearchKeyword] = useState('')
   const [searchActive, setSearchActive] = useState(false)
   const [searchHistory, setSearchHistory] = useState<string[]>(['动车组介绍', '正晚点查询', '代售点'])
+  const [homeTextVisible, setHomeTextVisible] = useState(false)
   const suggestions = ['购票', '改签', '退票', '起售时间']
   const filteredSuggestions = suggestions.filter(s => s.includes(searchKeyword.trim()))
   const onSearchBlur = () => setTimeout(() => setSearchActive(false), 120)
@@ -27,12 +35,13 @@ const TopNavigation: React.FC<TopNavigationProps> = ({ showWelcomeLogin = false 
   const clearHistory = () => setSearchHistory([])
 
   return (
-    <div className="top-navigation" data-testid="top-navigation" onClick={() => console.log('Logo clicked')}>
+    <div className="top-navigation" data-testid="top-navigation">
       <div className="header-con">
         <h1 className="logo">
           {/* 变更说明：采用背景图隐藏文本的方式复刻来源项目 logo 行为 */}
-          <a href="/" className="logo-link" aria-label="中国铁路12306">中国铁路12306</a>
-          <img src="/images/logo.png" alt="中国铁路12306" style={{ display: 'none' }} />
+          <a href="/" className="logo-link" aria-label="中国铁路12306" onClick={(e)=>{e.preventDefault(); setHomeTextVisible(true); navigate('/')}}>中国铁路12306</a>
+          <img src="/images/logo.png" alt="中国铁路12306" style={{ display: 'none' }} onClick={()=>{ setHomeTextVisible(true); navigate('/') }} />
+          {homeTextVisible && (<span className="home-text" aria-live="polite">首页</span>)}
         </h1>
         {!showWelcomeLogin && (
           <div className="header-right">
@@ -109,7 +118,9 @@ const TopNavigation: React.FC<TopNavigationProps> = ({ showWelcomeLogin = false 
                   <li><a role="button">账户安全</a></li>
                   <li className="nav-line"></li>
                   <li><a role="button" onClick={(e)=>{e.preventDefault(); navigate('/passengers')}}>乘车人</a></li>
-                  <li><a role="button">地址管理</a></li>
+                  {showAddressLink && (
+                    <li><a role="button" onClick={(e)=>{e.preventDefault(); onAddressManagementClick?.(); navigate('/address-management')}}>地址管理</a></li>
+                  )}
                   <li className="nav-line"></li>
                   <li><a role="button">温馨服务查询</a></li>
                 </ul>

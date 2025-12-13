@@ -15,6 +15,7 @@ const metricsRoutes = require('./route-manifests/metrics');
 const queryStatsRoutes = require('./route-manifests/queryStats');
 const trainRoutes = require('./route-manifests/trains');
 const userRoutes = require('./route-manifests/user');
+const addressesRoutes = require('./route-manifests/addresses');
 const dbService = require('./domain-providers/dbService');
 const errorHandler = require('./request-interceptors/errorHandler');
 const jsonDbService = require('./domain-providers/jsonDbService');
@@ -40,6 +41,7 @@ app.use('/api/metrics', metricsRoutes);
 app.use('/api/query-stats', queryStatsRoutes);
 app.use('/api/trains', trainRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api', addressesRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

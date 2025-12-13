@@ -43,6 +43,9 @@
     - name: onLogoClick
       type: function
       description: "Logo点击事件处理函数"
+    - name: onAddressManagementClick
+      type: function
+      description: "“我的12306”下拉中的“地址管理”入口点击处理函数"
   state:
     - none
   dependencies:
@@ -52,6 +55,7 @@
     - Logo包含中国铁路12306官方标识和文字
     - Logo右侧显示"欢迎登录12306"文字（黑色）
     - Logo点击可跳转到12306首页
+    - 右侧包含“我的12306”下拉菜单，提供“地址管理”入口，点击后跳转到地址管理页
   changeLog:
     - date: "2025-01-25"
       description: "初始创建，顶部导航组件。"
@@ -707,3 +711,159 @@
   changeLog:
     - date: "2025-11-15"
       description: "新增车次列表展示组件。"
+
+- type: Frontend
+  id: UI-AddressManagementPage
+  description: 地址管理页面主容器，布局与个人信息页一致，右侧为地址管理面板
+  properties:
+    - none
+  state:
+    - addresses
+    - isEditing
+    - editingAddress
+    - showDeleteModal
+    - showSuccessModal
+    - isLoading
+    - error
+  dependencies:
+    - UI-TopNavigation
+    - UI-SideMenu
+    - UI-AddressListTable
+    - UI-AddressForm
+    - UI-AddressTips
+    - UI-ConfirmModal
+    - UI-BottomNavigation
+    - API-GET-UserAddresses
+  acceptanceCriteria:
+    - 顶部导航、左侧菜单与底部导航布局保持与个人信息页一致
+    - 右侧区域在“列表模式”展示地址列表与温馨提示；在“编辑模式”展示地址表单
+    - 初始进入页面时加载并显示地址列表（最多20条，最新在顶部）
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增地址管理页面主容器组件。"
+
+- type: Frontend
+  id: UI-AddressListTable
+  description: 地址列表展示组件与添加入口
+  properties:
+    - name: data
+      type: array
+      description: "地址数据数组，按创建时间倒序"
+    - name: onAdd
+      type: function
+      description: "点击添加按钮进入表单模式"
+    - name: onEdit
+      type: function
+      description: "点击纸笔图标进入修改模式"
+    - name: onDelete
+      type: function
+      description: "点击垃圾桶图标触发删除确认"
+  state:
+    - none
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 表格列标题依次为“序号”“收件人”“地址”“手机”“操作”
+    - 操作列显示垃圾桶图标与纸笔图标
+    - 地址列为所在地址（省/市/区县/乡镇/附近区域）与详细地址的拼接
+    - 序号从1开始递增，最新添加的地址显示在列表顶部
+    - 在无地址时仅显示列标题，不显示具体地址
+    - 列表顶部左侧显示深绿色添加按钮与“添加”字样
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增地址列表展示组件。"
+
+- type: Frontend
+  id: UI-AddressTips
+  description: 地址管理温馨提示组件
+  properties:
+    - none
+  state:
+    - none
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 显示黑体标题“温馨提示”
+    - 正文显示两条提示：
+    - “1.您最多可添加20个车票快递地址，对已支付的地址30天内不可删除与修改。”
+    - “2.请您准确完整的填写收件地址、收件人姓名、手机号码等信息，并保持电话畅通，以免耽误接收车票。”
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增地址管理温馨提示组件。"
+
+- type: Frontend
+  id: UI-AddressForm
+  description: 地址添加/修改表单组件，支持级联选择与字段校验
+  properties:
+    - name: mode
+      type: string
+      description: "操作模式：create 或 edit"
+    - name: initialValues
+      type: object
+      description: "编辑模式下的初始表单值"
+    - name: onCancel
+      type: function
+      description: "取消按钮回调，退出编辑状态"
+    - name: onSaveSuccess
+      type: function
+      description: "保存成功回调，刷新列表并退出编辑状态"
+  state:
+    - provinceCode
+    - cityCode
+    - districtCode
+    - townCode
+    - areaCode
+    - detailAddress
+    - recipient
+    - phone
+    - errors
+    - isLoading
+    - showSuccessModal
+  dependencies:
+    - UI-SelectDropdown
+    - UI-ValidationInput
+    - API-GET-RegionOptions
+    - API-POST-UserAddresses
+    - API-PUT-UserAddress
+    - UI-SuccessModal
+  acceptanceCriteria:
+    - 点击添加后切换到表单模式，原列表区域消失
+    - 五个选择框初始显示灰字占位：“请选择省/市/区县/乡镇（周边地区）/附近区域”
+    - 越级选择时下拉列表内容为空；正常级联时显示具体可选内容
+    - 详细地址占位为“请填写详细地址”，仅允许数字、英文、汉字
+    - 收件人占位为“请填写收件人”，仅允许中文或英文，长度2-30个字符
+    - 手机号码占位为“请填写手机号码”，仅允许11位纯数字
+    - 底部显示白色“取消”与橙色“保存”按钮；保存时执行完整校验
+    - 当字段不合法时显示对应红字提示（与PRD一致）
+    - 保存成功后页面中央显示“✅添加成功”弹窗与“确定”按钮；点击后退出编辑状态并返回列表
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增地址添加/修改表单组件。"
+
+- type: Frontend
+  id: UI-ConfirmModal
+  description: 通用确认弹窗组件
+  properties:
+    - name: isVisible
+      type: boolean
+      description: "弹窗显示状态"
+    - name: message
+      type: string
+      description: "确认提示文案"
+    - name: onConfirm
+      type: function
+      description: "点击确定回调"
+    - name: onCancel
+      type: function
+      description: "点击取消回调"
+  state:
+    - none
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 弹窗位于页面中央，显示传入文案
+    - 底部显示白色“取消”与橙色“确定”按钮
+    - 在地址管理页用于删除确认：文案为“您确定要删除选中的车票快递地址吗？”
+  changeLog:
+    - date: "2025-12-13"
+      description: "新增通用确认弹窗组件，用于地址删除确认。"

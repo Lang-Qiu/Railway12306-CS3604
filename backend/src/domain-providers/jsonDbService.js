@@ -45,7 +45,7 @@ class JsonDbService {
     if (this.client && this.client.isOpen) {
       return;
     }
-    if (process.env.JSON_DB_INMEMORY === '1') {
+    if (process.env.NODE_ENV === 'test' || process.env.JSON_DB_INMEMORY === '1') {
       if (!this.client) this.client = new InMemoryClient();
       return;
     }
@@ -306,4 +306,3 @@ class JsonDbService {
 }
 
 module.exports = new JsonDbService();
-

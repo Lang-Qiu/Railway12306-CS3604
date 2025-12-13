@@ -18,12 +18,17 @@ class DatabaseManager {
     this.db.run(`
       CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username VARCHAR(50) UNIQUE NOT NULL,
-        email VARCHAR(100) UNIQUE NOT NULL,
-        phone VARCHAR(20) UNIQUE NOT NULL,
-        password_hash VARCHAR(255) NOT NULL,
-        id_card VARCHAR(18),
-        real_name VARCHAR(50),
+        username TEXT UNIQUE NOT NULL,
+        email TEXT UNIQUE,
+        phone TEXT UNIQUE,
+        password TEXT,
+        password_hash TEXT,
+        name TEXT,
+        real_name TEXT,
+        id_card_type TEXT,
+        id_card_number TEXT UNIQUE,
+        id_card TEXT,
+        discount_type TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         last_login DATETIME,
@@ -82,12 +87,12 @@ class DatabaseManager {
     const hashedPassword2 = await bcrypt.hash('password456', 10);
 
     this.db.run(
-      `INSERT OR IGNORE INTO users (username, email, phone, password_hash, real_name, id_card) VALUES (?, ?, ?, ?, ?, ?)`,
-      ['testuser', 'test@example.com', '13800138000', hashedPassword1, '张三', '110101199001011234']
+      `INSERT OR IGNORE INTO users (username, email, phone, password_hash, name, real_name, id_card_type, id_card_number, discount_type, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+      ['testuser', 'test@example.com', '13800138000', hashedPassword1, '张三', '张三', 'ID', '110101199001011234', '普通']
     );
     this.db.run(
-      `INSERT OR IGNORE INTO users (username, email, phone, password_hash, real_name, id_card) VALUES (?, ?, ?, ?, ?, ?)`,
-      ['user2', 'user2@example.com', '13900139000', hashedPassword2, '李四', '110101199002022345']
+      `INSERT OR IGNORE INTO users (username, email, phone, password_hash, name, real_name, id_card_type, id_card_number, discount_type, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+      ['user2', 'user2@example.com', '13900139000', hashedPassword2, '李四', '李四', 'ID', '110101199002022345', '普通']
     );
 
     const now = new Date();

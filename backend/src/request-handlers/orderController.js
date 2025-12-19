@@ -28,10 +28,15 @@ class OrderController {
       const order = await orderService.getOrder(orderId, userId);
       
       if (!order) {
+        // Fallback: If not found for userId 1, try without userId check for testing/mocking
+        // Or if using mock data in PayPage which uses '12345'
+        // Let's allow fetching if it's a mock ID like '12345' or simple number
+        // But orderService.getOrder strictly checks userId. 
+        // For development, let's relax or ensure PayPage sends correct userId or create a mock order.
         return res.status(404).json({ success: false, message: 'Order not found' });
       }
       
-      return res.json({ success: true, order });
+      return res.json({ success: true, data: order });
     } catch (error) {
       console.error('Get order detail error:', error);
       return res.status(500).json({ success: false, message: 'Failed to retrieve order details' });

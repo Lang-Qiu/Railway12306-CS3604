@@ -9,7 +9,7 @@ UI-ORDER-HEADER:
   path: "frontend/src/components/OrderHeader.tsx"
   description: "顶部导航区域组件"
   related_req_id: "REQ-ORDER-NAV-TOP"
-  upstream_ids: ["UI-ORDER-PAGE", "UI-PAY-PAGE"]
+  upstream_ids: ["UI-ORDER-PAGE", "UI-PAY-PAGE", "UI-SUCCESS-PAGE"]
   downstream_ids: []
 
 UI-TRAIN-INFO:
@@ -58,7 +58,7 @@ UI-ORDER-FOOTER:
   path: "frontend/src/components/OrderFooter.tsx"
   description: "底部导航区域组件"
   related_req_id: "REQ-ORDER-NAV-BOTTOM"
-  upstream_ids: ["UI-ORDER-PAGE", "UI-PAY-PAGE"]
+  upstream_ids: ["UI-ORDER-PAGE", "UI-PAY-PAGE", "UI-SUCCESS-PAGE"]
   downstream_ids: []
 
 UI-SELECT-DROPDOWN:
@@ -93,7 +93,7 @@ UI-PAY-NAV-MAIN:
   path: "frontend/src/components/PaymentNavMain.tsx"
   description: "支付页主导航栏组件"
   related_req_id: "REQ-PAY-NAV-MAIN"
-  upstream_ids: ["UI-PAY-PAGE"]
+  upstream_ids: ["UI-PAY-PAGE", "UI-SUCCESS-PAGE"]
   downstream_ids: []
 
 UI-PAY-COUNTDOWN:
@@ -135,5 +135,33 @@ UI-PAY-MODAL-UNFINISHED:
   path: "frontend/src/components/UnfinishedOrderModal.tsx"
   description: "未完成订单提示弹窗"
   related_req_id: "REQ-PAY-MODAL-UNFINISHED"
-  upstream_ids: [] # Typically called by TrainsPage or others
+  upstream_ids: []
+  downstream_ids: []
+
+UI-SUCCESS-PAGE:
+  path: "frontend/src/pages/PurchaseSuccessPage.tsx"
+  description: "购票成功页主容器"
+  related_req_id: "REQ-SUCCESS-PAGE"
+  upstream_ids: []
+  downstream_ids: ["UI-ORDER-HEADER", "UI-ORDER-FOOTER", "UI-PAY-NAV-MAIN", "UI-SUCCESS-BANNER", "UI-SUCCESS-ORDER-INFO", "UI-SUCCESS-WARM-TIPS"]
+
+UI-SUCCESS-BANNER:
+  path: "frontend/src/components/SuccessBanner.tsx"
+  description: "购票成功提示区域组件"
+  related_req_id: "REQ-SUCCESS-BANNER"
+  upstream_ids: ["UI-SUCCESS-PAGE"]
+  downstream_ids: []
+
+UI-SUCCESS-ORDER-INFO:
+  path: "frontend/src/components/SuccessOrderInfo.tsx"
+  description: "购票成功页订单信息与乘车信息区域组件"
+  related_req_id: "REQ-SUCCESS-ORDER-INFO"
+  upstream_ids: ["UI-SUCCESS-PAGE"]
+  downstream_ids: []
+
+UI-SUCCESS-WARM-TIPS:
+  path: "frontend/src/components/SuccessWarmTips.tsx"
+  description: "购票成功页温馨提示与广告组件"
+  related_req_id: "REQ-SUCCESS-WARM-TIPS"
+  upstream_ids: ["UI-SUCCESS-PAGE"]
   downstream_ids: []

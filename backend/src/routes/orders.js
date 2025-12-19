@@ -10,9 +10,9 @@ router.post('/', async (req, res) => {
     
     try {
         const result = await orderService.createOrder(userId, trainId, passengers);
-        res.json(result);
+        res.status(201).json({ success: true, ...result });
     } catch (error) {
-        res.status(500).json({ error: 'Order creation failed', details: error.message });
+        res.status(500).json({ success: false, error: 'Order creation failed', details: error.message });
     }
 });
 
@@ -22,11 +22,11 @@ router.get('/:id', async (req, res) => {
     try {
         const order = await orderService.getOrderDetails(orderId);
         if (!order) {
-            return res.status(404).json({ error: 'Order not found' });
+            return res.status(404).json({ success: false, error: 'Order not found' });
         }
-        res.json(order);
+        res.json({ success: true, data: order });
     } catch (error) {
-        res.status(501).json({ error: 'Not Implemented', details: error.message });
+        res.status(500).json({ success: false, error: 'Internal Server Error', details: error.message });
     }
 });
 

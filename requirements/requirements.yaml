@@ -118,3 +118,51 @@
 - id: REQ-PAY-ACTION-TIMEOUT
   name: "支付超时逻辑"
   description: "倒计时结束后的自动处理流程"
+
+- id: REQ-SUCCESS-PAGE
+  name: "购票成功页"
+  description: "购票成功页面的整体结构与功能"
+  children:
+    - id: REQ-SUCCESS-LAYOUT
+      name: "整体布局"
+      description: "页面背景为white，分为顶部导航、成功提示、订单信息、温馨提示与广告、底部导航五大部分"
+
+    - id: REQ-SUCCESS-NAV-TOP
+      name: "顶部导航区域"
+      description: "Logo区域与欢迎信息"
+      assets: "登录页-顶部导航区域-Logo区域.png"
+
+    - id: REQ-SUCCESS-NAV-MAIN
+      name: "主导航栏"
+      description: "包含车票查询、订单查询、我的12306等导航项"
+
+    - id: REQ-SUCCESS-BANNER
+      name: "成功提示区域"
+      description: "显示交易成功、感谢语、订单号、乘车人提示、推送提示"
+      assets: "/images/tick.png"
+
+    - id: REQ-SUCCESS-ORDER-INFO
+      name: "订单信息与乘车信息区"
+      description: "显示订单车次信息、乘车人表格、操作按钮"
+
+    - id: REQ-SUCCESS-WARM-TIPS
+      name: "温馨提示面板与广告面板"
+      description: "显示温馨提示、二维码、广告图片"
+      assets: ["/images/微信二维码.png", "/images/支付宝二维码.png", "/images/广告.png"]
+
+    - id: REQ-SUCCESS-NAV-BOTTOM
+      name: "底部导航区域"
+      description: "友情链接与二维码"
+      assets: ["中国铁路官方微信二维码.png", "中国铁路官方微博二维码.png", "12306公众号二维码.png", "铁路12306二维码.png"]
+
+- id: REQ-SUCCESS-DISPLAY
+  name: "乘车信息显示"
+  description: "页面加载时从数据库查询并显示订单及乘车人信息"
+
+- id: REQ-SUCCESS-ACTION-CONTINUE
+  name: "继续购票跳转"
+  description: "点击继续购票按钮跳转至车次列表页"
+
+- id: REQ-SUCCESS-ACTION-DETAILS
+  name: "查询订单详情跳转"
+  description: "点击查询订单详情按钮跳转至订单详情页"

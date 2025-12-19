@@ -16,6 +16,7 @@ const PassengersPage = lazy(() => import('./pages/PassengersPage.tsx'))
 const InformationPage = lazy(() => import('./pages/InformationPage.tsx'))
 const PhoneVerificationPage = lazy(() => import('./pages/PhoneVerificationPage.tsx'))
 const PayPage = lazy(() => import('./pages/PayPage.tsx'))
+const PurchaseSuccessPage = lazy(() => import('./pages/PurchaseSuccessPage.tsx'))
 
 function App() {
   const location = useLocation()
@@ -56,6 +57,11 @@ function App() {
           <Route path="/pay" element={
             <ProtectedRoute>
               <PayPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/purchase-success/:orderId" element={
+            <ProtectedRoute>
+              <PurchaseSuccessPage />
             </ProtectedRoute>
           } />
         </Routes>

@@ -47,11 +47,18 @@ const PayPage: React.FC<PayPageProps> = () => {
 
   const handlePay = async () => {
     setIsPaying(true);
-    // TODO: Call API
+    // TODO: Call API for payment
     // await confirmPayment(orderId);
+    
     setTimeout(() => {
         setIsPaying(false);
-        navigate(`/purchase-success/${orderId}`);
+        const targetId = orderData?.id || orderId;
+        if (!targetId) {
+            console.error('Missing order ID for navigation');
+            // Fallback or error handling
+            return;
+        }
+        navigate(`/purchase-success/${targetId}`);
     }, 1000);
   };
 

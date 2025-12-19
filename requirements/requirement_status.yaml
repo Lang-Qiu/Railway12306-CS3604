@@ -290,7 +290,7 @@ REQ-PAY-ACTION-CONFIRM:
     interfaces_generated: true
     tests_generated: true
     implemented: true
-  artifacts:
+    artifacts:
     ui_ids: []
     api_ids: ["API-POST-PAY-CONFIRM"]
     func_ids: ["FUNC-PAY-CONFIRM"]
@@ -301,7 +301,7 @@ REQ-PAY-ACTION-CANCEL:
     interfaces_generated: true
     tests_generated: true
     implemented: true
-  artifacts:
+    artifacts:
     ui_ids: []
     api_ids: ["API-POST-PAY-CANCEL"]
     func_ids: ["FUNC-PAY-CANCEL"]
@@ -312,7 +312,128 @@ REQ-PAY-ACTION-TIMEOUT:
     interfaces_generated: true
     tests_generated: true
     implemented: true
-  artifacts:
+    artifacts:
     ui_ids: ["UI-PAY-PAGE", "UI-PAY-MODAL-TIMEOUT"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-PAGE:
+  name: "购票成功页"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-SUCCESS-PAGE"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-LAYOUT:
+  name: "整体布局"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-SUCCESS-PAGE"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-NAV-TOP:
+  name: "顶部导航区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-ORDER-HEADER"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-NAV-MAIN:
+  name: "主导航栏"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PAY-NAV-MAIN"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-BANNER:
+  name: "成功提示区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-SUCCESS-BANNER"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-ORDER-INFO:
+  name: "订单信息与乘车信息区"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-SUCCESS-ORDER-INFO"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-WARM-TIPS:
+  name: "温馨提示面板与广告面板"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-SUCCESS-WARM-TIPS"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-NAV-BOTTOM:
+  name: "底部导航区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-ORDER-FOOTER"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-DISPLAY:
+  name: "乘车信息显示"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: []
+    api_ids: ["API-GET-ORDER-DETAILS"]
+    func_ids: ["FUNC-GET-ORDER-DETAILS"]
+
+REQ-SUCCESS-ACTION-CONTINUE:
+  name: "继续购票跳转"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-SUCCESS-ORDER-INFO"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-ACTION-DETAILS:
+  name: "查询订单详情跳转"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-SUCCESS-ORDER-INFO"]
     api_ids: []
     func_ids: []

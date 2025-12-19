@@ -69,7 +69,22 @@ class AuthService {
     }
   }
 
-  // ... (generateSessionId remains the same)
+  // 生成会话ID
+  generateSessionId(userId) {
+    return uuidv4();
+  }
+
+  // 生成JWT令牌
+  generateToken(payload) {
+    try {
+      const secret = process.env.JWT_SECRET || 'your-default-secret';
+      const options = { expiresIn: '1h' };
+      return jwt.sign(payload, secret, options);
+    } catch (error) {
+      console.error('Generate JWT token error:', error);
+      throw error;
+    }
+  }
 
   // 创建登录会话 (Refactored)
   async createLoginSession(user) {
@@ -81,8 +96,8 @@ class AuthService {
         userId: user.userId,
         username: user.username,
         phone: user.phone,
-        id_card_type: user.id_card_type,
-        id_card_number: user.id_card_number,
+        id_card_type: user.idCardType || user.id_card_type,
+        id_card_number: user.idCardNumber || user.id_card_number,
         step: 'pending_verification' // 等待短信验证
       };
 
@@ -117,10 +132,27 @@ class AuthService {
   }
 
   // 生成并发送短信验证码 (Refactored)
-  async generateAndSendSmsCode(sessionId) {
+  async generateAndSendSmsCode(sessionId, idCardLast4) {
     try {
-      const session = await jsonDbService.getSession(sessionId);
+      console.log(`[AuthService] generateAndSendSmsCode called for SID: ${sessionId}, IDLast4: ${idCardLast4}`);
+      let session = await jsonDbService.getSession(sessionId);
+      console.log(`[AuthService] Current session step: ${session ? session.step : 'null'}`);
+
+      // 如果提供了身份证后4位且当前状态为pending_verification，尝试进行验证
+      if (idCardLast4 && session && session.step === 'pending_verification') {
+        console.log(`[AuthService] Validating ID card last 4...`);
+        const validateResult = await this.validateIdCardLast4(sessionId, idCardLast4);
+        console.log(`[AuthService] Validation result:`, validateResult);
+        if (!validateResult.success) {
+          return { success: false, error: validateResult.error };
+        }
+        // 重新获取session，因为validateIdCardLast4已经更新了它
+        session = await jsonDbService.getSession(sessionId);
+        console.log(`[AuthService] Session step after validation: ${session ? session.step : 'null'}`);
+      }
+
       if (!session || session.step !== 'pending_sms_verification') {
+        console.log(`[AuthService] Invalid session state. Expected pending_sms_verification, got ${session ? session.step : 'null'}`);
         return { success: false, error: '会话无效或状态不正确' };
       }
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import './TopNavigation.css'
 
 interface TopNavigationProps {
@@ -9,6 +10,7 @@ interface TopNavigationProps {
 
 const TopNavigation: React.FC<TopNavigationProps> = ({ showWelcomeLogin = false }) => {
   const navigate = useNavigate()
+  const { user, isAuthenticated, logout } = useAuth()
   // const handleLogoClick = () => { if (onLogoClick) onLogoClick() }
   // 变更说明：集成来源项目的头部搜索与顶部菜单（无障碍/敬老版/English/我的12306/登录注册），保留原组件接口与登录逻辑
   const [searchKeyword, setSearchKeyword] = useState('')
@@ -115,10 +117,17 @@ const TopNavigation: React.FC<TopNavigationProps> = ({ showWelcomeLogin = false 
                 </ul>
               </li>
               <li className="menu-item menu-line">|</li>
-              <li className="menu-item menu-login" role="menuitem">
-                <a href="/login">登录</a>
-                <a href="/register" className="ml">注册</a>
-              </li>
+              {isAuthenticated ? (
+                <li className="menu-item menu-login" role="menuitem">
+                  <span className="welcome-user">欢迎您，{user?.username || user?.name || '用户'}</span>
+                  <a role="button" className="ml" onClick={(e) => { e.preventDefault(); logout(); navigate('/login'); }}>退出</a>
+                </li>
+              ) : (
+                <li className="menu-item menu-login" role="menuitem">
+                  <a href="/login">登录</a>
+                  <a href="/register" className="ml">注册</a>
+                </li>
+              )}
             </ul>
           </div>
         )}

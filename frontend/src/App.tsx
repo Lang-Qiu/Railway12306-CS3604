@@ -1,5 +1,7 @@
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { Suspense, lazy } from 'react'
+import { AuthProvider } from './context/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
 const LoginPage = lazy(() => import('./pages/LoginPage.tsx'))
 const RegisterPage = lazy(() => import('./pages/RegisterPage.tsx'))
 const HomePage = lazy(() => import('./pages/HomePage.tsx'))
@@ -19,24 +21,42 @@ function App() {
   const isLogin = location.pathname === '/login'
   const isTrains = location.pathname === '/trains'
   return (
-    <div className="App">
-      <TopNavigation showWelcomeLogin={isLogin || isTrains} />
-      <MainNavigation />
-      <Suspense fallback={<div style={{padding:16}}>页面加载中…</div>}>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/" element={<HomePage />} />
-        <Route path="/trains" element={<TrainsPage />} />
-        <Route path="/orders" element={<OrderPage />} />
-        <Route path="/orders/history" element={<OrderHistoryPage />} />
-        <Route path="/passengers" element={<PassengersPage />} />
-        <Route path="/information" element={<InformationPage />} />
-        <Route path="/phone-verification" element={<PhoneVerificationPage />} />
-      </Routes>
-      </Suspense>
-      <BottomNavigation />
-    </div>
+    <AuthProvider>
+      <div className="App">
+        <TopNavigation showWelcomeLogin={isLogin || isTrains} />
+        <MainNavigation />
+        <Suspense fallback={<div style={{padding:16}}>页面加载中…</div>}>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/trains" element={<TrainsPage />} />
+          <Route path="/orders" element={
+            <ProtectedRoute>
+              <OrderPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/orders/history" element={
+            <ProtectedRoute>
+              <OrderHistoryPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/passengers" element={
+            <ProtectedRoute>
+              <PassengersPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/information" element={
+            <ProtectedRoute>
+              <InformationPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/phone-verification" element={<PhoneVerificationPage />} />
+        </Routes>
+        </Suspense>
+        <BottomNavigation />
+      </div>
+    </AuthProvider>
   )
 }
 

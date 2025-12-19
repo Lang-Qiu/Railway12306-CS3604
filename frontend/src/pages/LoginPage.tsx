@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import { PATHS } from '../constants/routes'
 import { login as apiLogin, verifyLogin as apiVerifyLogin, getPublicKey as apiGetPublicKey, getCsrfToken as apiGetCsrfToken } from '../api/auth'
 import LoginForm from '../components/LoginForm'
@@ -8,7 +9,10 @@ import * as forge from 'node-forge';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [showSmsModal, setShowSmsModal] = useState(false)
+  const location = useLocation()
+  const from = (location.state as any)?.from?.pathname || '/'
   const [sessionId, setSessionId] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -113,12 +117,25 @@ const LoginPage: React.FC = () => {
       
       if (response.success) {
         console.log('SMS verification success:', response)
+        
+        // Update global auth state immediately
+        // Note: Backend might return user info in different structure, ensuring we extract it correctly
+        const userData = response.user || { username: '用户', id: response.userId || 'unknown' };
+        const token = response.token;
+        
+        if (token) {
+          login(token, userData);
+          console.log('Global auth state updated');
+        } else {
+          console.error('Login successful but no token received');
+        }
+
         setSmsSuccess('登录成功！')
         // 2秒后关闭弹窗并跳转
         setTimeout(() => {
           setShowSmsModal(false)
-          // TODO: 跳转到首页或用户中心
-          navigate('/')
+          // 跳转到之前的页面或首页
+          navigate(from, { replace: true })
         }, 2000)
       }
     } catch (error: any) {

@@ -1,0 +1,48 @@
+API-GET-TRAIN-INFO:
+  path: "backend/src/routes/trains.js"
+  signature: "GET /api/v1/trains/:trainId"
+  related_req_id: "REQ-ORDER-TRAIN-INFO"
+  upstream_ids: ["UI-TRAIN-INFO"]
+  downstream_ids: ["FUNC-GET-TRAIN-DETAILS"]
+
+API-GET-PASSENGERS:
+  path: "backend/src/routes/passengers.js"
+  signature: "GET /api/v1/passengers"
+  related_req_id: "REQ-ORDER-PASSENGER-LIST"
+  upstream_ids: ["UI-PASSENGER-LIST"]
+  downstream_ids: ["FUNC-GET-PASSENGERS"]
+
+API-SEARCH-PASSENGERS:
+  path: "backend/src/routes/passengers.js"
+  signature: "GET /api/v1/passengers/search"
+  related_req_id: "REQ-ORDER-PASSENGER-SEARCH"
+  upstream_ids: ["UI-PASSENGER-SEARCH"]
+  downstream_ids: ["FUNC-SEARCH-PASSENGERS"]
+
+API-POST-ORDER:
+  path: "backend/src/routes/orders.js"
+  signature: "POST /api/v1/orders"
+  related_req_id: "REQ-ORDER-SUBMIT"
+  upstream_ids: ["UI-ORDER-CONFIRM-MODAL"]
+  downstream_ids: ["FUNC-CREATE-ORDER"]
+
+API-GET-ORDER-DETAILS:
+  path: "backend/src/routes/orders.js"
+  signature: "GET /api/v1/orders/:id"
+  related_req_id: "REQ-PAY-PAGE"
+  upstream_ids: ["UI-PAY-PAGE"]
+  downstream_ids: ["FUNC-GET-ORDER-DETAILS"]
+
+API-POST-PAY-CONFIRM:
+  path: "backend/src/routes/payment.js"
+  signature: "POST /api/v1/payment/:orderId/confirm"
+  related_req_id: "REQ-PAY-ACTION-CONFIRM"
+  upstream_ids: ["UI-PAY-ORDER-INFO"]
+  downstream_ids: ["FUNC-PAY-CONFIRM"]
+
+API-POST-PAY-CANCEL:
+  path: "backend/src/routes/payment.js"
+  signature: "POST /api/v1/payment/:orderId/cancel"
+  related_req_id: "REQ-PAY-ACTION-CANCEL"
+  upstream_ids: ["UI-PAY-MODAL-CANCEL"]
+  downstream_ids: ["FUNC-PAY-CANCEL"]

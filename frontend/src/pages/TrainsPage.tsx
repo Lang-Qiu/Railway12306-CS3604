@@ -97,10 +97,8 @@ const TrainsPage: React.FC = () => {
     }
     navigate('/orders', {
       state: {
-        trainNo: train.trainNo,
-        departureStation: searchParams.departureStation,
-        arrivalStation: searchParams.arrivalStation,
-        departureDate: searchParams.departureDate,
+        train: train,
+        date: searchParams.departureDate,
       },
     })
   }

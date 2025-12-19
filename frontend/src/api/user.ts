@@ -16,12 +16,12 @@ export interface UserProfile {
 const MOCK_USER: UserProfile = {
   id: '12345',
   username: 'zhangsan',
-  name: '张三', // Example name
+  name: '王小明', // Example name
   idType: '1', // 1 for ID Card
   idNumber: '110101199003078888',
   verificationStatus: '已通过',
   phone: '13812345678',
-  email: 'zhangsan@example.com',
+  email: 'wangxiaoming@example.com',
   discountType: '成人',
 };
 

@@ -1,0 +1,120 @@
+- id: REQ-ORDER-PAGE
+  name: "订单填写页"
+  description: "订单填写页面的整体结构与功能"
+  children:
+    - id: REQ-ORDER-LAYOUT
+      name: "整体布局"
+      description: "页面背景为white，分为顶部导航、列车信息、乘客信息、订单提交、底部导航五大部分"
+    
+    - id: REQ-ORDER-NAV-TOP
+      name: "顶部导航区域"
+      description: "Logo区域与欢迎信息"
+      assets: "登录页-顶部导航区域-Logo区域.png"
+      
+    - id: REQ-ORDER-TRAIN-INFO
+      name: "列车信息区域"
+      description: "显示列车基本信息、票价与余票信息"
+      
+    - id: REQ-ORDER-PASSENGER-INFO
+      name: "乘客信息区域"
+      description: "乘客列表选择与购票信息填写"
+      children:
+        - id: REQ-ORDER-PASSENGER-LIST
+          name: "乘客列表"
+          description: "显示常用乘车人供勾选"
+        - id: REQ-ORDER-PASSENGER-SEARCH
+          name: "搜索框"
+          description: "搜索乘车人"
+        - id: REQ-ORDER-PURCHASE-TABLE
+          name: "购票信息填写区域"
+          description: "动态显示的购票信息表格"
+          
+    - id: REQ-ORDER-SUBMIT-SECTION
+      name: "订单提交与温馨提示区域"
+      description: "包含提交按钮和温馨提示"
+      
+    - id: REQ-ORDER-NAV-BOTTOM
+      name: "底部导航区域"
+      description: "友情链接与二维码"
+      assets: ["中国铁路官方微信二维码.png", "中国铁路官方微博二维码.png", "12306公众号二维码.png", "铁路12306二维码.png"]
+
+- id: REQ-SEAT-DEFAULT
+  name: "席别默认设置"
+  description: "根据车次类型自动选择默认席别"
+  
+- id: REQ-PASSENGER-SELECT
+  name: "用户选择乘车人"
+  description: "勾选乘车人自动填充购票信息，支持多选"
+  
+- id: REQ-SEAT-SELECT
+  name: "用户选择席位"
+  description: "席位下拉菜单显示与交互"
+  
+- id: REQ-ORDER-SUBMIT
+  name: "用户提交订单"
+  description: "提交订单的校验、弹窗与流程"
+  
+- id: REQ-CONFIRM-MODAL
+  name: "信息核对弹窗"
+  description: "提交成功后的信息核对与确认"
+
+- id: REQ-PAY-PAGE
+  name: "订单支付页"
+  description: "订单支付页面的整体结构与功能"
+  children:
+    - id: REQ-PAY-LAYOUT
+      name: "整体布局"
+      description: "页面背景为white，分为顶部导航、席位锁定时效倒计时、订单信息与确认支付、温馨提示面板、底部导航"
+      
+    - id: REQ-PAY-NAV-TOP
+      name: "顶部导航区域"
+      description: "Logo区域与欢迎信息"
+      assets: "登录页-顶部导航区域-Logo区域.png"
+      
+    - id: REQ-PAY-NAV-MAIN
+      name: "主导航栏"
+      description: "包含车票查询、订单查询、我的12306等导航项"
+      
+    - id: REQ-PAY-COUNTDOWN
+      name: "席位锁定时效倒计时区域"
+      description: "显示订单支付剩余时间，倒计时结束或少于5分钟有特定样式"
+      assets: "/images/lock.png"
+      
+    - id: REQ-PAY-ORDER-INFO
+      name: "订单信息与确认支付区"
+      description: "显示车次信息、乘车人表格、保险信息、总票价及操作按钮"
+      assets: "/images/ensurance.png"
+      
+    - id: REQ-PAY-WARM-TIPS
+      name: "温馨提示面板"
+      description: "显示支付相关的温馨提示信息"
+      
+    - id: REQ-PAY-NAV-BOTTOM
+      name: "底部导航区域"
+      description: "友情链接与二维码"
+      assets: ["中国铁路官方微信二维码.png", "中国铁路官方微博二维码.png", "12306公众号二维码.png", "铁路12306二维码.png"]
+      
+    - id: REQ-PAY-MODAL-CANCEL
+      name: "交易提示弹窗"
+      description: "取消订单时的确认弹窗"
+      assets: "/images/question.png"
+      
+    - id: REQ-PAY-MODAL-TIMEOUT
+      name: "超时提示弹窗"
+      description: "支付超时后的提示弹窗"
+
+    - id: REQ-PAY-MODAL-UNFINISHED
+      name: "未完成订单提示弹窗"
+      description: "用户有未处理订单时的提示弹窗"
+
+- id: REQ-PAY-ACTION-CONFIRM
+  name: "确认支付逻辑"
+  description: "用户点击网上支付按钮后的处理流程"
+  
+- id: REQ-PAY-ACTION-CANCEL
+  name: "取消订单逻辑"
+  description: "用户点击取消订单按钮及其确认后的处理流程"
+  
+- id: REQ-PAY-ACTION-TIMEOUT
+  name: "支付超时逻辑"
+  description: "倒计时结束后的自动处理流程"

@@ -1,0 +1,55 @@
+FUNC-GET-TRAIN-DETAILS:
+  path: "backend/src/services/trainService.js"
+  signature: "getTrainDetails(trainId)"
+  related_req_id: "REQ-ORDER-TRAIN-INFO"
+  upstream_ids: ["API-GET-TRAIN-INFO"]
+  downstream_ids: []
+  db_tables: ["trains", "stations", "train_seats", "seat_types"]
+
+FUNC-GET-PASSENGERS:
+  path: "backend/src/services/passengerService.js"
+  signature: "getPassengersByUserId(userId)"
+  related_req_id: "REQ-ORDER-PASSENGER-LIST"
+  upstream_ids: ["API-GET-PASSENGERS"]
+  downstream_ids: []
+  db_tables: ["passengers"]
+
+FUNC-SEARCH-PASSENGERS:
+  path: "backend/src/services/passengerService.js"
+  signature: "searchPassengers(userId, query)"
+  related_req_id: "REQ-ORDER-PASSENGER-SEARCH"
+  upstream_ids: ["API-SEARCH-PASSENGERS"]
+  downstream_ids: []
+  db_tables: ["passengers"]
+
+FUNC-CREATE-ORDER:
+  path: "backend/src/services/orderService.js"
+  signature: "createOrder(userId, trainId, passengers)"
+  related_req_id: "REQ-ORDER-SUBMIT"
+  upstream_ids: ["API-POST-ORDER"]
+  downstream_ids: []
+  db_tables: ["orders", "order_items", "train_seats", "trains", "passengers"]
+
+FUNC-GET-ORDER-DETAILS:
+  path: "backend/src/services/orderService.js"
+  signature: "getOrderDetails(orderId)"
+  related_req_id: "REQ-PAY-PAGE"
+  upstream_ids: ["API-GET-ORDER-DETAILS"]
+  downstream_ids: []
+  db_tables: ["orders", "order_items", "trains", "passengers"]
+
+FUNC-PAY-CONFIRM:
+  path: "backend/src/services/paymentService.js"
+  signature: "confirmPayment(orderId)"
+  related_req_id: "REQ-PAY-ACTION-CONFIRM"
+  upstream_ids: ["API-POST-PAY-CONFIRM"]
+  downstream_ids: []
+  db_tables: ["orders", "train_seats"]
+
+FUNC-PAY-CANCEL:
+  path: "backend/src/services/paymentService.js"
+  signature: "cancelOrder(orderId)"
+  related_req_id: "REQ-PAY-ACTION-CANCEL"
+  upstream_ids: ["API-POST-PAY-CANCEL"]
+  downstream_ids: []
+  db_tables: ["orders", "train_seats", "users"]

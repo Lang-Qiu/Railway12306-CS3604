@@ -7,10 +7,14 @@ type Props = { train: any; onReserve: (trainNo: string) => void; isLoggedIn: boo
 const TrainItem: React.FC<Props> = ({ train, onReserve, isLoggedIn, queryTimestamp, rowIndex }) => {
   const seats = {
     business: train.availableSeats?.['商务座'] ?? null,
+    superiorFirst: train.availableSeats?.['优选一等座'] ?? null,
     firstClass: train.availableSeats?.['一等座'] ?? null,
     secondClass: train.availableSeats?.['二等座'] ?? null,
+    superiorSoftSleeper: train.availableSeats?.['高级软卧'] ?? null,
     softSleeper: train.availableSeats?.['软卧'] ?? null,
     hardSleeper: train.availableSeats?.['硬卧'] ?? null,
+    softSeat: train.availableSeats?.['软座'] ?? null,
+    hardSeat: train.availableSeats?.['硬座'] ?? null,
     noSeat: train.availableSeats?.['无座'] ?? null,
   }
   const fmtStatus = (n: number | null | undefined) => { if (n==null) return '--'; if (n===0) return '无'; if (n>=20) return '有'; return String(n) }
@@ -53,14 +57,14 @@ const TrainItem: React.FC<Props> = ({ train, onReserve, isLoggedIn, queryTimesta
         </div>
       </div>
       <div className="train-item-cell"><div className={`seat-info ${cls(seats.business)}`}>{fmtStatus(seats.business)}</div></div>
-      <div className="train-item-cell"><div className="seat-info">--</div></div>
+      <div className="train-item-cell"><div className={`seat-info ${cls(seats.superiorFirst)}`}>{fmtStatus(seats.superiorFirst)}</div></div>
       <div className="train-item-cell"><div className={`seat-info ${cls(seats.firstClass)}`}>{fmtStatus(seats.firstClass)}</div></div>
       <div className="train-item-cell"><div className={`seat-info ${cls(seats.secondClass)}`}>{fmtStatus(seats.secondClass)}</div></div>
-      <div className="train-item-cell"><div className="seat-info">--</div></div>
+      <div className="train-item-cell"><div className={`seat-info ${cls(seats.superiorSoftSleeper)}`}>{fmtStatus(seats.superiorSoftSleeper)}</div></div>
       <div className="train-item-cell"><div className={`seat-info ${cls(seats.softSleeper)}`}>{fmtStatus(seats.softSleeper)}</div></div>
       <div className="train-item-cell"><div className={`seat-info ${cls(seats.hardSleeper)}`}>{fmtStatus(seats.hardSleeper)}</div></div>
-      <div className="train-item-cell"><div className="seat-info">--</div></div>
-      <div className="train-item-cell"><div className="seat-info">--</div></div>
+      <div className="train-item-cell"><div className={`seat-info ${cls(seats.softSeat)}`}>{fmtStatus(seats.softSeat)}</div></div>
+      <div className="train-item-cell"><div className={`seat-info ${cls(seats.hardSeat)}`}>{fmtStatus(seats.hardSeat)}</div></div>
       <div className="train-item-cell"><div className={`seat-info ${cls(seats.noSeat)}`}>{fmtStatus(seats.noSeat)}</div></div>
       <div className="train-item-cell"><div className="seat-info">--</div></div>
       <div className="train-item-cell train-reserve-cell">

@@ -1,4 +1,5 @@
 const trainDatasetService = require('../domain-providers/trainDatasetService');
+const trainDataService = require('../domain-providers/trainDataService');
 
 async function getTrains(req, res) {
   try {
@@ -35,6 +36,23 @@ async function getTrains(req, res) {
   }
 }
 
+async function getTrainById(req, res) {
+  try {
+    const { trainId } = req.params;
+    const train = trainDataService.getTrainDetail(trainId);
+    
+    if (!train) {
+      return res.status(404).json({ error: 'Train not found' });
+    }
+    
+    res.json(train);
+  } catch (err) {
+    console.error('Error getting train details', err);
+    res.status(500).json({ error: 'Failed to retrieve train details.' });
+  }
+}
+
 module.exports = {
   getTrains,
+  getTrainById,
 };

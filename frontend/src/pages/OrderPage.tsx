@@ -100,7 +100,7 @@ const OrderPage: React.FC = () => {
         alert('订单创建成功！订单号: ' + res.orderId);
         setShowOrderConfirmModal(false);
         // Navigate to success page or order history
-        navigate('/pay'); 
+        navigate(`/pay/${res.orderId}`); 
       } else {
         alert('订单创建失败: ' + res.message);
       }

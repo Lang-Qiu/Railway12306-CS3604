@@ -1,31 +1,8 @@
 import React from 'react';
-
-interface Passenger {
-  id: number;
-  name: string;
-  type: string;
-  id_no: string;
-  seat_type: string;
-  seat_no: string; // e.g., "06Car07D" -> Parse to Coach 06, Seat 07D
-  price: number;
-}
-
-interface OrderData {
-  id: string;
-  train: {
-    train_no: string;
-    start_station: string;
-    end_station: string;
-    start_time: string;
-    end_time: string;
-    date: string;
-  };
-  passengers: Passenger[];
-  total_price: number;
-}
+import { Order } from '../types/Order';
 
 interface OrderInfoDisplayProps {
-  orderData: OrderData;
+  orderData: Order;
   onCancel: () => void;
   onPay: () => void;
   isPaying: boolean;
@@ -34,15 +11,13 @@ interface OrderInfoDisplayProps {
 const OrderInfoDisplay: React.FC<OrderInfoDisplayProps> = ({ orderData, onCancel, onPay, isPaying }) => {
   const { train, passengers, total_price } = orderData;
 
-  // Helper to parse seat_no "06Car07D" -> { coach: "06", seat: "07D" }
-  // This is a simple assumption based on the mock data.
-  const parseSeatNo = (seatStr: string) => {
-    // Regex to split "06Car07D"
-    const match = seatStr.match(/(\d+)Car(\w+)/);
-    if (match) {
-      return { coach: match[1], seat: match[2] };
-    }
-    return { coach: '--', seat: seatStr };
+  const formatDate = (dateStr: string) => {
+    if (dateStr.match(/[\u4e00-\u9fa5]/)) return dateStr;
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    const weekDay = weekDays[date.getDay()];
+    return `${dateStr} （${weekDay}）`;
   };
 
   return (
@@ -50,7 +25,7 @@ const OrderInfoDisplay: React.FC<OrderInfoDisplayProps> = ({ orderData, onCancel
       <div className="payment-order-info-display" style={{ 
         backgroundColor: 'white', 
         border: '1px solid #c0d7eb', 
-        borderRadius: '10px 0px 10px 10px', // Adjusted to match description somewhat
+        borderRadius: '10px 0px 10px 10px',
         marginTop: '20px',
         overflow: 'hidden'
       }}>
@@ -82,15 +57,15 @@ const OrderInfoDisplay: React.FC<OrderInfoDisplayProps> = ({ orderData, onCancel
             flexWrap: 'wrap',
             gap: '10px'
           }}>
-            <span style={{ fontWeight: 800, color: '#000000' }}>{train.date}</span>
-            <span style={{ fontWeight: 800, color: '#000000' }}>{train.train_no}</span>
+            <span style={{ fontWeight: 800, color: '#000000' }}>{formatDate(train.startDate)}</span>
+            <span style={{ fontWeight: 800, color: '#000000' }}>{train.trainNumber}</span>
             <span style={{ fontWeight: 400, color: '#000000', fontSize: '16px' }}>次</span>
-            <span style={{ fontWeight: 800, color: '#0066cc' }}>{train.start_station}</span>
+            <span style={{ fontWeight: 800, color: '#0066cc' }}>{train.startStation.name}</span>
             <span style={{ fontWeight: 400, color: '#000000', fontSize: '16px' }}>站</span>
-            <span style={{ fontWeight: 800, color: '#000000' }}>（{train.start_time} 开）—</span>
-            <span style={{ fontWeight: 800, color: '#0066cc' }}>{train.end_station}</span>
+            <span style={{ fontWeight: 800, color: '#000000' }}>（{train.startTime} 开）—</span>
+            <span style={{ fontWeight: 800, color: '#0066cc' }}>{train.endStation.name}</span>
             <span style={{ fontWeight: 400, color: '#000000', fontSize: '16px' }}>站</span>
-            <span style={{ fontWeight: 800, color: '#000000' }}>（{train.end_time} 到）</span>
+            <span style={{ fontWeight: 800, color: '#000000' }}>（{train.endTime} 到）</span>
           </div>
 
           {/* Passenger Table */}
@@ -116,21 +91,20 @@ const OrderInfoDisplay: React.FC<OrderInfoDisplayProps> = ({ orderData, onCancel
               </thead>
               <tbody>
                 {passengers.map((p, index) => {
-                  const { coach, seat } = parseSeatNo(p.seat_no);
                   return (
-                    <tr key={p.id} style={{ 
+                    <tr key={index} style={{ 
                       backgroundColor: '#eff1f9', 
                       color: '#111',
                       borderBottom: index === passengers.length - 1 ? '1px solid #999999' : '1px solid #d0d0d0'
                     }}>
                       <td style={{ padding: '12px 8px', textAlign: 'center', borderLeft: '1px solid #d0d0d0' }}>{index + 1}</td>
                       <td style={{ padding: '12px 8px', textAlign: 'center' }}>{p.name}</td>
-                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>中国居民身份证</td>
-                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>{p.id_no}</td>
-                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>{p.type}</td>
-                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>{p.seat_type}</td>
-                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>{coach}车</td>
-                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>{seat}号</td>
+                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>{p.idType}</td>
+                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>{p.idNumber}</td>
+                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>{p.ticketType}</td>
+                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>{p.seatType}</td>
+                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>{p.coachNumber}</td>
+                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>{p.seatNumber}</td>
                       <td style={{ padding: '12px 8px', textAlign: 'center', borderRight: '1px solid #d0d0d0' }}>{p.price.toFixed(1)}</td>
                     </tr>
                   );

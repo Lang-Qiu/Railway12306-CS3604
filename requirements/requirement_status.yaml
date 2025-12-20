@@ -437,3 +437,157 @@ REQ-SUCCESS-ACTION-DETAILS:
     ui_ids: ["UI-SUCCESS-ORDER-INFO"]
     api_ids: []
     func_ids: []
+
+REQ-PASSENGER-MANAGE:
+  name: "乘客管理页"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-PAGE"]
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-LAYOUT:
+  name: "整体布局"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-PAGE"]
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-NAV-TOP:
+  name: "顶部导航区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-ORDER-HEADER"]
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-BREADCRUMB:
+  name: "位置导航"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-PAGE"]
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-LIST-PANEL:
+  name: "乘车人信息展示面板"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-LIST-PANEL"]
+    api_ids: ["API-GET-PASSENGERS", "API-DELETE-PASSENGER"]
+    func_ids: ["FUNC-GET-PASSENGERS", "FUNC-DELETE-PASSENGER"]
+
+REQ-PASSENGER-SEARCH:
+  name: "搜索与筛选区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-SEARCH"]
+    api_ids: ["API-SEARCH-PASSENGERS"]
+    func_ids: ["FUNC-SEARCH-PASSENGERS"]
+
+REQ-PASSENGER-TABLE:
+  name: "乘车人列表表格"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-TABLE"]
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-ADD:
+  name: "添加乘车人"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: []
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-ADD-PANEL:
+  name: "添加乘车人面板"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-ADD-PANEL"]
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-ADD-LOGIC:
+  name: "添加逻辑"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: []
+    api_ids: ["API-POST-PASSENGER"]
+    func_ids: ["FUNC-CREATE-PASSENGER"]
+
+REQ-PASSENGER-EDIT:
+  name: "编辑乘车人"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: []
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-EDIT-PANEL:
+  name: "编辑乘车人面板"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-EDIT-PANEL"]
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-EDIT-LOGIC:
+  name: "编辑逻辑"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: []
+    api_ids: ["API-PUT-PASSENGER"]
+    func_ids: ["FUNC-UPDATE-PASSENGER"]
+
+REQ-PASSENGER-DELETE:
+  name: "删除乘车人"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: []
+    api_ids: ["API-DELETE-PASSENGER"]
+    func_ids: ["FUNC-DELETE-PASSENGER"]

@@ -1,5 +1,32 @@
+-- Users
+CREATE TABLE IF NOT EXISTS users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(100),
+    name VARCHAR(50),
+    id_card_number VARCHAR(20),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Passengers
+CREATE TABLE IF NOT EXISTS passengers (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    id_card_type VARCHAR(20) DEFAULT '二代居民身份证',
+    id_card_number VARCHAR(30),
+    phone VARCHAR(20),
+    discount_type VARCHAR(20) DEFAULT '成人',
+    verification_status VARCHAR(20) DEFAULT '已通过',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
 -- Orders
-CREATE TABLE orders (
+CREATE TABLE IF NOT EXISTS orders (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT,
     train_id INT,
@@ -11,7 +38,7 @@ CREATE TABLE orders (
     FOREIGN KEY (train_id) REFERENCES trains(id)
 );
 
-CREATE TABLE order_items (
+CREATE TABLE IF NOT EXISTS order_items (
     id INT PRIMARY KEY AUTO_INCREMENT,
     order_id INT,
     passenger_id INT,

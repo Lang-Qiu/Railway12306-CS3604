@@ -166,3 +166,57 @@
 - id: REQ-SUCCESS-ACTION-DETAILS
   name: "查询订单详情跳转"
   description: "点击查询订单详情按钮跳转至订单详情页"
+
+- id: REQ-PASSENGER-MANAGE
+  name: "乘客管理页"
+  description: "乘客管理页面的整体结构与功能"
+  children:
+    - id: REQ-PASSENGER-LAYOUT
+      name: "整体布局"
+      description: "页面背景为white，分为顶部导航、中部内容区域（左菜单、右面板）、底部导航"
+
+    - id: REQ-PASSENGER-NAV-TOP
+      name: "顶部导航区域"
+      description: "Logo区域与欢迎信息"
+      assets: "登录页-顶部导航区域-Logo区域.png"
+
+    - id: REQ-PASSENGER-BREADCRUMB
+      name: "位置导航"
+      description: "显示当前位置路径"
+
+    - id: REQ-PASSENGER-LIST-PANEL
+      name: "乘车人信息展示面板"
+      description: "显示乘车人列表、搜索框、添加按钮、批量删除按钮"
+      children:
+        - id: REQ-PASSENGER-SEARCH
+          name: "搜索与筛选区域"
+          description: "输入姓名搜索乘车人"
+        - id: REQ-PASSENGER-TABLE
+          name: "乘车人列表表格"
+          description: "展示乘车人详细信息与操作"
+
+    - id: REQ-PASSENGER-ADD
+      name: "添加乘车人"
+      description: "添加新的乘车人信息"
+      children:
+        - id: REQ-PASSENGER-ADD-PANEL
+          name: "添加乘车人面板"
+          description: "填写乘车人信息的表单"
+        - id: REQ-PASSENGER-ADD-LOGIC
+          name: "添加逻辑"
+          description: "校验与保存逻辑"
+
+    - id: REQ-PASSENGER-EDIT
+      name: "编辑乘车人"
+      description: "编辑现有乘车人信息"
+      children:
+        - id: REQ-PASSENGER-EDIT-PANEL
+          name: "编辑乘车人面板"
+          description: "编辑表单，基本信息只读"
+        - id: REQ-PASSENGER-EDIT-LOGIC
+          name: "编辑逻辑"
+          description: "校验与保存逻辑"
+
+    - id: REQ-PASSENGER-DELETE
+      name: "删除乘车人"
+      description: "删除或批量删除乘车人"

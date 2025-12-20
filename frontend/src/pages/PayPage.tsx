@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import OrderHeader from '../components/OrderHeader';
 import OrderFooter from '../components/OrderFooter';
-import PaymentNavMain from '../components/PaymentNavMain';
 import PaymentCountdown from '../components/PaymentCountdown';
 import OrderInfoDisplay from '../components/OrderInfoDisplay';
 import WarmTipsPanel from '../components/WarmTipsPanel';
 import CancelOrderModal from '../components/CancelOrderModal';
 import TimeoutModal from '../components/TimeoutModal';
+import { getOrderDetail } from '../api/orders';
+import { Order } from '../types/Order';
 
 interface PayPageProps {}
 
@@ -15,99 +16,86 @@ const PayPage: React.FC<PayPageProps> = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(true);
-  const [orderData, setOrderData] = useState<any>(null);
+  const [orderData, setOrderData] = useState<Order | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showTimeoutModal, setShowTimeoutModal] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // TODO: Fetch order details using API
-    // fetchOrderDetails(orderId).then(data => { setOrderData(data); setLoading(false); });
-    
-    // Mock data
-    setOrderData({
-        id: orderId || '12345',
-        status: 'PENDING',
-        expires_at: new Date(Date.now() + 20 * 60000).toISOString(),
-        train: {
-            train_no: 'G499',
-            start_station: '上海虹桥',
-            end_station: '杭州东',
-            start_time: '11:00',
-            end_time: '11:45',
-            date: '2025-12-05 （周五）'
-        },
-        passengers: [
-            { id: 1, name: '王小明', type: '成人票', id_no: '3301*******678', seat_type: '二等座', seat_no: '06Car07D', price: 73.0 }
-        ],
-        total_price: 73.0
-    });
-    setLoading(false);
+    const fetchOrder = async () => {
+        if (!orderId) {
+            setError('缺少订单号');
+            setLoading(false);
+            return;
+        }
+        setLoading(true);
+        try {
+            const res = await getOrderDetail(Number(orderId));
+            if (res.success && res.data) {
+                setOrderData(res.data);
+            } else {
+                setError(res.error || '获取订单失败');
+            }
+        } catch (err) {
+            setError('获取订单失败');
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchOrder();
   }, [orderId]);
 
   const handlePay = async () => {
     setIsPaying(true);
-    // TODO: Call API for payment
-    // await confirmPayment(orderId);
-    
+    // Simulate payment API call
+    // TODO: Call actual payment API
     setTimeout(() => {
         setIsPaying(false);
-        const targetId = orderData?.id || orderId;
-        if (!targetId) {
-            console.error('Missing order ID for navigation');
-            // Fallback or error handling
-            return;
+        if (orderData) {
+            navigate(`/purchase-success/${orderData.id}`);
         }
-        navigate(`/purchase-success/${targetId}`);
     }, 1000);
   };
 
-  const handleCancelClick = () => {
-    setShowCancelModal(true);
-  };
-
   const handleConfirmCancel = async () => {
-    // TODO: Call API
-    // await cancelOrder(orderId);
+    // TODO: Call API to cancel order
     setShowCancelModal(false);
     navigate('/trains');
   };
 
-  // Callback for countdown expiration
-  // Note: PaymentCountdown needs to expose an onExpire callback ideally, 
-  // but for now we can rely on parent checking or passing a callback prop if we modify PaymentCountdown.
-  // For strict compliance with PRD "Show TimeoutModal when countdown ends", we should pass a callback.
-  // Let's assume PaymentCountdown will be updated or we check time here too.
-  // Ideally, PaymentCountdown should accept an `onExpire` prop. 
-  // Since I created PaymentCountdown, I should check if it has onExpire. It does NOT.
-  // I will just use a simple timeout here matching the expires_at for the modal, 
-  // or better, I should update PaymentCountdown to support onExpire.
-  
-  // For now, I'll simulate timeout modal trigger if needed, or rely on the fact that I should update PaymentCountdown.
-  // Let's update PaymentCountdown to take onExpire.
+  if (loading) return <div>Loading...</div>;
+  if (error || !orderData) return <div>{error || '订单不存在'}</div>;
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  // Calculate expire time: created_at + 30 mins
+  // If created_at is missing, default to now (should not happen with real data)
+  const createdAt = orderData.created_at ? new Date(orderData.created_at).getTime() : Date.now();
+  const expireTime = new Date(createdAt + 30 * 60 * 1000).toISOString();
+
+  console.log('[PayPage Debug]', {
+      orderId: orderData.id,
+      createdAtRaw: orderData.created_at,
+      createdAtParsed: new Date(createdAt).toISOString(),
+      expireTime,
+      now: new Date().toISOString(),
+      diffMinutes: (new Date(expireTime).getTime() - Date.now()) / 1000 / 60
+  });
 
   return (
     <div className="payment-page-container" style={{ backgroundColor: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <OrderHeader />
       <div className="payment-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 20px' }}>
-        {orderData && (
-            <PaymentCountdown 
-                expireTime={orderData.expires_at} 
-                onExpire={() => setShowTimeoutModal(true)} 
-            />
-        )}
+        <PaymentCountdown 
+            expireTime={expireTime} 
+            onExpire={() => setShowTimeoutModal(true)} 
+        />
 
-        {orderData && (
-            <OrderInfoDisplay 
-                orderData={orderData} 
-                onCancel={handleCancelClick}
-                onPay={handlePay}
-                isPaying={isPaying}
-            />
-        )}
+        <OrderInfoDisplay 
+            orderData={orderData} 
+            onCancel={() => setShowCancelModal(true)}
+            onPay={handlePay}
+            isPaying={isPaying}
+        />
 
         <WarmTipsPanel />
       </div>
@@ -122,6 +110,7 @@ const PayPage: React.FC<PayPageProps> = () => {
         visible={showTimeoutModal}
         onConfirm={() => navigate('/trains')}
       />
+      <OrderFooter />
     </div>
   );
 };

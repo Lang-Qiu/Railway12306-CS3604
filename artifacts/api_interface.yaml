@@ -9,15 +9,36 @@ API-GET-PASSENGERS:
   path: "backend/src/routes/passengers.js"
   signature: "GET /api/v1/passengers"
   related_req_id: "REQ-ORDER-PASSENGER-LIST"
-  upstream_ids: ["UI-PASSENGER-LIST"]
+  upstream_ids: ["UI-PASSENGER-LIST", "UI-PASSENGER-LIST-PANEL"]
   downstream_ids: ["FUNC-GET-PASSENGERS"]
 
 API-SEARCH-PASSENGERS:
   path: "backend/src/routes/passengers.js"
   signature: "GET /api/v1/passengers/search"
   related_req_id: "REQ-ORDER-PASSENGER-SEARCH"
-  upstream_ids: ["UI-PASSENGER-SEARCH"]
+  upstream_ids: ["UI-PASSENGER-SEARCH", "UI-PASSENGER-LIST-PANEL"]
   downstream_ids: ["FUNC-SEARCH-PASSENGERS"]
+
+API-POST-PASSENGER:
+  path: "backend/src/routes/passengers.js"
+  signature: "POST /api/v1/passengers"
+  related_req_id: "REQ-PASSENGER-ADD"
+  upstream_ids: ["UI-PASSENGER-ADD-PANEL"]
+  downstream_ids: ["FUNC-CREATE-PASSENGER"]
+
+API-PUT-PASSENGER:
+  path: "backend/src/routes/passengers.js"
+  signature: "PUT /api/v1/passengers/:id"
+  related_req_id: "REQ-PASSENGER-EDIT"
+  upstream_ids: ["UI-PASSENGER-EDIT-PANEL"]
+  downstream_ids: ["FUNC-UPDATE-PASSENGER"]
+
+API-DELETE-PASSENGER:
+  path: "backend/src/routes/passengers.js"
+  signature: "DELETE /api/v1/passengers/:id"
+  related_req_id: "REQ-PASSENGER-DELETE"
+  upstream_ids: ["UI-PASSENGER-LIST-PANEL"]
+  downstream_ids: ["FUNC-DELETE-PASSENGER"]
 
 API-POST-ORDER:
   path: "backend/src/routes/orders.js"

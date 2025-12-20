@@ -1,37 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import OrderHeader from '../components/OrderHeader';
-import PaymentNavMain from '../components/PaymentNavMain';
-import OrderFooter from '../components/OrderFooter';
 import SuccessBanner from '../components/SuccessBanner';
 import SuccessOrderInfo from '../components/SuccessOrderInfo';
 import SuccessWarmTips from '../components/SuccessWarmTips';
 import { getOrderDetail } from '../api/orders';
+import { Order } from '../types/Order';
 import './PurchaseSuccessPage.css';
-
-interface Order {
-  id: string;
-  orderNumber?: string;
-  train: {
-    trainNumber: string;
-    startStation: { name: string };
-    endStation: { name: string };
-    startTime: string;
-    endTime: string;
-    startDate: string;
-  };
-  passengers: {
-    name: string;
-    idType: string;
-    idNumber: string;
-    ticketType: string;
-    seatType: string;
-    coachNumber: string;
-    seatNumber: string;
-    price: number;
-    status: string;
-  }[];
-}
 
 const PurchaseSuccessPage: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -49,50 +23,23 @@ const PurchaseSuccessPage: React.FC = () => {
         const parsedOrderId = orderId ? parseInt(orderId, 10) : NaN;
 
         if (isNaN(parsedOrderId)) {
-            // Fallback mock data if no valid orderId provided
-            console.warn('Invalid or missing orderId, using mock data');
-            const mockOrder: Order = {
-              id: 'EA12345678',
-              orderNumber: 'EA12345678',
-              train: {
-                trainNumber: 'G499',
-                startStation: { name: '上海虹桥' },
-                endStation: { name: '杭州东' },
-                startTime: '11:00',
-                endTime: '11:45',
-                startDate: '2025-12-05'
-              },
-              passengers: [
-                {
-                  name: '张三',
-                  idType: '中国居民身份证',
-                  idNumber: '3301*******028',
-                  ticketType: '成人票',
-                  seatType: '二等座',
-                  coachNumber: '06车',
-                  seatNumber: '07D号',
-                  price: 73.0,
-                  status: '已支付'
-                }
-              ]
-            };
-            setOrder(mockOrder);
+            setError('订单号无效');
             return;
         }
 
         const response = await getOrderDetail(parsedOrderId);
         if (response.success && response.data) {
-             // Ensure data types are correct, especially price
              const data = response.data;
+             // Ensure price is number if it comes as string (just in case)
              if (data.passengers) {
                 data.passengers = data.passengers.map((p: any) => ({
                     ...p,
-                    price: Number(p.price) // Ensure price is a number
+                    price: Number(p.price)
                 }));
              }
              setOrder(data);
         } else {
-             setError(response.error || '获取订单信息失败');
+             setError(response.error || response.message || '获取订单信息失败');
         }
       } catch (err) {
         setError('获取订单信息失败');
@@ -121,8 +68,6 @@ const PurchaseSuccessPage: React.FC = () => {
 
   return (
     <div className="purchase-success-page">
-      <OrderHeader />
-      <PaymentNavMain />
       
       <div className="purchase-success-content">
         <SuccessBanner order={order} />
@@ -130,7 +75,6 @@ const PurchaseSuccessPage: React.FC = () => {
         <SuccessWarmTips />
       </div>
       
-      <OrderFooter />
     </div>
   );
 };

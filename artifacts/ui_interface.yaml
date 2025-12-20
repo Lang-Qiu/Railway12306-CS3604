@@ -9,7 +9,7 @@ UI-ORDER-HEADER:
   path: "frontend/src/components/OrderHeader.tsx"
   description: "顶部导航区域组件"
   related_req_id: "REQ-ORDER-NAV-TOP"
-  upstream_ids: ["UI-ORDER-PAGE", "UI-PAY-PAGE", "UI-SUCCESS-PAGE"]
+  upstream_ids: ["UI-ORDER-PAGE", "UI-PAY-PAGE", "UI-SUCCESS-PAGE", "UI-PASSENGER-PAGE"]
   downstream_ids: []
 
 UI-TRAIN-INFO:
@@ -37,7 +37,7 @@ UI-PASSENGER-SEARCH:
   path: "frontend/src/components/PassengerSearch.tsx"
   description: "乘车人搜索组件"
   related_req_id: "REQ-ORDER-PASSENGER-SEARCH"
-  upstream_ids: ["UI-PASSENGER-INFO-SECTION"]
+  upstream_ids: ["UI-PASSENGER-INFO-SECTION", "UI-PASSENGER-LIST-PANEL"]
   downstream_ids: ["API-SEARCH-PASSENGERS"]
 
 UI-PURCHASE-TABLE:
@@ -58,7 +58,7 @@ UI-ORDER-FOOTER:
   path: "frontend/src/components/OrderFooter.tsx"
   description: "底部导航区域组件"
   related_req_id: "REQ-ORDER-NAV-BOTTOM"
-  upstream_ids: ["UI-ORDER-PAGE", "UI-PAY-PAGE", "UI-SUCCESS-PAGE"]
+  upstream_ids: ["UI-ORDER-PAGE", "UI-PAY-PAGE", "UI-SUCCESS-PAGE", "UI-PASSENGER-PAGE"]
   downstream_ids: []
 
 UI-SELECT-DROPDOWN:
@@ -72,7 +72,7 @@ UI-CONFIRM-MODAL:
   path: "frontend/src/components/ConfirmModal.tsx"
   description: "通用确认/提示弹窗"
   related_req_id: "REQ-ORDER-SUBMIT"
-  upstream_ids: ["UI-ORDER-PAGE"]
+  upstream_ids: ["UI-ORDER-PAGE", "UI-PASSENGER-ADD-PANEL", "UI-PASSENGER-EDIT-PANEL", "UI-PASSENGER-LIST-PANEL"]
   downstream_ids: []
 
 UI-ORDER-CONFIRM-MODAL:
@@ -165,3 +165,38 @@ UI-SUCCESS-WARM-TIPS:
   related_req_id: "REQ-SUCCESS-WARM-TIPS"
   upstream_ids: ["UI-SUCCESS-PAGE"]
   downstream_ids: []
+
+UI-PASSENGER-PAGE:
+  path: "frontend/src/pages/PassengersPage.tsx"
+  description: "乘客管理页主容器"
+  related_req_id: "REQ-PASSENGER-MANAGE"
+  upstream_ids: []
+  downstream_ids: ["UI-ORDER-HEADER", "UI-ORDER-FOOTER", "UI-PASSENGER-LIST-PANEL", "UI-PASSENGER-ADD-PANEL", "UI-PASSENGER-EDIT-PANEL"]
+
+UI-PASSENGER-LIST-PANEL:
+  path: "frontend/src/components/PassengerListPanel.tsx"
+  description: "乘车人信息展示面板（含列表、搜索）"
+  related_req_id: "REQ-PASSENGER-LIST-PANEL"
+  upstream_ids: ["UI-PASSENGER-PAGE"]
+  downstream_ids: ["UI-PASSENGER-TABLE", "UI-PASSENGER-SEARCH", "API-GET-PASSENGERS", "API-DELETE-PASSENGER"]
+
+UI-PASSENGER-TABLE:
+  path: "frontend/src/components/PassengerTable.tsx"
+  description: "乘车人列表表格"
+  related_req_id: "REQ-PASSENGER-TABLE"
+  upstream_ids: ["UI-PASSENGER-LIST-PANEL"]
+  downstream_ids: []
+
+UI-PASSENGER-ADD-PANEL:
+  path: "frontend/src/components/AddPassengerPanel.tsx"
+  description: "添加乘车人面板"
+  related_req_id: "REQ-PASSENGER-ADD-PANEL"
+  upstream_ids: ["UI-PASSENGER-PAGE"]
+  downstream_ids: ["API-POST-PASSENGER", "UI-CONFIRM-MODAL"]
+
+UI-PASSENGER-EDIT-PANEL:
+  path: "frontend/src/components/EditPassengerPanel.tsx"
+  description: "编辑乘车人面板"
+  related_req_id: "REQ-PASSENGER-EDIT-PANEL"
+  upstream_ids: ["UI-PASSENGER-PAGE"]
+  downstream_ids: ["API-PUT-PASSENGER", "UI-CONFIRM-MODAL"]

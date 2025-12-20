@@ -136,7 +136,7 @@ class OrderService {
           id: order.id.toString(),
           orderNumber: `EA${order.id.toString().padStart(8, '0')}`, // Mock order number
           status: order.status,
-          created_at: order.created_at,
+          created_at: order.created_at.replace(' ', 'T') + 'Z',
           total_price: order.total_price,
           train: {
               trainNumber: train.train_no,
@@ -158,6 +158,17 @@ class OrderService {
               status: order.status === 'PAID' ? '已支付' : '待支付'
           }))
       };
+  }
+  async listOrders(userId) {
+    const orders = db.all('SELECT id FROM orders WHERE user_id = ? ORDER BY created_at DESC', [userId]);
+    const results = [];
+    for (const o of orders) {
+        const detail = await this.getOrder(o.id, userId);
+        if (detail) {
+            results.push(detail);
+        }
+    }
+    return results;
   }
 }
 

@@ -1,37 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Order } from '../types/Order';
 import './SuccessOrderInfo.css';
-
-interface Station {
-  name: string;
-}
-
-interface Train {
-  trainNumber: string;
-  startStation: Station;
-  endStation: Station;
-  startTime: string; // HH:mm
-  endTime: string; // HH:mm
-  startDate: string; // YYYY-MM-DD
-}
-
-interface Passenger {
-  name: string;
-  idType: string;
-  idNumber: string; // Masked
-  ticketType: string;
-  seatType: string;
-  coachNumber: string;
-  seatNumber: string;
-  price: number;
-  status: string; // "已支付"
-}
-
-interface Order {
-  id: string;
-  train: Train;
-  passengers: Passenger[];
-}
 
 interface SuccessOrderInfoProps {
   order: Order | null;
@@ -47,7 +17,11 @@ const SuccessOrderInfo: React.FC<SuccessOrderInfoProps> = ({ order }) => {
   // Helper to format date "2025-12-05 （周五）"
   // Assuming startDate is "YYYY-MM-DD"
   const formatDate = (dateStr: string) => {
+    // Handle cases where dateStr might already have day of week or be invalid
+    if (dateStr.match(/[\u4e00-\u9fa5]/)) return dateStr;
     const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+
     const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
     const weekDay = weekDays[date.getDay()];
     return `${dateStr} （${weekDay}）`;

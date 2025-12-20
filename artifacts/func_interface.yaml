@@ -22,6 +22,30 @@ FUNC-SEARCH-PASSENGERS:
   downstream_ids: []
   db_tables: ["passengers"]
 
+FUNC-CREATE-PASSENGER:
+  path: "backend/src/services/passengerService.js"
+  signature: "createPassenger(userId, passenger)"
+  related_req_id: "REQ-PASSENGER-ADD-LOGIC"
+  upstream_ids: ["API-POST-PASSENGER"]
+  downstream_ids: []
+  db_tables: ["passengers"]
+
+FUNC-UPDATE-PASSENGER:
+  path: "backend/src/services/passengerService.js"
+  signature: "updatePassenger(userId, passengerId, passenger)"
+  related_req_id: "REQ-PASSENGER-EDIT-LOGIC"
+  upstream_ids: ["API-PUT-PASSENGER"]
+  downstream_ids: []
+  db_tables: ["passengers"]
+
+FUNC-DELETE-PASSENGER:
+  path: "backend/src/services/passengerService.js"
+  signature: "deletePassenger(userId, passengerId)"
+  related_req_id: "REQ-PASSENGER-DELETE"
+  upstream_ids: ["API-DELETE-PASSENGER"]
+  downstream_ids: []
+  db_tables: ["passengers"]
+
 FUNC-CREATE-ORDER:
   path: "backend/src/services/orderService.js"
   signature: "createOrder(userId, trainId, passengers)"

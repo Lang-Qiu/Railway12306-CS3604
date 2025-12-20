@@ -12,8 +12,12 @@ const PaymentCountdown: React.FC<PaymentCountdownProps> = ({ expireTime, onExpir
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const difference = new Date(expireTime).getTime() - new Date().getTime();
+      const now = new Date().getTime();
+      const end = new Date(expireTime).getTime();
+      const difference = end - now;
       
+      console.debug('[Countdown]', { expireTime, now: new Date(now).toISOString(), difference });
+
       if (difference <= 0) {
         if (!isExpired) {
           setIsExpired(true);

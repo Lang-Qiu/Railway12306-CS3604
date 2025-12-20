@@ -44,8 +44,14 @@ class OrderController {
   }
 
   async listOrders(req, res) {
-     // TODO: Implement list orders via orderService if needed
-     res.status(501).json({ message: 'Not implemented' });
+    try {
+      const userId = req.headers['x-user-id'] || req.query.userId || 1;
+      const orders = await orderService.listOrders(userId);
+      return res.json({ success: true, orders });
+    } catch (error) {
+      console.error('List orders error:', error);
+      return res.status(500).json({ success: false, message: 'Failed to list orders' });
+    }
   }
 
   async confirmOrder(req, res) {

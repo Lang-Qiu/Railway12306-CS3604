@@ -54,7 +54,7 @@ function App() {
             </ProtectedRoute>
           } />
           <Route path="/phone-verification" element={<PhoneVerificationPage />} />
-          <Route path="/pay" element={
+          <Route path="/pay/:orderId" element={
             <ProtectedRoute>
               <PayPage />
             </ProtectedRoute>

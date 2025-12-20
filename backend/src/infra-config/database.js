@@ -85,6 +85,10 @@ class DatabaseManager {
         verification_status VARCHAR(20) DEFAULT '已通过',
         email VARCHAR(100),
         is_frequent BOOLEAN DEFAULT 1,
+        seat_preference VARCHAR(20),
+        special_needs VARCHAR(200),
+        is_common BOOLEAN DEFAULT 1,
+        version INTEGER DEFAULT 1,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id)

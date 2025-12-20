@@ -20,6 +20,10 @@ CREATE TABLE IF NOT EXISTS passengers (
     phone VARCHAR(20),
     discount_type VARCHAR(20) DEFAULT '成人',
     verification_status VARCHAR(20) DEFAULT '已通过',
+    seat_preference VARCHAR(20),
+    special_needs VARCHAR(200),
+    is_common BOOLEAN DEFAULT 1,
+    version INT DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)

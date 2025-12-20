@@ -9,7 +9,8 @@ import OrderConfirmationModal from '../components/OrderConfirmationModal';
 
 import { listPassengers } from '../api/passengers';
 import { createOrder } from '../api/orders';
-import { Passenger } from '../components/PassengerList';
+import { Passenger } from '../api/passengers';
+import { syncService } from '../services/SyncService';
 
 const OrderPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -37,10 +38,32 @@ const OrderPage: React.FC = () => {
 
     // Fetch passengers for userId 1
     listPassengers(1).then(data => {
-      if (data.success) {
-        setPassengers(data.passengers);
+      if (Array.isArray(data)) {
+        setPassengers(data);
       }
     });
+
+    syncService.connect();
+    const unsubscribe = syncService.subscribe((event) => {
+      setPassengers(prev => {
+        if (event.type === 'PASSENGER_UPDATED') {
+          const updatedPassenger = event.payload;
+          const index = prev.findIndex(p => p.id === updatedPassenger.id);
+          if (index !== -1) {
+            const newPassengers = [...prev];
+            newPassengers[index] = updatedPassenger;
+            return newPassengers;
+          }
+          return prev;
+        } else if (event.type === 'PASSENGER_ADDED') {
+          return [event.payload, ...prev];
+        } else if (event.type === 'PASSENGER_DELETED') {
+          return prev.filter(p => p.id !== event.payload.id);
+        }
+        return prev;
+      });
+    });
+    return unsubscribe;
   }, [train, navigate]);
 
   const handleTogglePassenger = (id: number) => {

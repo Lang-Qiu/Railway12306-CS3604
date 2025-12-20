@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SideMenu from '../components/SideMenu';
 import { Passenger, listPassengers, searchPassengers, addPassenger, updatePassenger, deletePassenger } from '../api/passengers';
+import { syncService } from '../services/SyncService';
 import './PassengersPage.css';
 
 const PassengersPage: React.FC = () => {
@@ -20,13 +21,37 @@ const PassengersPage: React.FC = () => {
     phone: '',
     idCardType: '二代居民身份证',
     idCardNumber: '',
-    discountType: '成人'
+    discountType: '成人',
+    seatPreference: '无偏好',
+    specialNeeds: '',
+    isCommon: true
   });
 
   const userId = 1; // TODO: Get from auth context
 
   useEffect(() => {
     fetchPassengers();
+    syncService.connect();
+    const unsubscribe = syncService.subscribe((event) => {
+      setPassengers(prev => {
+        if (event.type === 'PASSENGER_UPDATED') {
+            const updatedPassenger = event.payload;
+            const index = prev.findIndex(p => p.id === updatedPassenger.id);
+            if (index !== -1) {
+              const newPassengers = [...prev];
+              newPassengers[index] = updatedPassenger;
+              return newPassengers;
+            }
+            return prev;
+        } else if (event.type === 'PASSENGER_ADDED') {
+            return [event.payload, ...prev];
+        } else if (event.type === 'PASSENGER_DELETED') {
+            return prev.filter(p => p.id !== event.payload.id);
+        }
+        return prev;
+      });
+    });
+    return () => unsubscribe();
   }, []);
 
   const fetchPassengers = async () => {
@@ -66,7 +91,10 @@ const PassengersPage: React.FC = () => {
         phone: '',
         idCardType: '二代居民身份证',
         idCardNumber: '',
-        discountType: '成人'
+        discountType: '成人',
+        seatPreference: '无偏好',
+        specialNeeds: '',
+        isCommon: true
       });
       fetchPassengers();
     } catch (error) {
@@ -253,6 +281,34 @@ const PassengersPage: React.FC = () => {
                   <option value="残疾军人">残疾军人</option>
                 </select>
               </div>
+              <div className="form-group">
+                <label>座位偏好：</label>
+                <select 
+                  value={formData.seatPreference} 
+                  onChange={e => setFormData({...formData, seatPreference: e.target.value})}
+                >
+                  <option value="无偏好">无偏好</option>
+                  <option value="靠窗">靠窗</option>
+                  <option value="过道">过道</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>特殊需求：</label>
+                <input 
+                  type="text" 
+                  value={formData.specialNeeds} 
+                  onChange={e => setFormData({...formData, specialNeeds: e.target.value})}
+                  placeholder="如轮椅、儿童餐等"
+                />
+              </div>
+              <div className="form-group">
+                <label>常用：</label>
+                <input 
+                  type="checkbox" 
+                  checked={formData.isCommon} 
+                  onChange={e => setFormData({...formData, isCommon: e.target.checked})}
+                />
+              </div>
             </div>
             <div className="modal-footer">
               <button className="btn-cancel" onClick={() => setShowAddModal(false)}>取 消</button>
@@ -317,6 +373,34 @@ const PassengersPage: React.FC = () => {
                   <option value="儿童">儿童</option>
                   <option value="学生">学生</option>
                 </select>
+              </div>
+              <div className="form-group">
+                <label>座位偏好：</label>
+                <select 
+                  value={formData.seatPreference} 
+                  onChange={e => setFormData({...formData, seatPreference: e.target.value})}
+                >
+                  <option value="无偏好">无偏好</option>
+                  <option value="靠窗">靠窗</option>
+                  <option value="过道">过道</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>特殊需求：</label>
+                <input 
+                  type="text" 
+                  value={formData.specialNeeds} 
+                  onChange={e => setFormData({...formData, specialNeeds: e.target.value})}
+                  placeholder="如轮椅、儿童餐等"
+                />
+              </div>
+              <div className="form-group">
+                <label>常用：</label>
+                <input 
+                  type="checkbox" 
+                  checked={formData.isCommon} 
+                  onChange={e => setFormData({...formData, isCommon: e.target.checked})}
+                />
               </div>
             </div>
             <div className="modal-footer">

@@ -55,11 +55,17 @@ app.use('*', (req, res) => {
 });
 
 const databaseManager = require('./infra-config/database');
+const http = require('http');
+const wsServer = require('./websocket/wsServer');
 
 async function startServer() {
   await jsonDbService.connect();
   await databaseManager.initDatabase();
-  app.listen(PORT, () => {
+  
+  const server = http.createServer(app);
+  wsServer.init(server);
+  
+  server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });
 }

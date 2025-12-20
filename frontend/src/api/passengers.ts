@@ -9,6 +9,10 @@ export interface Passenger {
   idCardNumber?: string;
   discountType?: string;
   verificationStatus?: string;
+  seatPreference?: string;
+  specialNeeds?: string;
+  isCommon?: boolean;
+  version?: number;
   createdAt?: string;
   updatedAt?: string;
 }

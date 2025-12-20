@@ -45,16 +45,29 @@ router.post('/', async (req, res) => {
     }
 });
 
+const wsServer = require('../websocket/wsServer');
+
 // PUT /api/v1/passengers/:id
 router.put('/:id', async (req, res) => {
     const userId = getUserId(req);
     const passengerId = req.params.id;
+    // req.body should contain 'version' for concurrency control
     try {
-        const result = await passengerService.updatePassenger(userId, passengerId, req.body);
+        // If the frontend sends version, use it. Otherwise, strictly speaking we should fail or fetch first.
+        // For now, let's assume if version is present we check it.
+        const currentVersion = req.body.version;
+        
+        const result = await passengerService.updatePassenger(userId, passengerId, req.body, currentVersion);
         if (result.success) {
-            res.json(result);
+            // Fetch updated passenger to broadcast
+            const updatedPassenger = await passengerService.getPassengerById(passengerId);
+            wsServer.broadcast({
+                type: 'PASSENGER_UPDATED',
+                payload: updatedPassenger
+            });
+            res.json({ success: true, passenger: updatedPassenger });
         } else {
-            res.status(404).json({ error: 'Passenger not found or no changes made' });
+            res.status(409).json({ error: 'Passenger not found or version conflict' });
         }
     } catch (error) {
         console.error('Error updating passenger:', error);
@@ -69,6 +82,10 @@ router.delete('/:id', async (req, res) => {
     try {
         const result = await passengerService.deletePassenger(userId, passengerId);
         if (result.success) {
+            wsServer.broadcast({
+                type: 'PASSENGER_DELETED',
+                payload: { id: parseInt(passengerId) }
+            });
             res.json(result);
         } else {
             res.status(404).json({ error: 'Passenger not found' });

@@ -16,9 +16,14 @@ if (fs.existsSync(testDbPath)) {
 
 // 导入dbService以初始化数据库
 const dbService = require('../src/domain-providers/dbService')
+const databaseManager = require('../src/infra-config/database')
 
 // 给数据库一点时间来初始化
 beforeAll(async () => {
+  // 初始化数据库
+  await databaseManager.initDatabase()
+  await dbService.init()
+  
   // 等待数据库初始化完成
   await new Promise(resolve => setTimeout(resolve, 100))
 })

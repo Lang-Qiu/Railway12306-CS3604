@@ -19,7 +19,9 @@ const HomePage: React.FC = () => {
   const [toError, setToError] = useState(false)
   const [student, setStudent] = useState(false)
   const [highspeed, setHighspeed] = useState(false)
-  const [err, setErr] = useState('')
+  // const [err, setErr] = useState('')
+  const [showFromPicker, setShowFromPicker] = useState(false)
+  const [showToPicker, setShowToPicker] = useState(false)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showReturnDatePicker, setShowReturnDatePicker] = useState(false)
   const [showRefundStartPicker, setShowRefundStartPicker] = useState(false)
@@ -74,10 +76,10 @@ const HomePage: React.FC = () => {
   }
 
   const submit = () => {
-    setErr('')
+    // setErr('')
     if (mode === 'refund') {
       if (!refundStart || !refundEnd) {
-        setErr('请填写开始与结束日期')
+        // setErr('请填写开始与结束日期')
         return
       }
       navigate(`/trains?mode=refund&type=${refundQueryType}&start=${encodeURIComponent(refundStart)}&end=${encodeURIComponent(refundEnd)}&kw=${encodeURIComponent(refundKeyword)}`)
@@ -86,11 +88,11 @@ const HomePage: React.FC = () => {
     if (!from || !to || !date) {
       setFromError(!from)
       setToError(!to)
-      setErr('请填写出发地、到达地与日期')
+      // setErr('请填写出发地、到达地与日期')
       return
     }
     if (mode === 'round' && !returnDate) {
-      setErr('请填写返程日期')
+      // setErr('请填写返程日期')
       return
     }
     const params = new URLSearchParams()

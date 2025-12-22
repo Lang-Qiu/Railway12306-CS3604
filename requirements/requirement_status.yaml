@@ -1,0 +1,593 @@
+REQ-ORDER-PAGE:
+  name: "订单填写页"
+  status:
+    interfaces_generated: true
+    tests_generated: false
+    implemented: false
+  artifacts:
+    ui_ids: ["UI-ORDER-PAGE"]
+    api_ids: []
+    func_ids: []
+
+REQ-ORDER-LAYOUT:
+  name: "整体布局"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-ORDER-PAGE"]
+    api_ids: []
+    func_ids: []
+
+REQ-ORDER-NAV-TOP:
+  name: "顶部导航区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-ORDER-HEADER"]
+    api_ids: []
+    func_ids: []
+
+REQ-ORDER-TRAIN-INFO:
+  name: "列车信息区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-TRAIN-INFO"]
+    api_ids: ["API-GET-TRAIN-INFO"]
+    func_ids: ["FUNC-GET-TRAIN-DETAILS"]
+
+REQ-ORDER-PASSENGER-INFO:
+  name: "乘客信息区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-INFO-SECTION"]
+    api_ids: []
+    func_ids: []
+
+REQ-ORDER-PASSENGER-LIST:
+  name: "乘客列表"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-LIST"]
+    api_ids: ["API-GET-PASSENGERS"]
+    func_ids: ["FUNC-GET-PASSENGERS"]
+
+REQ-ORDER-PASSENGER-SEARCH:
+  name: "搜索框"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-SEARCH"]
+    api_ids: ["API-SEARCH-PASSENGERS"]
+    func_ids: ["FUNC-SEARCH-PASSENGERS"]
+
+REQ-ORDER-PURCHASE-TABLE:
+  name: "购票信息填写区域"
+  status:
+    interfaces_generated: true
+    tests_generated: false
+    implemented: false
+  artifacts:
+    ui_ids: ["UI-PURCHASE-TABLE"]
+    api_ids: []
+    func_ids: []
+
+REQ-ORDER-SUBMIT-SECTION:
+  name: "订单提交与温馨提示区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-ORDER-SUBMIT-SECTION"]
+    api_ids: []
+    func_ids: []
+
+REQ-ORDER-NAV-BOTTOM:
+  name: "底部导航区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-ORDER-FOOTER"]
+    api_ids: []
+    func_ids: []
+
+REQ-SEAT-DEFAULT:
+  name: "席别默认设置"
+  status:
+    interfaces_generated: true
+    tests_generated: false
+    implemented: false
+  artifacts:
+    ui_ids: []
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-SELECT:
+  name: "用户选择乘车人"
+  status:
+    interfaces_generated: true
+    tests_generated: false
+    implemented: false
+  artifacts:
+    ui_ids: []
+    api_ids: []
+    func_ids: []
+
+REQ-SEAT-SELECT:
+  name: "用户选择席位"
+  status:
+    interfaces_generated: true
+    tests_generated: false
+    implemented: false
+  artifacts:
+    ui_ids: ["UI-SELECT-DROPDOWN"]
+    api_ids: []
+    func_ids: []
+
+REQ-ORDER-SUBMIT:
+  name: "用户提交订单"
+  status:
+    interfaces_generated: true
+    tests_generated: false
+    implemented: false
+  artifacts:
+    ui_ids: ["UI-CONFIRM-MODAL"]
+    api_ids: ["API-POST-ORDER"]
+    func_ids: ["FUNC-CREATE-ORDER"]
+
+REQ-CONFIRM-MODAL:
+  name: "信息核对弹窗"
+  status:
+    interfaces_generated: true
+    tests_generated: false
+    implemented: false
+  artifacts:
+    ui_ids: ["UI-ORDER-CONFIRM-MODAL"]
+    api_ids: []
+    func_ids: []
+
+REQ-PAY-PAGE:
+  name: "订单支付页"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PAY-PAGE"]
+    api_ids: ["API-GET-ORDER-DETAILS"]
+    func_ids: ["FUNC-GET-ORDER-DETAILS"]
+
+REQ-PAY-LAYOUT:
+  name: "整体布局"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PAY-PAGE"]
+    api_ids: []
+    func_ids: []
+
+REQ-PAY-NAV-TOP:
+  name: "顶部导航区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-ORDER-HEADER"]
+    api_ids: []
+    func_ids: []
+
+REQ-PAY-NAV-MAIN:
+  name: "主导航栏"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PAY-NAV-MAIN"]
+    api_ids: []
+    func_ids: []
+
+REQ-PAY-COUNTDOWN:
+  name: "席位锁定时效倒计时区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PAY-COUNTDOWN"]
+    api_ids: []
+    func_ids: []
+
+REQ-PAY-ORDER-INFO:
+  name: "订单信息与确认支付区"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PAY-ORDER-INFO"]
+    api_ids: []
+    func_ids: []
+
+REQ-PAY-WARM-TIPS:
+  name: "温馨提示面板"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PAY-WARM-TIPS"]
+    api_ids: []
+    func_ids: []
+
+REQ-PAY-NAV-BOTTOM:
+  name: "底部导航区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-ORDER-FOOTER"]
+    api_ids: []
+    func_ids: []
+
+REQ-PAY-MODAL-CANCEL:
+  name: "交易提示弹窗"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PAY-MODAL-CANCEL"]
+    api_ids: []
+    func_ids: []
+
+REQ-PAY-MODAL-TIMEOUT:
+  name: "超时提示弹窗"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PAY-MODAL-TIMEOUT"]
+    api_ids: []
+    func_ids: []
+
+REQ-PAY-MODAL-UNFINISHED:
+  name: "未完成订单提示弹窗"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PAY-MODAL-UNFINISHED"]
+    api_ids: []
+    func_ids: []
+
+REQ-PAY-ACTION-CONFIRM:
+  name: "确认支付逻辑"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+    artifacts:
+    ui_ids: []
+    api_ids: ["API-POST-PAY-CONFIRM"]
+    func_ids: ["FUNC-PAY-CONFIRM"]
+
+REQ-PAY-ACTION-CANCEL:
+  name: "取消订单逻辑"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+    artifacts:
+    ui_ids: []
+    api_ids: ["API-POST-PAY-CANCEL"]
+    func_ids: ["FUNC-PAY-CANCEL"]
+
+REQ-PAY-ACTION-TIMEOUT:
+  name: "支付超时逻辑"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+    artifacts:
+    ui_ids: ["UI-PAY-PAGE", "UI-PAY-MODAL-TIMEOUT"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-PAGE:
+  name: "购票成功页"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-SUCCESS-PAGE"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-LAYOUT:
+  name: "整体布局"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-SUCCESS-PAGE"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-NAV-TOP:
+  name: "顶部导航区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-ORDER-HEADER"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-NAV-MAIN:
+  name: "主导航栏"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PAY-NAV-MAIN"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-BANNER:
+  name: "成功提示区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-SUCCESS-BANNER"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-ORDER-INFO:
+  name: "订单信息与乘车信息区"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-SUCCESS-ORDER-INFO"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-WARM-TIPS:
+  name: "温馨提示面板与广告面板"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-SUCCESS-WARM-TIPS"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-NAV-BOTTOM:
+  name: "底部导航区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-ORDER-FOOTER"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-DISPLAY:
+  name: "乘车信息显示"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: []
+    api_ids: ["API-GET-ORDER-DETAILS"]
+    func_ids: ["FUNC-GET-ORDER-DETAILS"]
+
+REQ-SUCCESS-ACTION-CONTINUE:
+  name: "继续购票跳转"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-SUCCESS-ORDER-INFO"]
+    api_ids: []
+    func_ids: []
+
+REQ-SUCCESS-ACTION-DETAILS:
+  name: "查询订单详情跳转"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-SUCCESS-ORDER-INFO"]
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-MANAGE:
+  name: "乘客管理页"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-PAGE"]
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-LAYOUT:
+  name: "整体布局"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-PAGE"]
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-NAV-TOP:
+  name: "顶部导航区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-ORDER-HEADER"]
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-BREADCRUMB:
+  name: "位置导航"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-PAGE"]
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-LIST-PANEL:
+  name: "乘车人信息展示面板"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-LIST-PANEL"]
+    api_ids: ["API-GET-PASSENGERS", "API-DELETE-PASSENGER"]
+    func_ids: ["FUNC-GET-PASSENGERS", "FUNC-DELETE-PASSENGER"]
+
+REQ-PASSENGER-SEARCH:
+  name: "搜索与筛选区域"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-SEARCH"]
+    api_ids: ["API-SEARCH-PASSENGERS"]
+    func_ids: ["FUNC-SEARCH-PASSENGERS"]
+
+REQ-PASSENGER-TABLE:
+  name: "乘车人列表表格"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-TABLE"]
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-ADD:
+  name: "添加乘车人"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: []
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-ADD-PANEL:
+  name: "添加乘车人面板"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-ADD-PANEL"]
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-ADD-LOGIC:
+  name: "添加逻辑"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: []
+    api_ids: ["API-POST-PASSENGER"]
+    func_ids: ["FUNC-CREATE-PASSENGER"]
+
+REQ-PASSENGER-EDIT:
+  name: "编辑乘车人"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: []
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-EDIT-PANEL:
+  name: "编辑乘车人面板"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: ["UI-PASSENGER-EDIT-PANEL"]
+    api_ids: []
+    func_ids: []
+
+REQ-PASSENGER-EDIT-LOGIC:
+  name: "编辑逻辑"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: []
+    api_ids: ["API-PUT-PASSENGER"]
+    func_ids: ["FUNC-UPDATE-PASSENGER"]
+
+REQ-PASSENGER-DELETE:
+  name: "删除乘车人"
+  status:
+    interfaces_generated: true
+    tests_generated: true
+    implemented: true
+  artifacts:
+    ui_ids: []
+    api_ids: ["API-DELETE-PASSENGER"]
+    func_ids: ["FUNC-DELETE-PASSENGER"]

@@ -39,3 +39,10 @@
 .menu-login a { color:#333; }
 .menu-login a.ml { margin-left:8px; }
 .nav-line { height:1px; margin:4px 0; background:#eee; }
+
+.welcome-user {
+  color: #3b99fc;
+  margin-right: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}

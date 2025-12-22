@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import './TrainsPage.css'
  
 import TrainSearchBar from '../components/our12306/TrainSearchBar'
@@ -28,17 +29,7 @@ const TrainsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [queryTimestamp, setQueryTimestamp] = useState<Date>(new Date())
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-
-  useEffect(() => {
-    const checkLoginStatus = () => {
-      const token = localStorage.getItem('authToken')
-      setIsLoggedIn(!!token)
-    }
-    checkLoginStatus()
-    window.addEventListener('storage', checkLoginStatus)
-    return () => window.removeEventListener('storage', checkLoginStatus)
-  }, [])
+  const { isAuthenticated } = useAuth()
 
   const fetchTrains = async (params: any) => {
     if (!params.departureStation || !params.arrivalStation) return
@@ -93,11 +84,9 @@ const TrainsPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  
-
   const handleNavigateToLogin = () => navigate('/login')
   const handleNavigateToRegister = () => navigate('/register')
-  const handleNavigateToPersonalCenter = () => navigate(isLoggedIn ? '/personal-info' : '/login')
+  const handleNavigateToPersonalCenter = () => navigate(isAuthenticated ? '/information' : '/login')
   const handleMy12306Click = () => handleNavigateToPersonalCenter()
 
   const handleNavigateToOrderPage = (trainNo: string) => {
@@ -108,10 +97,8 @@ const TrainsPage: React.FC = () => {
     }
     navigate('/orders', {
       state: {
-        trainNo: train.trainNo,
-        departureStation: searchParams.departureStation,
-        arrivalStation: searchParams.arrivalStation,
-        departureDate: searchParams.departureDate,
+        train: train,
+        date: searchParams.departureDate,
       },
     })
   }
@@ -119,7 +106,7 @@ const TrainsPage: React.FC = () => {
   const handleFilterChange = (filters: any) => {
     const strategies: Record<string, (xs: any[]) => any[]> = {}
     if (filters.departureTimeRange) {
-      const [start,end] = String(filters.departureTimeRange).split('--')
+      const [start,end] = String(filters.departureTimeRange).split('-')
       const [sh,sm] = start.split(':').map(Number)
       const [eh,em] = end.split(':').map(Number)
       const sMin = sh*60+sm
@@ -157,8 +144,6 @@ const TrainsPage: React.FC = () => {
     setFilteredTrains(out)
   }
 
-  const username = isLoggedIn ? (localStorage.getItem('username') || localStorage.getItem('userId') || '用户') : ''
-
   return (
     <div className="train-list-page">
       <div className="train-list-content">
@@ -185,7 +170,7 @@ const TrainsPage: React.FC = () => {
           <TrainList
             trains={filteredTrains}
             onReserve={handleNavigateToOrderPage}
-            isLoggedIn={isLoggedIn}
+            isLoggedIn={isAuthenticated}
             queryTimestamp={queryTimestamp.toISOString()}
             departureCity={searchParams.departureStation}
             arrivalCity={searchParams.arrivalStation}

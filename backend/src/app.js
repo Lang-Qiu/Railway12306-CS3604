@@ -8,12 +8,13 @@ process.env.JSON_DB_INMEMORY = process.env.JSON_DB_INMEMORY || '1';
 const authRoutes = require('./route-manifests/auth');
 const registerRoutes = require('../modules/register-migrated/routes/register');
 const orderRoutes = require('./route-manifests/orders');
-const passengerRoutes = require('./route-manifests/passengers');
+const passengerRoutes = require('./routes/passengers');
 const stationRoutes = require('./route-manifests/stations');
 const ticketRoutes = require('./route-manifests/tickets');
 const metricsRoutes = require('./route-manifests/metrics');
 const queryStatsRoutes = require('./route-manifests/queryStats');
 const trainRoutes = require('./route-manifests/trains');
+const userRoutes = require('./route-manifests/user');
 const dbService = require('./domain-providers/dbService');
 const errorHandler = require('./request-interceptors/errorHandler');
 const jsonDbService = require('./domain-providers/jsonDbService');
@@ -38,6 +39,7 @@ app.use('/api/tickets', ticketRoutes);
 app.use('/api/metrics', metricsRoutes);
 app.use('/api/query-stats', queryStatsRoutes);
 app.use('/api/trains', trainRoutes);
+app.use('/api/user', userRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -53,11 +55,17 @@ app.use('*', (req, res) => {
 });
 
 const databaseManager = require('./infra-config/database');
+const http = require('http');
+const wsServer = require('./websocket/wsServer');
 
 async function startServer() {
   await jsonDbService.connect();
   await databaseManager.initDatabase();
-  app.listen(PORT, () => {
+  
+  const server = http.createServer(app);
+  wsServer.init(server);
+  
+  server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });
 }

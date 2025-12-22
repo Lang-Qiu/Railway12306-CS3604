@@ -197,6 +197,123 @@
       description: "初始创建，支持注册页用户名实时验证。"
 
 - type: Backend
+  id: API-GET-UserProfile
+  route: GET /api/user/profile
+  description: 获取当前登录用户的个人信息
+  input:
+    type: Header
+    params:
+      Authorization: "Bearer token"
+  output:
+    success:
+      statusCode: 200
+      body: 
+        username: "string"
+        name: "string"
+        idType: "string"
+        idNumber: "string"
+        verificationStatus: "string"
+        phone: "string"
+        email: "string"
+        discountType: "string"
+    error:
+      - statusCode: 401
+        body: { error: "未授权或Token失效" }
+  dependencies:
+    - DB-FindUserById
+  acceptanceCriteria:
+    - 验证Token有效性
+    - 返回包含基本信息、联系方式、附加信息的完整对象
+  changeLog:
+    - date: "2025-12-08"
+      description: "初始创建，支持个人信息页展示。"
+
+- type: Backend
+  id: API-PUT-UserEmail
+  route: PUT /api/user/email
+  description: 更新用户邮箱
+  input:
+    type: JSON
+    body:
+      email: string
+  output:
+    success:
+      statusCode: 200
+      body: { message: "邮箱更新成功" }
+    error:
+      - statusCode: 400
+        body: { error: "邮箱格式不正确" }
+      - statusCode: 401
+        body: { error: "未授权" }
+  dependencies:
+    - DB-UpdateUserEmail
+  acceptanceCriteria:
+    - 验证邮箱格式
+    - 更新数据库
+  changeLog:
+    - date: "2025-12-08"
+      description: "初始创建，支持个人信息页邮箱修改。"
+
+- type: Backend
+  id: API-PUT-UserPhone
+  route: PUT /api/user/phone
+  description: 更新用户手机号（需先验证原密码和新手机验证码）
+  input:
+    type: JSON
+    body:
+      newPhone: string
+      verificationCode: string
+      password: string
+  output:
+    success:
+      statusCode: 200
+      body: { message: "手机号更新成功" }
+    error:
+      - statusCode: 400
+        body: { error: "验证码错误" }
+      - statusCode: 400
+        body: { error: "密码错误" }
+      - statusCode: 401
+        body: { error: "未授权" }
+  dependencies:
+    - DB-VerifyPassword
+    - DB-VerifyCode
+    - DB-UpdateUserPhone
+  acceptanceCriteria:
+    - 验证登录密码
+    - 验证新手机号的短信验证码
+    - 更新手机号
+  changeLog:
+    - date: "2025-12-08"
+      description: "初始创建，支持手机核验页手机号修改。"
+
+- type: Backend
+  id: API-PUT-UserDiscountType
+  route: PUT /api/user/discount-type
+  description: 更新用户优惠(待)类型
+  input:
+    type: JSON
+    body:
+      discountType: string
+  output:
+    success:
+      statusCode: 200
+      body: { message: "优惠类型更新成功" }
+    error:
+      - statusCode: 400
+        body: { error: "无效的优惠类型" }
+      - statusCode: 401
+        body: { error: "未授权" }
+  dependencies:
+    - DB-UpdateUserDiscountType
+  acceptanceCriteria:
+    - 验证输入类型
+    - 更新数据库
+  changeLog:
+    - date: "2025-12-08"
+      description: "初始创建，支持个人信息页优惠类型修改。"
+
+- type: Backend
   id: API-POST-ValidatePassword
   route: POST /api/register/validate-password
   description: 验证密码的合法性

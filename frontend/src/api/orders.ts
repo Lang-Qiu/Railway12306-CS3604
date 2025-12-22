@@ -1,14 +1,15 @@
 import client from './client'
 
-export async function createOrder(payload: {
-  trainNo: string
-  origin: string
-  destination: string
-  date: string
-  seatType: 'business' | 'firstClass' | 'secondClass'
-  quantity: number
-  passengerNames?: string[]
-}) {
+export interface CreateOrderPayload {
+  userId: number;
+  trainId: number;
+  passengers: {
+    passengerId: number;
+    seatTypeId: number;
+  }[];
+}
+
+export async function createOrder(payload: CreateOrderPayload) {
   const res = await client.post('/api/orders', payload)
   return res.data
 }

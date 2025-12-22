@@ -60,9 +60,9 @@ class AuthController {
       }
 
       const sessionId = await authService.createLoginSession(result.user);
-      const token = authService.generateToken({ userId: result.user.id, username: result.user.username, step: 'pending_verification' });
+      const token = authService.generateToken({ userId: result.user.userId, username: result.user.username, step: 'pending_verification' });
 
-      console.log(`[Login Success] Session created for user: ${result.user.username} (ID: ${result.user.id})`);
+      console.log(`[Login Success] Session created for user: ${result.user.username} (ID: ${result.user.userId})`);
       return res.status(200).json({ success: true, sessionId, token, message: messages.login.pendingVerification });
     } catch (error) {
       console.error('Login error:', error);

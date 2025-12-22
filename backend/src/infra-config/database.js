@@ -71,15 +71,50 @@ class DatabaseManager {
       );
     `);
 
+    // --- NEW TABLES FOR ORDER MODULE (from origin/main) ---
+
+    this.db.run(`
+      CREATE TABLE passengers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        name VARCHAR(50) NOT NULL,
+        phone VARCHAR(20),
+        id_card_type VARCHAR(20) DEFAULT '二代居民身份证',
+        id_card_number VARCHAR(50),
+        discount_type VARCHAR(20) DEFAULT '成人',
+        verification_status VARCHAR(20) DEFAULT '已通过',
+        email VARCHAR(100),
+        is_frequent BOOLEAN DEFAULT 1,
+        seat_preference VARCHAR(20),
+        special_needs VARCHAR(200),
+        is_common BOOLEAN DEFAULT 1,
+        version INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      );
+    `);
+
+    this.db.run(`
+      CREATE TABLE stations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name VARCHAR(50) NOT NULL,
+        code VARCHAR(20) NOT NULL UNIQUE
+      );
+    `);
+
+    // Merged TRAINS table to support both schemas
     this.db.run(`
       CREATE TABLE trains (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         train_no VARCHAR(20) NOT NULL,
+        
+        -- Fields from HEAD
         train_type VARCHAR(10),
-        origin VARCHAR(50) NOT NULL,
-        destination VARCHAR(50) NOT NULL,
-        departure_time VARCHAR(10) NOT NULL,
-        arrival_time VARCHAR(10) NOT NULL,
+        origin VARCHAR(50),
+        destination VARCHAR(50),
+        departure_time VARCHAR(10),
+        arrival_time VARCHAR(10),
         planned_duration_min INTEGER,
         business_price REAL,
         first_class_price REAL,
@@ -87,7 +122,62 @@ class DatabaseManager {
         no_seat_price REAL,
         soft_sleeper_price REAL,
         hard_sleeper_price REAL,
-        dong_sleeper_price REAL
+        dong_sleeper_price REAL,
+
+        -- Fields from origin/main
+        start_station_id INTEGER,
+        end_station_id INTEGER,
+        start_time VARCHAR(20),
+        end_time VARCHAR(20),
+        type VARCHAR(10)
+      );
+    `);
+
+    this.db.run(`
+      CREATE TABLE seat_types (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name VARCHAR(50) NOT NULL,
+        code VARCHAR(20)
+      );
+    `);
+
+    this.db.run(`
+      CREATE TABLE train_seats (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        train_id INTEGER,
+        seat_type_id INTEGER,
+        price DECIMAL(10, 2),
+        total_count INTEGER,
+        available_count INTEGER,
+        FOREIGN KEY (train_id) REFERENCES trains(id),
+        FOREIGN KEY (seat_type_id) REFERENCES seat_types(id)
+      );
+    `);
+
+    this.db.run(`
+      CREATE TABLE orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        train_id INTEGER,
+        status VARCHAR(20) DEFAULT 'PENDING',
+        total_price DECIMAL(10, 2),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (train_id) REFERENCES trains(id)
+      );
+    `);
+
+    this.db.run(`
+      CREATE TABLE order_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_id INTEGER,
+        passenger_id INTEGER,
+        seat_type_id INTEGER,
+        seat_no VARCHAR(20),
+        price DECIMAL(10, 2),
+        FOREIGN KEY (order_id) REFERENCES orders(id),
+        FOREIGN KEY (passenger_id) REFERENCES passengers(id),
+        FOREIGN KEY (seat_type_id) REFERENCES seat_types(id)
       );
     `);
 
@@ -121,8 +211,47 @@ class DatabaseManager {
       ['13900139000', '654321', now.toISOString(), expiresAt.toISOString(), now.toISOString()]
     );
 
-    // Insert test trains
-    this.db.run(`DELETE FROM trains`); // Clear existing if any (though this is in-memory mostly unless using file)
+    // Seed Passengers for testuser (id: 1)
+    this.db.run(
+      `INSERT INTO passengers (user_id, name, phone, id_card_number, discount_type) VALUES (?, ?, ?, ?, ?)`,
+      [1, '王小明', '13800138001', '330101199001015678', '成人']
+    );
+    this.db.run(
+      `INSERT INTO passengers (user_id, name, phone, id_card_number, discount_type) VALUES (?, ?, ?, ?, ?)`,
+      [1, '李小红', '13800138002', '110101199002026789', '成人']
+    );
+
+    // Seed Stations
+    this.db.run(`INSERT INTO stations (name, code) VALUES ('北京南', 'BJP')`);
+    this.db.run(`INSERT INTO stations (name, code) VALUES ('上海虹桥', 'SHH')`);
+    this.db.run(`INSERT INTO stations (name, code) VALUES ('南京南', 'NJH')`);
+
+    // Seed Seat Types
+    this.db.run(`INSERT INTO seat_types (name, code) VALUES ('二等座', 'O')`); // O is code for 2nd class
+    this.db.run(`INSERT INTO seat_types (name, code) VALUES ('一等座', 'M')`); // M is code for 1st class
+    this.db.run(`INSERT INTO seat_types (name, code) VALUES ('商务座', '9')`); // 9 is code for business
+
+    // Seed Trains (G27) - origin/main style
+    // Assuming IDs: Beijing South=1, Shanghai Hongqiao=2
+    this.db.run(
+      `INSERT INTO trains (train_no, start_station_id, end_station_id, start_time, end_time, type, origin, destination) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      ['G27', 1, 2, '19:00', '23:35', 'G', '北京南', '上海虹桥'] // Populating both sets of fields for compatibility
+    );
+    
+    // Seed Train Seats for G27 (train_id=1)
+    // 2nd Class (seat_type_id=1)
+    this.db.run(
+      `INSERT INTO train_seats (train_id, seat_type_id, price, total_count, available_count) VALUES (?, ?, ?, ?, ?)`,
+      [1, 1, 553.0, 500, 100]
+    );
+    // 1st Class (seat_type_id=2)
+    this.db.run(
+      `INSERT INTO train_seats (train_id, seat_type_id, price, total_count, available_count) VALUES (?, ?, ?, ?, ?)`,
+      [1, 2, 933.0, 100, 20]
+    );
+
+    // Insert test trains from HEAD
+    // Note: IDs will autoincrement from 2
     const trains = [
       // 上海 -> 北京
       ['G1', 'G', '上海', '北京', '09:00', '13:30', 270, 1500, 900, 550, 100, null, null, null],

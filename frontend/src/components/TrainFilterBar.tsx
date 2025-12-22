@@ -40,10 +40,10 @@ const TrainFilterBar: React.FC<Props> = ({ options, value, onChange }) => {
     else next.add(key)
     onChange?.({ seatTypes: Array.from(next) })
   }
-  const [collapsed, setCollapsed] = useState<{ [k: string]: boolean }>({ types: false, origins: false, destinations: false, seatTypes: false })
-  const toggleCollapse = (key: 'types' | 'origins' | 'destinations' | 'seatTypes') => {
-    setCollapsed((p) => ({ ...p, [key]: !p[key] }))
-  }
+  // const [collapsed, setCollapsed] = useState<{ [k: string]: boolean }>({ types: false, origins: false, destinations: false, seatTypes: false })
+  // const toggleCollapse = (key: 'types' | 'origins' | 'destinations' | 'seatTypes') => {
+  //   setCollapsed((p) => ({ ...p, [key]: !p[key] }))
+  // }
   const [panelCollapsed, setPanelCollapsed] = useState(false)
   const [timeRange, setTimeRange] = useState('00:00~24:00')
   return (

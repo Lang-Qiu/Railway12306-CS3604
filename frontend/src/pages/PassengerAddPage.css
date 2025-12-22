@@ -1,0 +1,202 @@
+.passenger-add-page {
+  /* Inherit layout from parent wrapper if needed, but here we define page specific styles */
+  background-color: #f8f9fc;
+  min-height: calc(100vh - 200px);
+}
+
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+.breadcrumb {
+  font-size: 12px;
+  color: #666;
+  padding: 10px 0;
+}
+
+.breadcrumb a {
+  color: #666;
+  text-decoration: none;
+}
+
+.breadcrumb span {
+  color: #0077ff;
+}
+
+.main-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.right-panel {
+  flex: 1;
+  background-color: #fff;
+  border: 1px solid #c8e1fa;
+  min-height: 600px;
+  padding: 0;
+}
+
+.warning-bar {
+  background-color: #fffdee;
+  border: 1px solid #edd28b;
+  color: #ff6600;
+  padding: 10px 15px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.warning-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: #ff9900; /* Placeholder for icon */
+  border-radius: 50%;
+  margin-right: 8px;
+  color: white;
+  text-align: center;
+  line-height: 16px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.add-form-container {
+  padding: 20px 40px;
+}
+
+.form-section {
+  margin-bottom: 30px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: baseline;
+}
+
+.section-title .tip {
+  font-size: 12px;
+  color: #ff6600;
+  font-weight: normal;
+  margin-left: 5px;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.form-label {
+  width: 100px;
+  text-align: right;
+  margin-right: 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+.form-label .required {
+  color: #ff0000;
+  margin-right: 4px;
+}
+
+.form-input-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.form-input, .form-select {
+  width: 280px;
+  height: 30px;
+  border: 1px solid #cfcfcf;
+  padding: 0 5px;
+  font-size: 14px;
+  color: #333;
+  background-color: white;
+}
+
+.form-input::placeholder {
+  color: #999;
+}
+
+.input-tip-right {
+  font-size: 12px;
+  color: #ff6600;
+  margin-left: 10px;
+}
+
+.input-tip-bottom {
+  font-size: 12px;
+  color: #ff6600;
+  margin-top: 5px;
+  margin-left: 110px; /* Label width + margin */
+  line-height: 1.5;
+}
+
+.phone-group {
+  display: flex;
+}
+
+.phone-prefix {
+  width: 80px;
+  height: 30px;
+  border: 1px solid #cfcfcf;
+  border-right: none;
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #333;
+}
+
+.phone-input {
+  width: 200px;
+  height: 30px;
+  border: 1px solid #cfcfcf;
+  padding: 0 10px;
+}
+
+.action-buttons {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding-left: 110px; /* Align with inputs somewhat */
+}
+
+.btn-cancel, .btn-save {
+  width: 90px;
+  height: 30px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-cancel {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  color: #333;
+}
+
+.btn-save {
+  background-color: #ff7f00;
+  border: 1px solid #ff7f00;
+  color: #fff;
+}
+
+.btn-save:hover {
+  background-color: #ff9933;
+}

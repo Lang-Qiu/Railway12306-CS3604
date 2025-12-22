@@ -198,6 +198,99 @@
     - 支持不同类型的消息样式
     - 支持自动隐藏和手动关闭
     - 在登录表单中显示在"立即登录"按钮上方
+
+- type: Frontend
+  id: UI-InformationPage
+  description: 个人信息管理页面，包含左侧菜单和右侧信息面板
+  properties:
+    - none
+  state:
+    - currentUser
+    - isLoading
+    - error
+  dependencies:
+    - UI-TopNavigation
+    - UI-BottomNavigation
+    - UI-SideMenu
+    - UI-PersonalInfoPanel
+    - API-GET-UserProfile
+  acceptanceCriteria:
+    - 布局符合PRD 6.1.1要求：顶部导航、中部（左菜单+右面板）、底部导航
+    - 初始加载时调用API获取用户信息
+  changeLog:
+    - date: "2025-12-08"
+      description: "初始创建，个人信息页主容器。"
+
+- type: Frontend
+  id: UI-SideMenu
+  description: 个人中心左侧功能菜单栏
+  properties:
+    - name: activeItem
+      type: string
+      description: "当前选中的菜单项ID"
+  state:
+    - expandedSections
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 宽度220px，样式符合PRD 6.1.4
+    - 包含"订单中心"（火车票订单）、"个人信息"（查看个人信息、手机核验）、"常用信息管理"（乘车人）
+    - 支持菜单项点击切换路由或状态
+  changeLog:
+    - date: "2025-12-08"
+      description: "初始创建，左侧导航菜单。"
+
+- type: Frontend
+  id: UI-PersonalInfoPanel
+  description: 右侧个人信息展示面板
+  properties:
+    - name: user
+      type: object
+      description: "用户信息对象"
+    - name: onUpdateEmail
+      type: function
+      description: "更新邮箱的回调"
+  state:
+    - isEditingEmail
+    - emailInput
+    - isEditingDiscountType
+    - discountTypeInput
+  dependencies:
+    - API-PUT-UserEmail
+  acceptanceCriteria:
+    - 包含基本信息、联系方式、附加信息三个模块（PRD 6.1.5）
+    - 基本信息只读
+    - 联系方式支持邮箱编辑（PRD 6.3）
+    - 手机号旁显示"去手机核验修改"链接
+  changeLog:
+    - date: "2025-12-08"
+      description: "初始创建，个人信息展示与编辑面板。"
+
+- type: Frontend
+  id: UI-PhoneVerificationPage
+  description: 手机核验页面，用于修改手机号
+  properties:
+    - none
+  state:
+    - step: number (1: verify password, 2: verify new phone, 3: success)
+    - password: string
+    - newPhone: string
+    - verificationCode: string
+    - loading: boolean
+    - error: string
+  dependencies:
+    - API-PUT-UserPhone
+    - UI-TopNavigation
+    - UI-BottomNavigation
+    - UI-SideMenu
+    - UI-BreadcrumbNavigation
+  acceptanceCriteria:
+    - 步骤1：验证当前登录密码
+    - 步骤2：输入新手机号并获取/输入验证码
+    - 步骤3：显示修改成功信息
+  changeLog:
+    - date: "2025-12-08"
+      description: "初始创建，手机核验页面。"
     - 在短信验证弹窗中显示在"确定"按钮上方
   changeLog:
     - date: "2025-01-25"

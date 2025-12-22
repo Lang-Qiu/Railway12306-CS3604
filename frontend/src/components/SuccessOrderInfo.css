@@ -1,0 +1,160 @@
+.success-order-info-container {
+  max-width: 1100px;
+  margin-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.success-order-info-display {
+  background-color: white;
+  border: 1px solid #c0d7eb;
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+}
+
+.success-order-info-header {
+  background: linear-gradient(to right, #3698d5, #1d82bd);
+  border-radius: 10px 10px 0px 0px;
+  padding: 5px 20px;
+  border-bottom: 2px solid #8fcdec;
+  font-size: 16px;
+  font-weight: 500;
+  color: white;
+  letter-spacing: 0.5px;
+}
+
+.success-order-info-content {
+  background-color: white;
+  padding: 20px 20px 0px 20px;
+}
+
+.success-train-info-row {
+  margin-bottom: 20px;
+  font-size: 20px;
+  color: #333333;
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.success-train-date, .success-train-no, .success-train-bold-group {
+  font-weight: 800;
+  color: #000000;
+  font-size: 20px;
+}
+
+.success-train-text {
+  font-weight: 400;
+  color: #000000;
+  font-size: 16px;
+}
+
+.success-train-station {
+  font-weight: 1000;
+  color: #ff0000;
+  font-size: 26px;
+}
+
+.success-passenger-table-container {
+  padding: 0;
+  margin-top: 12px;
+  background-color: transparent;
+}
+
+.success-passenger-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-bottom: 0;
+}
+
+.success-passenger-table th {
+  background: linear-gradient(to bottom, #ffffff, #d9d9d9);
+  padding: 10px 8px;
+  text-align: center;
+  font-weight: 700;
+  color: #333;
+  border-top: 1px solid #999999;
+  border-bottom: 1px solid #d0d0d0;
+  font-size: 15px;
+}
+
+.success-passenger-table th:first-child {
+  border-left: 1px solid #d0d0d0;
+}
+
+.success-passenger-table th:last-child {
+  border-right: 1px solid #d0d0d0;
+}
+
+.success-passenger-table td {
+  padding: 12px 8px;
+  text-align: center;
+  border-bottom: 1px solid #d0d0d0;
+  color: #333;
+  background-color: #eff1f9;
+}
+
+.success-passenger-table td:first-child {
+  border-left: 1px solid #d0d0d0;
+}
+
+.success-passenger-table td:last-child {
+  border-right: 1px solid #d0d0d0;
+}
+
+.success-passenger-table tr:hover td {
+  background-color: #e5e7ef;
+}
+
+.success-passenger-table tr:last-child td {
+  border-bottom: 1px solid #999999;
+}
+
+.status-paid {
+  color: #fb8530;
+  font-weight: 600;
+}
+
+.success-order-actions {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  padding: 20px 0;
+  border-top: 2px solid #c0d7eb;
+}
+
+.food-button, .continue-button, .view-details-button {
+  padding: 10px 40px;
+  border-radius: 5px;
+  font-size: 15px;
+  font-weight: 500;
+  min-width: 140px;
+  cursor: pointer;
+}
+
+.food-button, .continue-button {
+  background-color: white;
+  color: #666;
+  border: 1px solid #d0d0d0;
+}
+
+.food-button:hover, .continue-button:hover {
+  background-color: #f5f5f5;
+  border-color: #b0b0b0;
+}
+
+.view-details-button {
+  background-color: #ff7200;
+  color: white;
+  border: 1px solid #ff7200;
+}
+
+.view-details-button:hover {
+  background-color: #ff8533;
+  border-color: #ff8533;
+}

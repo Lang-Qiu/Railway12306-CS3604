@@ -1,0 +1,156 @@
+.personal-info-panel {
+  flex: 1;
+  padding: 10px 20px;
+  background-color: #fff;
+  min-height: calc(100vh - 200px);
+  /* Border logic handled in component structure or parent */
+}
+
+.info-section {
+  padding: 20px;
+  border: 1px solid #e8e8e8;
+  margin-bottom: -1px; /* Collapse borders */
+}
+
+.info-section:first-child {
+  border-radius: 4px 4px 0 0;
+}
+
+.info-section:last-child {
+  border-radius: 0 0 4px 4px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px dashed #e8e8e8;
+  padding-bottom: 10px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  padding-left: 15px;
+  border-left: 4px solid #3b99fc;
+}
+
+.edit-btn {
+  padding: 3px 20px;
+  background: transparent;
+  color: #555;
+  font-size: 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.edit-btn:hover {
+  color: #ff8000;
+  border-color: #ff8000;
+}
+
+.save-btn {
+  padding: 3px 20px;
+  background: #ff8000;
+  color: #fff;
+  font-size: 14px;
+  border: 1px solid #ff8000;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.save-btn:hover {
+  background: #e67300;
+  border-color: #e67300;
+}
+
+.cancel-btn {
+  padding: 3px 20px;
+  background: transparent;
+  color: #666;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  line-height: 2;
+  margin-bottom: 6px;
+  max-width: 900px;
+}
+
+.info-label {
+  width: 300px;
+  text-align: right;
+  font-size: 14px;
+  color: #333;
+  font-weight: 400;
+  margin-right: 5px;
+}
+
+.info-value {
+  flex: 1;
+  text-align: left;
+  font-size: 14px;
+  color: #333;
+  font-weight: 450;
+  padding-left: 5px;
+}
+
+.verification-status {
+  color: #ff9800;
+  font-weight: 500;
+  margin-left: 10px;
+}
+
+.verify-link {
+  color: #2876c8;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-left: 15px;
+}
+
+.verify-link:hover {
+  color: #1e5fa8;
+}
+
+.email-input {
+  flex: 0 1 400px;
+  padding: 6px 0 6px 10px;
+  border: 1px solid #d0d0d0;
+  font-size: 14px;
+  outline: none;
+  border-radius: 0;
+}
+
+.email-input:focus {
+  border-color: #2876c8;
+}
+
+.discount-select {
+  width: 200px;
+  height: 36px;
+  border: 1px solid #b8b8b8;
+  padding: 0 28px 0 12px;
+  font-size: 14px;
+  outline: none;
+  border-radius: 0;
+  background-color: #fff;
+  box-shadow: 0 0 0 rgba(64, 169, 255, 0);
+  transition: all 0.3s;
+}
+
+.discount-select:hover, .discount-select:focus {
+  border-color: #40a9ff;
+  box-shadow: 0 0 0 2px rgba(64, 169, 255, 0.1);
+}

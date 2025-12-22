@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">47.61% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>12/24</span>
+                <span class='fraction'>10/21</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.33% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>2/6</span>
+                <span class='fraction'>3/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.33% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/3</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">52.17% </span>
+                <span class="strong">47.61% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>12/23</span>
+                <span class='fraction'>10/21</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -105,41 +105,43 @@
 <a name='L40'></a><a href='#L40'>40</a>
 <a name='L41'></a><a href='#L41'>41</a>
 <a name='L42'></a><a href='#L42'>42</a>
-<a name='L43'></a><a href='#L43'>43</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -148,41 +150,42 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const forge = require('node-forge');
-let runtimePrivateKeyPem = process.env.RSA_PRIVATE_KEY || <span class="branch-1 cbranch-no" title="branch not covered" >'';</span>
-let runtimePublicKeyPem = '';
+const fs = require('fs');
+const path = require('path');
 &nbsp;
-function ensureKeyPair() {
-  try {
-    <span class="missing-if-branch" title="else path not taken" >E</span>if (runtimePrivateKeyPem) {
-      const privateKey = forge.pki.privateKeyFromPem(runtimePrivateKeyPem);
-      const publicKey = <span class="cstat-no" title="statement not covered" >forge.pki.setRsaPublicKey(privateKey.n, privateKey.e);</span>
-<span class="cstat-no" title="statement not covered" >      runtimePublicKeyPem = forge.pki.publicKeyToPem(publicKey);</span>
-<span class="cstat-no" title="statement not covered" >      return;</span>
-    }
-  } catch (_) {
-    runtimePrivateKeyPem = '';
+let privateKeyPem;
+&nbsp;
+// 优先从文件读取私钥
+try {
+  const keyPath = path.join(__dirname, '../../certs/jwtRS256.key');
+  <span class="missing-if-branch" title="else path not taken" >E</span>if (fs.existsSync(keyPath)) {
+    privateKeyPem = fs.readFileSync(keyPath, 'utf8');
   }
-  const keypair = forge.pki.rsa.generateKeyPair({ bits: 2048, e: 0x10001 });
-  runtimePrivateKeyPem = forge.pki.privateKeyToPem(keypair.privateKey);
-  runtimePublicKeyPem = forge.pki.publicKeyToPem(keypair.publicKey);
+} catch (error) {
+<span class="cstat-no" title="statement not covered" >  console.warn('Failed to read private key from file:', error);</span>
 }
 &nbsp;
-ensureKeyPair();
+// 如果文件读取失败，尝试从环境变量读取
+<span class="missing-if-branch" title="if path not taken" >I</span>if (!privateKeyPem) {
+<span class="cstat-no" title="statement not covered" >  privateKeyPem = process.env.RSA_PRIVATE_KEY;</span>
+}
+&nbsp;
+<span class="missing-if-branch" title="if path not taken" >I</span>if (!privateKeyPem) {
+<span class="cstat-no" title="statement not covered" >  throw new Error('RSA_PRIVATE_KEY not found in file or environment variable');</span>
+}
 &nbsp;
 function <span class="fstat-no" title="function not covered" >decryptPassword(</span>encryptedPassword) {
-<span class="cstat-no" title="statement not covered" >  if (!runtimePrivateKeyPem) <span class="cstat-no" title="statement not covered" >return encryptedPassword;</span></span>
-<span class="cstat-no" title="statement not covered" >  try {</span>
-    const privateKey = <span class="cstat-no" title="statement not covered" >forge.pki.privateKeyFromPem(runtimePrivateKeyPem);</span>
-    const decoded = <span class="cstat-no" title="statement not covered" >forge.util.decode64(encryptedPassword);</span>
-    const decrypted = <span class="cstat-no" title="statement not covered" >privateKey.decrypt(decoded, 'RSA-OAEP');</span>
-<span class="cstat-no" title="statement not covered" >    return decrypted;</span>
-  } catch (_) {
-<span class="cstat-no" title="statement not covered" >    return encryptedPassword;</span>
-  }
+  const privateKey = <span class="cstat-no" title="statement not covered" >forge.pki.privateKeyFromPem(privateKeyPem);</span>
+  const decoded = <span class="cstat-no" title="statement not covered" >forge.util.decode64(encryptedPassword);</span>
+  const decrypted = <span class="cstat-no" title="statement not covered" >privateKey.decrypt(decoded, 'RSA-OAEP');</span>
+<span class="cstat-no" title="statement not covered" >  return decrypted;</span>
 }
 &nbsp;
 function <span class="fstat-no" title="function not covered" >getPublicKey(</span>) {
-<span class="cstat-no" title="statement not covered" >  return runtimePublicKeyPem;</span>
+  const privateKey = <span class="cstat-no" title="statement not covered" >forge.pki.privateKeyFromPem(privateKeyPem);</span>
+  const publicKey = <span class="cstat-no" title="statement not covered" >forge.pki.setRsaPublicKey(privateKey.n, privateKey.e);</span>
+  const publicKeyPem = <span class="cstat-no" title="statement not covered" >forge.pki.publicKeyToPem(publicKey);</span>
+<span class="cstat-no" title="statement not covered" >  return publicKeyPem;</span>
 }
 &nbsp;
 module.exports = {
@@ -196,7 +199,7 @@ module.exports = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-24T07:36:36.975Z
+                at 2025-12-20T08:22:59.377Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

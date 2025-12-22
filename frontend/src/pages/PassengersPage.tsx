@@ -1,248 +1,436 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { listPassengers, searchPassengers, addPassenger, updatePassenger, deletePassenger } from '../api/passengers'
-import TopNavigation from '../components/TopNavigation'
-import MainNavigation from '../components/MainNavigation'
-import BottomNavigation from '../components/BottomNavigation'
-import '../styles/base.css'
-import './PassengersPage.css'
-
-type Passenger = {
-  id: number
-  name: string
-  phone?: string
-  id_card_type?: string
-  id_card_number?: string
-  discount_type?: string
-  status?: '已通过' | '待核验' | '未通过'
-}
+import React, { useState, useEffect } from 'react';
+import SideMenu from '../components/SideMenu';
+import { Passenger, listPassengers, searchPassengers, addPassenger, updatePassenger, deletePassenger } from '../api/passengers';
+import { syncService } from '../services/SyncService';
+import './PassengersPage.css';
 
 const PassengersPage: React.FC = () => {
-  const [userId] = useState<number>(1)
-  const [list, setList] = useState<Passenger[]>([])
-  const [q, setQ] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [showAdd, setShowAdd] = useState(false)
-  const [editing, setEditing] = useState<Passenger | null>(null)
-  const [confirmId, setConfirmId] = useState<number | null>(null)
+  const [passengers, setPassengers] = useState<Passenger[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Modal states
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [currentPassenger, setCurrentPassenger] = useState<Passenger | null>(null);
 
-  const fetchList = async () => {
-    setLoading(true); setError('')
+  // Form states
+  const [formData, setFormData] = useState<Partial<Passenger>>({
+    name: '',
+    phone: '',
+    idCardType: '二代居民身份证',
+    idCardNumber: '',
+    discountType: '成人',
+    seatPreference: '无偏好',
+    specialNeeds: '',
+    isCommon: true
+  });
+
+  const userId = 1; // TODO: Get from auth context
+
+  useEffect(() => {
+    fetchPassengers();
+    syncService.connect();
+    const unsubscribe = syncService.subscribe((event) => {
+      setPassengers(prev => {
+        if (event.type === 'PASSENGER_UPDATED') {
+            const updatedPassenger = event.payload;
+            const index = prev.findIndex(p => p.id === updatedPassenger.id);
+            if (index !== -1) {
+              const newPassengers = [...prev];
+              newPassengers[index] = updatedPassenger;
+              return newPassengers;
+            }
+            return prev;
+        } else if (event.type === 'PASSENGER_ADDED') {
+            return [event.payload, ...prev];
+        } else if (event.type === 'PASSENGER_DELETED') {
+            return prev.filter(p => p.id !== event.payload.id);
+        }
+        return prev;
+      });
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const fetchPassengers = async () => {
+    setLoading(true);
     try {
-      const data = await listPassengers(userId)
-      const arr = Array.isArray(data.passengers) ? data.passengers : []
-      setList(arr as Passenger[])
-    } catch {
-      setError('加载失败')
+      const data = await listPassengers(userId);
+      setPassengers(data);
+    } catch (error) {
+      console.error('Failed to fetch passengers', error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  useEffect(() => { fetchList() }, [])
+  const handleSearch = async () => {
+    setLoading(true);
+    try {
+      if (searchQuery.trim()) {
+        const data = await searchPassengers(userId, searchQuery);
+        setPassengers(data);
+      } else {
+        await fetchPassengers();
+      }
+    } catch (error) {
+      console.error('Failed to search passengers', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const filtered = useMemo(() => list, [list])
+  const handleAdd = async () => {
+    try {
+      await addPassenger({ ...formData, userId });
+      setShowAddModal(false);
+      setFormData({
+        name: '',
+        phone: '',
+        idCardType: '二代居民身份证',
+        idCardNumber: '',
+        discountType: '成人',
+        seatPreference: '无偏好',
+        specialNeeds: '',
+        isCommon: true
+      });
+      fetchPassengers();
+    } catch (error) {
+      console.error('Failed to add passenger', error);
+    }
+  };
 
-  const [formName, setFormName] = useState('')
-  const [formPhone, setFormPhone] = useState('')
-  const [formIdType, setFormIdType] = useState('二代居民身份证')
-  const [formIdNumber, setFormIdNumber] = useState('')
-  const [formDiscount, setFormDiscount] = useState('成人')
+  const handleUpdate = async () => {
+    if (!currentPassenger) return;
+    try {
+      await updatePassenger(currentPassenger.id, { ...formData, userId });
+      setShowEditModal(false);
+      setCurrentPassenger(null);
+      fetchPassengers();
+    } catch (error) {
+      console.error('Failed to update passenger', error);
+    }
+  };
 
-  const resetForm = () => {
-    setFormName('')
-    setFormPhone('')
-    setFormIdType('二代居民身份证')
-    setFormIdNumber('')
-    setFormDiscount('成人')
-  }
+  const handleDelete = async () => {
+    if (!currentPassenger) return;
+    try {
+      await deletePassenger(currentPassenger.id, userId);
+      setShowDeleteModal(false);
+      setCurrentPassenger(null);
+      fetchPassengers();
+    } catch (error) {
+      console.error('Failed to delete passenger', error);
+    }
+  };
 
-  const submitAdd = async () => {
-    if (!formName) return
-    await addPassenger({ userId, name: formName, phone: formPhone, id_card_type: formIdType, id_card_number: formIdNumber, discount_type: formDiscount })
-    setShowAdd(false)
-    resetForm()
-    await fetchList()
-  }
+  const openEditModal = (passenger: Passenger) => {
+    setCurrentPassenger(passenger);
+    setFormData({
+      name: passenger.name,
+      phone: passenger.phone,
+      idCardType: passenger.idCardType,
+      idCardNumber: passenger.idCardNumber,
+      discountType: passenger.discountType
+    });
+    setShowEditModal(true);
+  };
 
-  const openEdit = (p: Passenger) => {
-    setEditing(p)
-    setFormName(p.name || '')
-    setFormPhone(p.phone || '')
-    setFormIdType(p.id_card_type || '二代居民身份证')
-    setFormIdNumber(p.id_card_number || '')
-    setFormDiscount(p.discount_type || '成人')
-  }
-
-  const submitEdit = async () => {
-    if (!editing) return
-    await updatePassenger(editing.id, { userId, name: formName, phone: formPhone, id_card_type: formIdType, id_card_number: formIdNumber, discount_type: formDiscount })
-    setEditing(null)
-    resetForm()
-    await fetchList()
-  }
-
-  const submitDelete = async () => {
-    if (confirmId == null) return
-    await deletePassenger(confirmId, userId)
-    setConfirmId(null)
-    await fetchList()
-  }
+  const openDeleteModal = (passenger: Passenger) => {
+    setCurrentPassenger(passenger);
+    setShowDeleteModal(true);
+  };
 
   return (
     <div className="passengers-page">
-      <TopNavigation />
-      <MainNavigation />
-      <div className="page-wrapper">
+      <div className="content-wrapper">
         <div className="breadcrumb">
-          <a href="javascript:;" className="crumb">我的12306</a>
-          <span className="sep">&gt;</span>
-          <span className="crumb current">乘车人</span>
+          当前位置：个人中心 &gt; 常用联系人
         </div>
-
-        <div className="tool-bar">
-          <div className="tool-bar-inner">
-            <div className="left-tools">
-              <button className="primary" onClick={() => { resetForm(); setShowAdd(true) }}>新增乘车人</button>
-              <button className="ghost" onClick={fetchList}>刷新</button>
+        
+        <div className="main-content">
+          <SideMenu activeMenu="passengers" />
+          
+          <div className="right-panel">
+            <div className="panel-header">
+              <h2>乘车人</h2>
             </div>
-            <div className="right-tools">
-              <input className="search" value={q} onChange={(e)=>setQ(e.target.value)} placeholder="姓名/手机号/证件号" />
-              <button className="search-btn" onClick={async ()=>{ const kw = q.trim(); if (kw) { try { const data = await searchPassengers(userId, kw); const arr = Array.isArray(data.passengers)? data.passengers: []; setList(arr as Passenger[]) } catch {} } }}>搜索</button>
+
+            <div className="toolbar">
+              <div className="search-box">
+                <input 
+                  type="text" 
+                  placeholder="姓名/手机号/证件号" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <button className="btn-search" onClick={handleSearch}>搜索</button>
+              </div>
+              <div className="actions">
+                <button className="btn-add" onClick={() => setShowAddModal(true)}>+ 新增乘车人</button>
+                <button className="btn-refresh" onClick={fetchPassengers}>刷新</button>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <div className="notice">
-          <span className="notice-icon">i</span>
-          <span className="notice-text">{' ${unlinkText} '}</span>
-        </div>
-
-        <div className="list-panel">
-          {loading && (<div className="loading">加载中…</div>)}
-          {error && (<div className="error">{error}</div>)}
-          {!loading && !error && (
-            <table className="table">
+            <table className="passenger-table">
               <thead>
                 <tr>
+                  <th>序号</th>
                   <th>姓名</th>
-                  <th>手机号</th>
                   <th>证件类型</th>
                   <th>证件号码</th>
-                  <th>优惠类型</th>
-                  <th>状态</th>
+                  <th>手机号</th>
+                  <th>旅客类型</th>
+                  <th>核验状态</th>
                   <th>操作</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.length === 0 && (
-                  <tr><td colSpan={7} className="empty">暂无乘车人</td></tr>
-                )}
-                {filtered.map(p => (
+                {passengers.map((p, index) => (
                   <tr key={p.id}>
+                    <td>{index + 1}</td>
                     <td>{p.name}</td>
-                    <td>{p.phone || '-'}</td>
-                    <td>{p.id_card_type || '-'}</td>
-                    <td>{p.id_card_number || '-'}</td>
-                    <td>{p.discount_type || '-'}</td>
+                    <td>{p.idCardType}</td>
+                    <td>{p.idCardNumber}</td>
+                    <td>{p.phone}</td>
+                    <td>{p.discountType}</td>
                     <td>
-                      {p.status === '已通过' && (<span className="tag pass">已通过</span>)}
-                      {p.status === '待核验' && (<span className="tag pending">待核验</span>)}
-                      {p.status === '未通过' && (<span className="tag fail">未通过</span>)}
-                      {!p.status && (<span className="tag unknown">—</span>)}
+                      <span className={`status ${p.verificationStatus === '已通过' ? 'passed' : 'pending'}`}>
+                        {p.verificationStatus}
+                      </span>
                     </td>
                     <td>
-                      <button className="link" onClick={() => openEdit(p)}>编辑</button>
-                      <span className="split">|</span>
-                      <button className="link danger" onClick={() => setConfirmId(p.id)}>删除</button>
+                      <button className="btn-link" onClick={() => openEditModal(p)}>编辑</button>
+                      <button className="btn-link" onClick={() => openDeleteModal(p)}>删除</button>
                     </td>
                   </tr>
                 ))}
+                {passengers.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="empty-text">暂无数据</td>
+                  </tr>
+                )}
               </tbody>
             </table>
-          )}
+
+            <div className="tips-panel">
+              <h3>温馨提示：</h3>
+              <p>1. 身份证件有效期过期前6个月，或过期后6个月内，可办理"身份证件有效期核验"。</p>
+              <p>2. 请确保您的联系方式畅通，以便及时接收购票信息。</p>
+            </div>
+          </div>
         </div>
-
-        {showAdd && (
-          <div className="dialog-mask" onClick={() => setShowAdd(false)}>
-            <div className="dialog" onClick={(e)=>e.stopPropagation()}>
-              <div className="dialog-hd">新增乘车人</div>
-              <div className="dialog-bd">
-                <div className="form-row"><label>姓名</label><input value={formName} onChange={(e)=>setFormName(e.target.value)} /></div>
-                <div className="form-row"><label>手机号</label><input value={formPhone} onChange={(e)=>setFormPhone(e.target.value)} /></div>
-                <div className="form-row"><label>证件类型</label>
-                  <select value={formIdType} onChange={(e)=>setFormIdType(e.target.value)}>
-                    <option>二代居民身份证</option>
-                    <option>护照</option>
-                    <option>港澳居民来往内地通行证</option>
-                    <option>台湾居民来往大陆通行证</option>
-                  </select>
-                </div>
-                <div className="form-row"><label>证件号码</label><input value={formIdNumber} onChange={(e)=>setFormIdNumber(e.target.value)} /></div>
-                <div className="form-row"><label>优惠类型</label>
-                  <select value={formDiscount} onChange={(e)=>setFormDiscount(e.target.value)}>
-                    <option>成人</option>
-                    <option>学生</option>
-                    <option>儿童</option>
-                  </select>
-                </div>
-              </div>
-              <div className="dialog-ft">
-                <button className="primary" onClick={submitAdd}>确 定</button>
-                <button className="ghost" onClick={() => setShowAdd(false)}>取 消</button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {editing && (
-          <div className="dialog-mask" onClick={() => setEditing(null)}>
-            <div className="dialog" onClick={(e)=>e.stopPropagation()}>
-              <div className="dialog-hd">编辑乘车人</div>
-              <div className="dialog-bd">
-                <div className="form-row"><label>姓名</label><input value={formName} onChange={(e)=>setFormName(e.target.value)} /></div>
-                <div className="form-row"><label>手机号</label><input value={formPhone} onChange={(e)=>setFormPhone(e.target.value)} /></div>
-                <div className="form-row"><label>证件类型</label>
-                  <select value={formIdType} onChange={(e)=>setFormIdType(e.target.value)}>
-                    <option>二代居民身份证</option>
-                    <option>护照</option>
-                    <option>港澳居民来往内地通行证</option>
-                    <option>台湾居民来往大陆通行证</option>
-                  </select>
-                </div>
-                <div className="form-row"><label>证件号码</label><input value={formIdNumber} onChange={(e)=>setFormIdNumber(e.target.value)} /></div>
-                <div className="form-row"><label>优惠类型</label>
-                  <select value={formDiscount} onChange={(e)=>setFormDiscount(e.target.value)}>
-                    <option>成人</option>
-                    <option>学生</option>
-                    <option>儿童</option>
-                  </select>
-                </div>
-              </div>
-              <div className="dialog-ft">
-                <button className="primary" onClick={submitEdit}>保 存</button>
-                <button className="ghost" onClick={() => setEditing(null)}>取 消</button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {confirmId != null && (
-          <div className="confirm-mask" onClick={() => setConfirmId(null)}>
-            <div className="confirm" onClick={(e)=>e.stopPropagation()}>
-              <div className="confirm-hd">删除确认</div>
-              <div className="confirm-bd">确定要删除该乘车人吗？</div>
-              <div className="confirm-ft">
-                <button className="danger" onClick={submitDelete}>删 除</button>
-                <button className="ghost" onClick={() => setConfirmId(null)}>取 消</button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-      <BottomNavigation />
-    </div>
-  )
-}
 
-export default PassengersPage
+      {/* Add Modal */}
+      {showAddModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h3>新增乘车人</h3>
+              <button className="close-btn" onClick={() => setShowAddModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <label>姓名：</label>
+                <input 
+                  type="text" 
+                  value={formData.name} 
+                  onChange={e => setFormData({...formData, name: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label>证件类型：</label>
+                <select 
+                  value={formData.idCardType} 
+                  onChange={e => setFormData({...formData, idCardType: e.target.value})}
+                >
+                  <option value="二代居民身份证">二代居民身份证</option>
+                  <option value="护照">护照</option>
+                  <option value="港澳居民来往内地通行证">港澳居民来往内地通行证</option>
+                  <option value="台湾居民来往大陆通行证">台湾居民来往大陆通行证</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>证件号码：</label>
+                <input 
+                  type="text" 
+                  value={formData.idCardNumber} 
+                  onChange={e => setFormData({...formData, idCardNumber: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label>手机号：</label>
+                <input 
+                  type="text" 
+                  value={formData.phone} 
+                  onChange={e => setFormData({...formData, phone: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label>旅客类型：</label>
+                <select 
+                  value={formData.discountType} 
+                  onChange={e => setFormData({...formData, discountType: e.target.value})}
+                >
+                  <option value="成人">成人</option>
+                  <option value="儿童">儿童</option>
+                  <option value="学生">学生</option>
+                  <option value="残疾军人">残疾军人</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>座位偏好：</label>
+                <select 
+                  value={formData.seatPreference} 
+                  onChange={e => setFormData({...formData, seatPreference: e.target.value})}
+                >
+                  <option value="无偏好">无偏好</option>
+                  <option value="靠窗">靠窗</option>
+                  <option value="过道">过道</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>特殊需求：</label>
+                <input 
+                  type="text" 
+                  value={formData.specialNeeds} 
+                  onChange={e => setFormData({...formData, specialNeeds: e.target.value})}
+                  placeholder="如轮椅、儿童餐等"
+                />
+              </div>
+              <div className="form-group">
+                <label>常用：</label>
+                <input 
+                  type="checkbox" 
+                  checked={formData.isCommon} 
+                  onChange={e => setFormData({...formData, isCommon: e.target.checked})}
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-cancel" onClick={() => setShowAddModal(false)}>取 消</button>
+              <button className="btn-confirm" onClick={handleAdd}>确 定</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {showEditModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h3>编辑乘车人</h3>
+              <button className="close-btn" onClick={() => setShowEditModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              {/* Similar fields as Add */}
+              <div className="form-group">
+                <label>姓名：</label>
+                <input 
+                  type="text" 
+                  value={formData.name} 
+                  onChange={e => setFormData({...formData, name: e.target.value})}
+                />
+              </div>
+              {/* ... other fields ... reusing for brevity in first pass, should componentize */}
+               <div className="form-group">
+                <label>证件类型：</label>
+                <select 
+                  value={formData.idCardType} 
+                  onChange={e => setFormData({...formData, idCardType: e.target.value})}
+                >
+                  <option value="二代居民身份证">二代居民身份证</option>
+                  <option value="护照">护照</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>证件号码：</label>
+                <input 
+                  type="text" 
+                  value={formData.idCardNumber} 
+                  onChange={e => setFormData({...formData, idCardNumber: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label>手机号：</label>
+                <input 
+                  type="text" 
+                  value={formData.phone} 
+                  onChange={e => setFormData({...formData, phone: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label>旅客类型：</label>
+                <select 
+                  value={formData.discountType} 
+                  onChange={e => setFormData({...formData, discountType: e.target.value})}
+                >
+                  <option value="成人">成人</option>
+                  <option value="儿童">儿童</option>
+                  <option value="学生">学生</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>座位偏好：</label>
+                <select 
+                  value={formData.seatPreference} 
+                  onChange={e => setFormData({...formData, seatPreference: e.target.value})}
+                >
+                  <option value="无偏好">无偏好</option>
+                  <option value="靠窗">靠窗</option>
+                  <option value="过道">过道</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>特殊需求：</label>
+                <input 
+                  type="text" 
+                  value={formData.specialNeeds} 
+                  onChange={e => setFormData({...formData, specialNeeds: e.target.value})}
+                  placeholder="如轮椅、儿童餐等"
+                />
+              </div>
+              <div className="form-group">
+                <label>常用：</label>
+                <input 
+                  type="checkbox" 
+                  checked={formData.isCommon} 
+                  onChange={e => setFormData({...formData, isCommon: e.target.checked})}
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-cancel" onClick={() => setShowEditModal(false)}>取 消</button>
+              <button className="btn-confirm" onClick={handleUpdate}>确 定</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Modal */}
+      {showDeleteModal && (
+        <div className="modal-overlay">
+          <div className="modal small">
+            <div className="modal-header">
+              <h3>删除确认</h3>
+              <button className="close-btn" onClick={() => setShowDeleteModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <p>您确定要删除该乘车人吗？</p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-cancel" onClick={() => setShowDeleteModal(false)}>取 消</button>
+              <button className="btn-confirm" onClick={handleDelete}>确 定</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default PassengersPage;

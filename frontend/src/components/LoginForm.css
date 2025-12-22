@@ -72,6 +72,7 @@
   transition: border-color 0.35s ease !important;
   box-sizing: border-box !important;
   background: #ffffff !important;
+  color: #000000 !important;
 }
 
 .login-form-container .form-input:focus {

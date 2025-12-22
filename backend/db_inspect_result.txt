@@ -1,0 +1,15 @@
+Opening DB: E:\LQiu\CS3604\12306_Follow\backend\database\12306-code-database-2023-12-15-main\db\train_basic.db
+Error: Could not locate the bindings file. Tried:
+ → E:\LQiu\CS3604\12306_Follow\backend\node_modules\better-sqlite3\build\better_sqlite3.node
+ → E:\LQiu\CS3604\12306_Follow\backend\node_modules\better-sqlite3\build\Debug\better_sqlite3.node
+ → E:\LQiu\CS3604\12306_Follow\backend\node_modules\better-sqlite3\build\Release\better_sqlite3.node
+ → E:\LQiu\CS3604\12306_Follow\backend\node_modules\better-sqlite3\out\Debug\better_sqlite3.node
+ → E:\LQiu\CS3604\12306_Follow\backend\node_modules\better-sqlite3\Debug\better_sqlite3.node
+ → E:\LQiu\CS3604\12306_Follow\backend\node_modules\better-sqlite3\out\Release\better_sqlite3.node
+ → E:\LQiu\CS3604\12306_Follow\backend\node_modules\better-sqlite3\Release\better_sqlite3.node
+ → E:\LQiu\CS3604\12306_Follow\backend\node_modules\better-sqlite3\build\default\better_sqlite3.node
+ → E:\LQiu\CS3604\12306_Follow\backend\node_modules\better-sqlite3\compiled\22.17.0\win32\x64\better_sqlite3.node
+ → E:\LQiu\CS3604\12306_Follow\backend\node_modules\better-sqlite3\addon-build\release\install-root\better_sqlite3.node
+ → E:\LQiu\CS3604\12306_Follow\backend\node_modules\better-sqlite3\addon-build\debug\install-root\better_sqlite3.node
+ → E:\LQiu\CS3604\12306_Follow\backend\node_modules\better-sqlite3\addon-build\default\install-root\better_sqlite3.node
+ → E:\LQiu\CS3604\12306_Follow\backend\node_modules\better-sqlite3\lib\binding\node-v127-win32-x64\better_sqlite3.node

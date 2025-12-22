@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import './TrainListPage.css'
- 
+
 import TrainSearchBar from '../components/our12306/TrainSearchBar'
 import TrainFilterPanel from '../components/our12306/TrainFilterPanel'
 import TrainList from '../components/our12306/TrainList'
- 
+
 import { searchTrains } from '../services/our12306/trainService'
+import { getStationCity, getStationsByCity } from '../services/our12306/stationService'
 
 const TrainListPage: React.FC = () => {
   const navigate = useNavigate()
@@ -45,10 +46,14 @@ const TrainListPage: React.FC = () => {
     setIsLoading(true)
     setError('')
     try {
+      // Resolve city names
+      const depCity = await getStationCity(params.departureStation)
+      const arrCity = await getStationCity(params.arrivalStation)
+
       const trainTypes = params.isHighSpeed ? ['G', 'C', 'D'] : []
       const result = await searchTrains(
-        params.departureStation,
-        params.arrivalStation,
+        depCity || params.departureStation,
+        arrCity || params.arrivalStation,
         params.departureDate,
         trainTypes
       )
@@ -57,7 +62,19 @@ const TrainListPage: React.FC = () => {
       setTrains(next)
       setFilteredTrains(next)
       setQueryTimestamp(new Date())
-      const opts = deriveFilterOptions(next)
+      // Build city-based station lists for filter UI
+      const depStationsList = await getStationsByCity(depCity || params.departureStation)
+      const arrStationsList = await getStationsByCity(arrCity || params.arrivalStation)
+      const seatTypesSet = new Set<string>()
+      for (const train of next) {
+        const seats = train?.availableSeats
+        if (seats) { for (const k of Object.keys(seats)) seatTypesSet.add(k) }
+      }
+      const opts = {
+        departureStations: depStationsList,
+        arrivalStations: arrStationsList,
+        seatTypes: Array.from(seatTypesSet),
+      }
       setFilterOptions(opts)
     } catch (e: any) {
       setError(e.message || '查询失败，请稍后重试')
@@ -93,7 +110,7 @@ const TrainListPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  
+
 
   const handleNavigateToLogin = () => navigate('/login')
   const handleNavigateToRegister = () => navigate('/register')
@@ -119,15 +136,15 @@ const TrainListPage: React.FC = () => {
   const handleFilterChange = (filters: any) => {
     const strategies: Record<string, (xs: any[]) => any[]> = {}
     if (filters.departureTimeRange) {
-      const [start,end] = String(filters.departureTimeRange).split('--')
-      const [sh,sm] = start.split(':').map(Number)
-      const [eh,em] = end.split(':').map(Number)
-      const sMin = sh*60+sm
-      const eMin = eh*60+em
+      const [start, end] = String(filters.departureTimeRange).split('--')
+      const [sh, sm] = start.split(':').map(Number)
+      const [eh, em] = end.split(':').map(Number)
+      const sMin = sh * 60 + sm
+      const eMin = eh * 60 + em
       strategies.departureTimeRange = (xs) => xs.filter((t) => {
-        const [h,m] = String(t.departureTime||'00:00').split(':').map(Number)
-        const val = h*60+m
-        return val>=sMin && val<=eMin
+        const [h, m] = String(t.departureTime || '00:00').split(':').map(Number)
+        const val = h * 60 + m
+        return val >= sMin && val <= eMin
       })
     }
     if (filters.trainTypes?.length) {

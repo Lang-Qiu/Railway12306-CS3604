@@ -71,6 +71,26 @@ class DatabaseManager {
       );
     `);
 
+    this.db.run(`
+      CREATE TABLE trains (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        train_no VARCHAR(20) NOT NULL,
+        train_type VARCHAR(10),
+        origin VARCHAR(50) NOT NULL,
+        destination VARCHAR(50) NOT NULL,
+        departure_time VARCHAR(10) NOT NULL,
+        arrival_time VARCHAR(10) NOT NULL,
+        planned_duration_min INTEGER,
+        business_price REAL,
+        first_class_price REAL,
+        second_class_price REAL,
+        no_seat_price REAL,
+        soft_sleeper_price REAL,
+        hard_sleeper_price REAL,
+        dong_sleeper_price REAL
+      );
+    `);
+
     await this.insertTestData();
 
     this.isInitialized = true;
@@ -100,6 +120,66 @@ class DatabaseManager {
       `INSERT OR IGNORE INTO verification_codes (phone, code, created_at, expires_at, used, sent_status, sent_at) VALUES (?, ?, ?, ?, 0, 'seed', ?)`,
       ['13900139000', '654321', now.toISOString(), expiresAt.toISOString(), now.toISOString()]
     );
+
+    // Insert test trains
+    this.db.run(`DELETE FROM trains`); // Clear existing if any (though this is in-memory mostly unless using file)
+    const trains = [
+      // 上海 -> 北京
+      ['G1', 'G', '上海', '北京', '09:00', '13:30', 270, 1500, 900, 550, 100, null, null, null],
+      ['G2', 'G', '上海', '北京', '10:00', '14:30', 270, 1500, 900, 550, 100, null, null, null],
+      ['G101', 'G', '上海虹桥', '北京南', '08:00', '12:30', 270, 1600, 950, 580, 100, null, null, null],
+      ['D1', 'D', '上海', '北京', '11:00', '21:00', 600, null, 400, 250, 100, null, null, null],
+      // 普速含卧铺
+      ['Z1', 'Z', '上海', '北京', '19:00', '07:00', 720, null, null, null, 150, 320, 260, null],
+      ['K101', 'K', '上海南', '北京西', '13:00', '13:00', 1440, null, null, null, 120, 280, 220, null],
+      // 北京 -> 上海
+      ['G3', 'G', '北京', '上海', '07:00', '11:30', 270, 1500, 900, 550, 100, null, null, null],
+      ['G5', 'G', '北京南', '上海虹桥', '08:05', '12:35', 270, 1600, 950, 580, 100, null, null, null],
+      ['G7', 'G', '北京南', '上海虹桥', '10:00', '14:28', 268, 1600, 950, 580, 100, null, null, null],
+      ['D2', 'D', '北京', '上海', '12:00', '22:00', 600, null, 400, 250, 100, null, null, null],
+      // 普速含卧铺
+      ['K102', 'K', '北京西', '上海南', '14:00', '14:00', 1440, null, null, null, 120, 300, 240, null],
+      // 动卧示例（夜间动车组动卧）
+      ['D305', 'D', '北京南', '上海虹桥', '22:10', '06:30', 500, null, 500, 320, null, null, null, 680]
+      ,
+      // 北京 ↔ 广州
+      ['G801', 'G', '北京南', '广州南', '07:30', '15:00', 450, 2200, 1300, 800, 100, null, null, null],
+      ['G802', 'G', '广州南', '北京南', '08:10', '15:40', 450, 2200, 1300, 800, 100, null, null, null],
+      ['Z35', 'Z', '北京', '广州', '18:30', '10:20', 950, null, null, null, 160, 380, 300, null],
+      ['K1203', 'K', '广州', '北京西', '12:20', '18:00', 1740, null, null, null, 120, 320, 260, null],
+      // 上海 ↔ 广州
+      ['G1301', 'G', '上海虹桥', '广州南', '09:20', '14:50', 330, 2100, 1250, 780, 100, null, null, null],
+      ['G1302', 'G', '广州南', '上海虹桥', '10:10', '15:40', 330, 2100, 1250, 780, 100, null, null, null],
+      ['D367', 'D', '上海', '广州', '08:00', '18:30', 630, null, 600, 380, 100, null, null, null],
+      ['K511', 'K', '广州', '上海南', '16:40', '18:20', 1500, null, null, null, 120, 300, 240, null],
+      // 北京 ↔ 天津（短途高铁）
+      ['G201', 'G', '北京南', '天津', '08:10', '09:00', 50, 300, 180, 95, null, null, null, null],
+      ['G202', 'G', '天津', '北京南', '09:30', '10:20', 50, 300, 180, 95, null, null, null, null],
+      ['G203', 'G', '北京南', '天津西', '11:00', '11:35', 35, 250, 150, 80, null, null, null, null],
+      // 天津 ↔ 上海
+      ['G2102', 'G', '天津西', '上海虹桥', '12:30', '17:30', 300, 1800, 1100, 700, 100, null, null, null],
+      ['D2103', 'D', '上海虹桥', '天津西', '13:10', '22:40', 570, null, 550, 340, 100, null, null, null],
+      ['K2104', 'K', '天津', '上海南', '15:00', '15:00', 1440, null, null, null, 120, 280, 220, null],
+      // 上海 ↔ 重庆
+      ['G197', 'G', '上海虹桥', '重庆北', '08:30', '15:20', 410, 2000, 1200, 750, 100, null, null, null],
+      ['D2205', 'D', '上海虹桥', '重庆西', '10:00', '20:30', 630, null, 620, 390, 100, null, null, null],
+      ['K1122', 'K', '重庆北', '上海南', '12:10', '18:30', 1860, null, null, null, 120, 340, 280, null],
+      // 北京 ↔ 重庆
+      ['G309', 'G', '北京西', '重庆北', '07:00', '14:20', 440, 2100, 1250, 780, 100, null, null, null],
+      ['D310', 'D', '重庆北', '北京西', '09:00', '19:40', 640, null, 620, 390, 100, null, null, null],
+      ['K430', 'K', '北京', '重庆西', '18:20', '18:00', 1380, null, null, null, 120, 320, 260, null],
+      // 广州 ↔ 重庆
+      ['G2951', 'G', '广州南', '重庆西', '09:40', '16:30', 410, 2000, 1180, 720, 100, null, null, null],
+      ['K2952', 'K', '重庆西', '广州', '14:20', '20:00', 1740, null, null, null, 120, 320, 260, null]
+    ];
+
+    for (const t of trains) {
+      this.db.run(
+        `INSERT INTO trains (train_no, train_type, origin, destination, departure_time, arrival_time, planned_duration_min, business_price, first_class_price, second_class_price, no_seat_price, soft_sleeper_price, hard_sleeper_price, dong_sleeper_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        t
+      );
+    }
+
     console.log('Test data inserted.');
   }
 

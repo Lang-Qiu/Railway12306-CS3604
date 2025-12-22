@@ -1,6 +1,46 @@
 const fs = require('fs')
 const path = require('path')
 
+let stationMapCache = null
+
+function loadStationMap() {
+  if (stationMapCache) return stationMapCache
+  try {
+    // Try to load from frontend public
+    const p = path.resolve(process.cwd(), '../frontend/public/station_name.js')
+    if (fs.existsSync(p)) {
+      const content = fs.readFileSync(p, 'utf-8')
+      const match = content.match(/var\s+station_names\s*=\s*'([^']+)'/)
+      if (match) {
+        const raw = match[1]
+        const items = raw.split('@').filter(Boolean)
+        const map = {} // City -> [Stations]
+        const stationToCity = {} // Station -> City
+        items.forEach(item => {
+          const parts = item.split('|')
+          const stationName = parts[1]
+          const cityName = parts[7] // City name is at index 7
+          if (cityName) {
+             if (!map[cityName]) map[cityName] = []
+             map[cityName].push(stationName)
+             stationToCity[stationName] = cityName
+          } else {
+             // Fallback if no city name (rare), map to itself
+             if (!map[stationName]) map[stationName] = []
+             map[stationName].push(stationName)
+             stationToCity[stationName] = stationName
+          }
+        })
+        stationMapCache = { map, stationToCity }
+        return stationMapCache
+      }
+    }
+  } catch (e) {
+    console.error('Error loading station map:', e)
+  }
+  return { map: {}, stationToCity: {} }
+}
+
 function toTrainItem(j) {
   const r = j && (j.route || j.basic || {})
   const fares = j && j.fares ? j.fares : {}
@@ -34,6 +74,25 @@ async function search({ from, to, highspeed }) {
     const raw = fs.readFileSync(dataPath, 'utf-8');
     const allTrains = JSON.parse(raw);
 
+    const { map, stationToCity } = loadStationMap()
+    
+    // Resolve from/to stations
+    let fromStations = [from]
+    if (map[from]) {
+        fromStations = map[from]
+    } else if (stationToCity[from]) {
+        const city = stationToCity[from]
+        if (map[city]) fromStations = map[city]
+    }
+
+    let toStations = [to]
+    if (map[to]) {
+        toStations = map[to]
+    } else if (stationToCity[to]) {
+        const city = stationToCity[to]
+        if (map[city]) toStations = map[city]
+    }
+
     const out = [];
     for (const train of allTrains) {
         const item = toTrainItem(train); // Normalize the item
@@ -42,7 +101,7 @@ async function search({ from, to, highspeed }) {
         const origin = item.route?.origin;
         const dest = item.route?.destination;
 
-        let match = origin === from && dest === to;
+        let match = fromStations.includes(origin) && toStations.includes(dest);
         if (match) {
             if (highspeed === '1') {
                 if (item.train_type === 'G' || item.train_type === 'D') {

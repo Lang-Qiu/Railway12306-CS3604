@@ -2,14 +2,27 @@ import React, { useEffect, useMemo, useState } from 'react'
 import './StationPicker.css'
 
 type Props = {
-  style: React.CSSProperties
+  style?: React.CSSProperties
   onSelect: (name: string) => void
   onClose: () => void
 }
 
-type Station = { name: string; pinyin: string }
+type Station = { name: string; pinyin: string; initial: string }
 
-const alphaGroups = ['ABCDE', 'FGHIJ', 'KLMNO', 'PQRST', 'UVWXYZ']
+const DOMESTIC_TABS = ['热门', 'ABCDE', 'FGHIJ', 'KLMNO', 'PQRST', 'UVWXYZ']
+const HOT_STATIONS = [
+  '北京', '上海', '天津', '重庆', '长沙', '长春', '成都', '福州',
+  '广州', '贵阳', '呼和浩特', '哈尔滨', '合肥', '杭州', '海口',
+  '济南', '昆明', '拉萨', '兰州', '南宁', '南京', '南昌', '沈阳',
+  '石家庄', '太原', '乌鲁木齐', '武汉', '西宁', '西安', '银川',
+  '郑州', '深圳', '厦门'
+]
+
+const INTERNATIONAL_STATIONS: Record<string, string[]> = {
+  '老挝': ['万象', '磨丁', '琅勃拉邦', '孟赛', '纳堆', '万荣'],
+  '越南': ['河内', '同登', '下龙湾'] // Added Vietnam for demo purposes
+}
+const INTERNATIONAL_TABS = Object.keys(INTERNATIONAL_STATIONS)
 
 async function loadStations(): Promise<Station[]> {
   try {
@@ -20,65 +33,89 @@ async function loadStations(): Promise<Station[]> {
     const items = raw.split('@').filter(Boolean)
     return items.map((s) => {
       const parts = s.split('|')
-      return { name: parts[1], pinyin: parts[3] }
+      // parts[1] is name, parts[3] is pinyin, parts[4] is initial (sometimes short pinyin)
+      // Actually parts[2] is code. Let's stick to parts[3] for pinyin.
+      // We can derive initial from pinyin or use parts[4] if suitable.
+      // Let's just take the first letter of pinyin as initial.
+      const pinyin = parts[3]
+      const initial = pinyin ? pinyin[0].toUpperCase() : ''
+      return { name: parts[1], pinyin, initial }
     })
   } catch {
     return []
   }
 }
 
-function groupByInitial(list: Station[]) {
-  const map: Record<string, string[]> = {}
-  for (const s of list) {
-    const initial = (s.pinyin?.[0] || '').toUpperCase()
-    if (!initial) continue
-    if (!map[initial]) map[initial] = []
-    map[initial].push(s.name)
-  }
-  for (const k of Object.keys(map)) map[k] = Array.from(new Set(map[k])).sort()
-  return map
-}
-
 const StationPicker: React.FC<Props> = ({ style, onSelect, onClose }) => {
   const [stations, setStations] = useState<Station[]>([])
-  const [activeTab, setActiveTab] = useState<string>('ABCDE')
-  const [pageIndex, setPageIndex] = useState<number>(0)
+  const [activeTab, setActiveTab] = useState<string>('热门')
+  const [activeRegion, setActiveRegion] = useState<'domestic' | 'international'>('domestic')
 
   useEffect(() => {
     loadStations().then(setStations)
   }, [])
 
-  const grouped = useMemo(() => groupByInitial(stations), [stations])
+  const groupedStations = useMemo(() => {
+    const groups: Record<string, string[]> = {}
+    stations.forEach(s => {
+      if (!groups[s.initial]) groups[s.initial] = []
+      groups[s.initial].push(s.name)
+    })
+    // Sort and dedup
+    Object.keys(groups).forEach(k => {
+      groups[k] = Array.from(new Set(groups[k])).sort((a, b) => a.localeCompare(b, 'zh-Hans-CN'))
+    })
+    return groups
+  }, [stations])
 
-  const renderGroup = (letters: string) => {
-    const start = pageIndex * 12
-    const visibleLetters = letters
-      .split('')
-      .filter((ch) => {
-        const arr = grouped[ch] || []
-        return arr.slice(start, start + 12).length > 0
-      })
+  // Reset tab when region changes
+  useEffect(() => {
+    if (activeRegion === 'domestic') {
+      setActiveTab('热门')
+    } else {
+      setActiveTab(INTERNATIONAL_TABS[0] || '')
+    }
+  }, [activeRegion])
+
+  const renderContent = () => {
+    if (activeRegion === 'international') {
+      const list = INTERNATIONAL_STATIONS[activeTab] || []
+      return (
+        <div className="sp-list">
+          <div className="sp-row">
+            <div className="sp-items">
+              {list.map(s => (
+                <button key={s} className="sp-item" onClick={() => onSelect(s)}>{s}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    if (activeTab === '热门') {
+      return (
+        <div className="sp-hot-list">
+          {HOT_STATIONS.map(s => (
+            <button key={s} className="sp-item" onClick={() => onSelect(s)}>{s}</button>
+          ))}
+        </div>
+      )
+    }
+
+    // Filter letters for current tab
+    const letters = activeTab.split('')
     return (
       <div className="sp-list">
-        {visibleLetters.map((ch) => {
-          const arr = grouped[ch] || []
-          const slice = arr.slice(start, start + 12)
-          const rows = [slice.slice(0, 6), slice.slice(6, 12)]
+        {letters.map(letter => {
+          const list = groupedStations[letter] || []
+          if (list.length === 0) return null
           return (
-            <div key={ch} className="sp-row">
-              <span className="sp-letter">{ch}</span>
+            <div key={letter} className="sp-row">
+              <span className="sp-letter">{letter}</span>
               <div className="sp-items">
-                {rows[0].map((name) => (
-                  <button key={ch + name} className="sp-item" onClick={() => onSelect(name)}>{name}</button>
-                ))}
-                {Array.from({ length: Math.max(0, 6 - rows[0].length) }).map((_, i) => (
-                  <span key={ch + 'p0' + i} className="sp-item placeholder" />
-                ))}
-                {rows[1].map((name) => (
-                  <button key={ch + name + 'r'} className="sp-item" onClick={() => onSelect(name)}>{name}</button>
-                ))}
-                {Array.from({ length: Math.max(0, 6 - rows[1].length) }).map((_, i) => (
-                  <span key={ch + 'p1' + i} className="sp-item placeholder" />
+                {list.map(s => (
+                  <button key={s} className="sp-item" onClick={() => onSelect(s)}>{s}</button>
                 ))}
               </div>
             </div>
@@ -88,32 +125,43 @@ const StationPicker: React.FC<Props> = ({ style, onSelect, onClose }) => {
     )
   }
 
-  const hasPrev = pageIndex > 0
-  const hasNext = useMemo(() => {
-    return activeTab.split('').some((ch) => {
-      const arr = grouped[ch] || []
-      return arr.length > (pageIndex + 1) * 12
-    })
-  }, [activeTab, grouped, pageIndex])
+  const currentTabs = activeRegion === 'domestic' ? DOMESTIC_TABS : INTERNATIONAL_TABS
 
   return (
     <div className="station-picker" style={style}>
-      <div className="sp-header">
-        <div className="sp-title">拼音支持首字母输入</div>
-        <button className="sp-close" onClick={onClose}>×</button>
+      <div className="sp-sidebar">
+        <button
+          className={`sp-side-btn ${activeRegion === 'domestic' ? 'active' : ''}`}
+          onClick={() => setActiveRegion('domestic')}
+        >
+          国内站点
+        </button>
+        <button
+          className={`sp-side-btn ${activeRegion === 'international' ? 'active' : ''}`}
+          onClick={() => setActiveRegion('international')}
+        >
+          国际站点
+        </button>
       </div>
-      <div className="sp-tabs">
-        {alphaGroups.map((g) => (
-          <button key={g} className={activeTab === g ? 'sp-tab active' : 'sp-tab'} onClick={() => { setActiveTab(g); setPageIndex(0) }}>
-            {g}
-          </button>
-        ))}
-      </div>
-      {renderGroup(activeTab)}
-      <div className="sp-pagination">
-        <button className={hasPrev ? 'sp-page' : 'sp-page disabled'} onClick={() => hasPrev && setPageIndex((p) => Math.max(0, p - 1))}>&laquo; 上一页</button>
-        <span className="sp-sep">|</span>
-        <button className={hasNext ? 'sp-page' : 'sp-page disabled'} onClick={() => hasNext && setPageIndex((p) => p + 1)}>下一页 &raquo;</button>
+      <div className="sp-main">
+        <div className="sp-header">
+          <div className="sp-tabs">
+            {currentTabs.map(tab => (
+              <button
+                key={tab}
+                className={`sp-tab ${activeTab === tab ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          <button className="sp-close" onClick={onClose}>×</button>
+        </div>
+        <div className="sp-content">
+          <div className="sp-info-tip">拼音支持首字母输入</div>
+          {renderContent()}
+        </div>
       </div>
     </div>
   )

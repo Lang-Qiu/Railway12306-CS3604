@@ -23,6 +23,15 @@ function transformTrainData(trains: any[]) {
     if (train.no_seat_price !== null) {
         availableSeats['无座'] = getRandomSeats();
     }
+    if (train.soft_sleeper_price !== undefined && train.soft_sleeper_price !== null) {
+      availableSeats['软卧'] = getRandomSeats();
+    }
+    if (train.hard_sleeper_price !== undefined && train.hard_sleeper_price !== null) {
+      availableSeats['硬卧'] = getRandomSeats();
+    }
+    if (train.dong_sleeper_price !== undefined && train.dong_sleeper_price !== null) {
+      availableSeats['动卧'] = getRandomSeats();
+    }
 
     return {
       trainNo: train.train_no,

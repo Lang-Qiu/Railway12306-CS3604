@@ -6,6 +6,50 @@ const { TextDecoder } = require('util');
 let CACHED_TRAINS = null;
 const decoder = new TextDecoder('gbk');
 
+let stationMapCache = null
+
+function loadStationMap() {
+  if (stationMapCache) return stationMapCache
+  try {
+    // Try to load from frontend public
+    let p = path.resolve(process.cwd(), '../frontend/public/station_name.js')
+    if (!fs.existsSync(p)) {
+        p = path.resolve(process.cwd(), 'frontend/public/station_name.js')
+    }
+    
+    if (fs.existsSync(p)) {
+      const content = fs.readFileSync(p, 'utf-8')
+      const match = content.match(/var\s+station_names\s*=\s*'([^']+)'/)
+      if (match) {
+        const raw = match[1]
+        const items = raw.split('@').filter(Boolean)
+        const map = {} // City -> [Stations]
+        const stationToCity = {} // Station -> City
+        items.forEach(item => {
+          const parts = item.split('|')
+          const stationName = parts[1]
+          const cityName = parts[7] // City name is at index 7
+          if (cityName) {
+             if (!map[cityName]) map[cityName] = []
+             map[cityName].push(stationName)
+             stationToCity[stationName] = cityName
+          } else {
+             // Fallback if no city name (rare), map to itself
+             if (!map[stationName]) map[stationName] = []
+             map[stationName].push(stationName)
+             stationToCity[stationName] = stationName
+          }
+        })
+        stationMapCache = { map, stationToCity }
+        return stationMapCache
+      }
+    }
+  } catch (e) {
+    console.error('Error loading station map:', e)
+  }
+  return { map: {}, stationToCity: {} }
+}
+
 function parseDuration(timeStr) {
     if (!timeStr || typeof timeStr !== 'string') return 0;
     const parts = timeStr.split(':');
@@ -60,7 +104,7 @@ function loadAllTrains() {
     console.log(`[TrainService] Loading train data from: ${DATA_ROOT}`);
 
     if (!fs.existsSync(DATA_ROOT)) {
-        console.error('[TrainService] Data root not found!');
+        // console.error('[TrainService] Data root not found!');
         return [];
     }
 
@@ -107,6 +151,25 @@ async function search({ from, to, highspeed }) {
   try {
     const allTrains = loadAllTrains();
 
+    const { map, stationToCity } = loadStationMap()
+    
+    // Resolve from/to stations
+    let fromStations = [from]
+    if (map[from]) {
+        fromStations = map[from]
+    } else if (stationToCity[from]) {
+        const city = stationToCity[from]
+        if (map[city]) fromStations = map[city]
+    }
+
+    let toStations = [to]
+    if (map[to]) {
+        toStations = map[to]
+    } else if (stationToCity[to]) {
+        const city = stationToCity[to]
+        if (map[city]) toStations = map[city]
+    }
+
     const out = [];
     for (const item of allTrains) {
         if (!item) continue;
@@ -114,20 +177,17 @@ async function search({ from, to, highspeed }) {
         const origin = item.route?.origin;
         const dest = item.route?.destination;
 
-        // 包含匹配 (input "北京" matches "北京南")
-        // 如果数据源是 "北京南"，input 是 "北京"，input.includes(origin) -> false
-        // origin.includes(input) -> true.
-        // 如果数据源是 "北京"，input 是 "北京南"，origin.includes(input) -> false.
+        let match = fromStations.includes(origin) && toStations.includes(dest);
         
-        // 12306 通常要求精确，或者 input 是不带 "站" 的城市名。
-        // 数据源里的 station_name 通常是不带 "站" 的（例如 "北京南"），但也有可能有。
-        // 刚才看 JSON 内容是 "哈尔滨西"，"北京朝阳"。
+        // Fallback to fuzzy match if strict match fails (from origin/main logic)? 
+        // No, HEAD's logic is better if map is correct. 
+        // But if map is missing data, origin/main's fuzzy match helps.
+        // However, HEAD's logic using fromStations array (which defaults to [from]) covers basic exact match.
+        // origin/main used 'includes' which is very loose (e.g. "Beijing" matches "Beijing South").
+        // stationMap handles "Beijing" -> ["Beijing South", "Beijing West"...].
+        // So HEAD's logic is superior.
         
-        // 宽松匹配策略：
-        const matchFrom = (origin && from && origin.includes(from)) || (origin && from && from.includes(origin));
-        const matchTo = (dest && to && dest.includes(to)) || (dest && to && to.includes(dest));
-
-        if (matchFrom && matchTo) {
+        if (match) {
             if (highspeed === '1') {
                 // 简单判断车次类型
                 const type = item.train_type ? item.train_type.toUpperCase() : '';

@@ -16,17 +16,18 @@ const TrainItem: React.FC<Props> = ({ train, onReserve, isLoggedIn, queryTimesta
     softSeat: train.availableSeats?.['软座'] ?? null,
     hardSeat: train.availableSeats?.['硬座'] ?? null,
     noSeat: train.availableSeats?.['无座'] ?? null,
+    dongSleeper: train.availableSeats?.['动卧'] ?? null,
   }
-  const fmtStatus = (n: number | null | undefined) => { if (n==null) return '--'; if (n===0) return '无'; if (n>=20) return '有'; return String(n) }
-  const cls = (n: number | null | undefined) => { if (n==null) return 'not-available'; if (n===0) return 'sold-out'; if (n>=20) return 'available'; return 'limited' }
-  const fmtDuration = (min?: number) => { if(!min&&min!==0) return '--'; const h=Math.floor((min||0)/60); const m=(min||0)%60; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}` }
+  const fmtStatus = (n: number | null | undefined) => { if (n == null) return '--'; if (n === 0) return '无'; if (n >= 20) return '有'; return String(n) }
+  const cls = (n: number | null | undefined) => { if (n == null) return 'not-available'; if (n === 0) return 'sold-out'; if (n >= 20) return 'available'; return 'limited' }
+  const fmtDuration = (min?: number) => { if (!min && min !== 0) return '--'; const h = Math.floor((min || 0) / 60); const m = (min || 0) % 60; return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}` }
 
   return (
     <div className={`train-item ${rowIndex % 2 === 0 ? 'train-item-even' : 'train-item-odd'}`}>
       <div className="train-item-cell align-left">
         <div className="train-number-container">
           <span className="train-number">{train.trainNo || '--'}</span>
-          <svg className="train-dropdown-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 8L2 4H10L6 8Z" fill="#2196f3"/></svg>
+          <svg className="train-dropdown-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 8L2 4H10L6 8Z" fill="#2196f3" /></svg>
         </div>
         <div className="train-badges">
           {train.trainNo?.startsWith('G') && <span className="train-badge">高</span>}
@@ -50,9 +51,9 @@ const TrainItem: React.FC<Props> = ({ train, onReserve, isLoggedIn, queryTimesta
         <div className="train-arrival-date">
           {(() => {
             if (!train.departureTime || !train.arrivalTime) return <span className="arrival-day-tag">当日到达</span>
-            const [dh,dm]=String(train.departureTime).split(':').map(Number); const [ah,am]=String(train.arrivalTime).split(':').map(Number)
-            const dep=dh*60+dm, arr=ah*60+am
-            return arr<dep ? <span className="arrival-day-tag">次日到达</span> : <span className="arrival-day-tag">当日到达</span>
+            const [dh, dm] = String(train.departureTime).split(':').map(Number); const [ah, am] = String(train.arrivalTime).split(':').map(Number)
+            const dep = dh * 60 + dm, arr = ah * 60 + am
+            return arr < dep ? <span className="arrival-day-tag">次日到达</span> : <span className="arrival-day-tag">当日到达</span>
           })()}
         </div>
       </div>
@@ -62,6 +63,7 @@ const TrainItem: React.FC<Props> = ({ train, onReserve, isLoggedIn, queryTimesta
       <div className="train-item-cell"><div className={`seat-info ${cls(seats.secondClass)}`}>{fmtStatus(seats.secondClass)}</div></div>
       <div className="train-item-cell"><div className={`seat-info ${cls(seats.superiorSoftSleeper)}`}>{fmtStatus(seats.superiorSoftSleeper)}</div></div>
       <div className="train-item-cell"><div className={`seat-info ${cls(seats.softSleeper)}`}>{fmtStatus(seats.softSleeper)}</div></div>
+      <div className="train-item-cell"><div className={`seat-info ${cls(seats.dongSleeper)}`}>{fmtStatus(seats.dongSleeper)}</div></div>
       <div className="train-item-cell"><div className={`seat-info ${cls(seats.hardSleeper)}`}>{fmtStatus(seats.hardSleeper)}</div></div>
       <div className="train-item-cell"><div className={`seat-info ${cls(seats.softSeat)}`}>{fmtStatus(seats.softSeat)}</div></div>
       <div className="train-item-cell"><div className={`seat-info ${cls(seats.hardSeat)}`}>{fmtStatus(seats.hardSeat)}</div></div>

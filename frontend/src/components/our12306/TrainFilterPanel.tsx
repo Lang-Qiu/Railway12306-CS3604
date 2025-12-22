@@ -29,7 +29,7 @@ const TrainFilterPanel: React.FC<Props> = ({ onFilterChange, departureStations, 
       const ds = d.toISOString().split('T')[0]
       const mm = d.getMonth() + 1
       const dd = d.getDate()
-      const wd = ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()]
+      const wd = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][d.getDay()]
       tabs.push({ date: ds, display: `${mm}-${dd}`, weekDay: wd })
       i += 1
     }
@@ -37,7 +37,7 @@ const TrainFilterPanel: React.FC<Props> = ({ onFilterChange, departureStations, 
   })()
 
   const trainTypeOptions = [
-    { key: 'GC', label: 'GC-高铁/城际', types: ['G','C'] },
+    { key: 'GC', label: 'GC-高铁/城际', types: ['G', 'C'] },
     { key: 'D', label: 'D-动车', types: ['D'] },
     { key: 'Z', label: 'Z-直达', types: ['Z'] },
     { key: 'T', label: 'T-特快', types: ['T'] },
@@ -46,7 +46,7 @@ const TrainFilterPanel: React.FC<Props> = ({ onFilterChange, departureStations, 
     { key: 'FUXING', label: '复兴号', types: ['FUXING'] },
     { key: 'SMART', label: '智能动车组', types: ['SMART'] },
   ]
-  const seatTypeOptions = ['商务座','一等座','二等座','软卧','软座','二等卧','一等卧','硬卧','硬座']
+  const seatTypeOptions = ['商务座', '一等座', '二等座', '软卧', '软座', '二等卧', '一等卧', '硬卧', '硬座']
 
   const trigger = (updates: any) => {
     onFilterChange({
@@ -78,11 +78,11 @@ const TrainFilterPanel: React.FC<Props> = ({ onFilterChange, departureStations, 
       <div className="filter-panel-container">
         <div className="filter-row">
           <div className="filter-label">车次类型：</div>
-          <button className="filter-all-btn" onClick={() => { const all = trainTypeOptions.flatMap((o) => o.types); const useAll = selectedTrainTypes.length !== all.length; setSelectedTrainTypes(useAll ? all : []); trigger({ trainTypes: useAll ? all : [] }) }}>全部</button>
+          <button className={`filter-all-btn ${selectedTrainTypes.length === 0 ? 'active' : ''}`} onClick={() => { setSelectedTrainTypes([]); trigger({ trainTypes: [] }) }}>全部</button>
           <div className="filter-options">
             {trainTypeOptions.map((o) => (
               <label key={o.key} className="filter-checkbox">
-                <input type="checkbox" checked={o.types.every((t) => selectedTrainTypes.includes(t))} onChange={() => toggleTypes(o.types)} />
+                <input type="checkbox" checked={o.types.some((t) => selectedTrainTypes.includes(t))} onChange={() => toggleTypes(o.types)} />
                 <span className="checkbox-label">{o.label}</span>
               </label>
             ))}
@@ -98,37 +98,33 @@ const TrainFilterPanel: React.FC<Props> = ({ onFilterChange, departureStations, 
             </select>
           </div>
         </div>
-        {departureStations.length > 0 && (
-          <div className="filter-row">
-            <div className="filter-label">出发车站：</div>
-            <button className="filter-all-btn" onClick={() => { const useAll = selectedDepartureStations.length !== departureStations.length; const next = useAll ? [...departureStations] : []; setSelectedDepartureStations(next); trigger({ departureStations: next }) }}>全选</button>
-            <div className="filter-options">
-              {departureStations.map((s) => (
-                <label key={s} className="filter-checkbox">
-                  <input type="checkbox" checked={selectedDepartureStations.includes(s)} onChange={() => { const next = selectedDepartureStations.includes(s) ? selectedDepartureStations.filter((x) => x !== s) : [...selectedDepartureStations, s]; setSelectedDepartureStations(next); trigger({ departureStations: next }) }} />
-                  <span className="checkbox-label">{s}</span>
-                </label>
-              ))}
-            </div>
+        <div className="filter-row">
+          <div className="filter-label">出发车站：</div>
+          <button className={`filter-all-btn ${selectedDepartureStations.length === 0 ? 'active' : ''}`} onClick={() => { setSelectedDepartureStations([]); trigger({ departureStations: [] }) }}>全部</button>
+          <div className="filter-options">
+            {departureStations.map((s) => (
+              <label key={s} className="filter-checkbox">
+                <input type="checkbox" checked={selectedDepartureStations.includes(s)} onChange={() => { const next = selectedDepartureStations.includes(s) ? selectedDepartureStations.filter((x) => x !== s) : [...selectedDepartureStations, s]; setSelectedDepartureStations(next); trigger({ departureStations: next }) }} />
+                <span className="checkbox-label">{s}</span>
+              </label>
+            ))}
           </div>
-        )}
-        {arrivalStations.length > 0 && (
-          <div className="filter-row">
-            <div className="filter-label">到达车站：</div>
-            <button className="filter-all-btn" onClick={() => { const useAll = selectedArrivalStations.length !== arrivalStations.length; const next = useAll ? [...arrivalStations] : []; setSelectedArrivalStations(next); trigger({ arrivalStations: next }) }}>全选</button>
-            <div className="filter-options">
-              {arrivalStations.map((s) => (
-                <label key={s} className="filter-checkbox">
-                  <input type="checkbox" checked={selectedArrivalStations.includes(s)} onChange={() => { const next = selectedArrivalStations.includes(s) ? selectedArrivalStations.filter((x) => x !== s) : [...selectedArrivalStations, s]; setSelectedArrivalStations(next); trigger({ arrivalStations: next }) }} />
-                  <span className="checkbox-label">{s}</span>
-                </label>
-              ))}
-            </div>
+        </div>
+        <div className="filter-row">
+          <div className="filter-label">到达车站：</div>
+          <button className={`filter-all-btn ${selectedArrivalStations.length === 0 ? 'active' : ''}`} onClick={() => { setSelectedArrivalStations([]); trigger({ arrivalStations: [] }) }}>全部</button>
+          <div className="filter-options">
+            {arrivalStations.map((s) => (
+              <label key={s} className="filter-checkbox">
+                <input type="checkbox" checked={selectedArrivalStations.includes(s)} onChange={() => { const next = selectedArrivalStations.includes(s) ? selectedArrivalStations.filter((x) => x !== s) : [...selectedArrivalStations, s]; setSelectedArrivalStations(next); trigger({ arrivalStations: next }) }} />
+                <span className="checkbox-label">{s}</span>
+              </label>
+            ))}
           </div>
-        )}
+        </div>
         <div className="filter-row">
           <div className="filter-label">车次席别：</div>
-          <button className="filter-all-btn" onClick={() => { const useAll = selectedSeatTypes.length !== seatTypeOptions.length; const next = useAll ? [...seatTypeOptions] : []; setSelectedSeatTypes(next); trigger({ seatTypes: next }) }}>全选</button>
+          <button className={`filter-all-btn ${selectedSeatTypes.length === 0 ? 'active' : ''}`} onClick={() => { setSelectedSeatTypes([]); trigger({ seatTypes: [] }) }}>全部</button>
           <div className="filter-options">
             {seatTypeOptions.map((t) => (
               <label key={t} className="filter-checkbox">
@@ -140,7 +136,7 @@ const TrainFilterPanel: React.FC<Props> = ({ onFilterChange, departureStations, 
         </div>
         <div className="filter-summary">
           <button className="clear-filters-btn" onClick={() => { setSelectedTrainTypes([]); setSelectedDepartureStations([]); setSelectedArrivalStations([]); setSelectedSeatTypes([]); trigger({ trainTypes: [], departureStations: [], arrivalStations: [], seatTypes: [] }) }}>
-            <span className="clear-icon">▼</span> 筛选
+            筛选 <span style={{ fontSize: '12px', marginLeft: '2px' }}>▲</span>
           </button>
         </div>
       </div>

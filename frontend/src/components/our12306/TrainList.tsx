@@ -46,26 +46,27 @@ const TrainList: React.FC<Props> = ({ trains, onReserve, isLoggedIn, queryTimest
       )}
       <div className="train-list-container">
         <div className="train-list-header">
-          <div className="train-list-header-cell">车次</div>
-          <div className="train-list-header-cell">出发站<br/>到达站</div>
-          <div className="train-list-header-cell">
-            <span className="header-line sortable-line" onClick={()=>handleSort('departureTime')}>出发时间 {icon('departureTime')}</span>
-            <span className="header-line sortable-line" onClick={()=>handleSort('arrivalTime')}>到达时间 {icon('arrivalTime',true)}</span>
+            <div className="train-list-header-cell">车次</div>
+            <div className="train-list-header-cell">出发站<br/>到达站</div>
+            <div className="train-list-header-cell">
+              <span className="header-line sortable-line" onClick={()=>handleSort('departureTime')}>出发时间 {icon('departureTime')}</span>
+              <span className="header-line sortable-line" onClick={()=>handleSort('arrivalTime')}>到达时间 {icon('arrivalTime',true)}</span>
+            </div>
+            <div className="train-list-header-cell sortable" onClick={()=>handleSort('duration')}><span className="header-line sortable-line">历时 {icon('duration')}</span></div>
+            <div className="train-list-header-cell">商务座<br/>特等座</div>
+            <div className="train-list-header-cell">优选<br/>一等座</div>
+            <div className="train-list-header-cell">一等座</div>
+            <div className="train-list-header-cell">二等座<br/>二等包座</div>
+            <div className="train-list-header-cell">高级<br/>软卧</div>
+            <div className="train-list-header-cell">软卧<br/>一等卧</div>
+            <div className="train-list-header-cell">动卧</div>
+            <div className="train-list-header-cell">硬卧<br/>二等卧</div>
+            <div className="train-list-header-cell">软座</div>
+            <div className="train-list-header-cell">硬座</div>
+            <div className="train-list-header-cell">无座</div>
+            <div className="train-list-header-cell">其他</div>
+            <div className="train-list-header-cell">备注</div>
           </div>
-          <div className="train-list-header-cell sortable" onClick={()=>handleSort('duration')}><span className="header-line">历时 {icon('duration')}</span></div>
-          <div className="train-list-header-cell">商务座<br/>特等座</div>
-          <div className="train-list-header-cell">优选<br/>一等座</div>
-          <div className="train-list-header-cell">一等座</div>
-          <div className="train-list-header-cell">二等座<br/>二等包座</div>
-          <div className="train-list-header-cell">高级<br/>软卧</div>
-          <div className="train-list-header-cell">软卧/动卧<br/>一等卧</div>
-          <div className="train-list-header-cell">硬卧<br/>二等卧</div>
-          <div className="train-list-header-cell">软座</div>
-          <div className="train-list-header-cell">硬座</div>
-          <div className="train-list-header-cell">无座</div>
-          <div className="train-list-header-cell">其他</div>
-          <div className="train-list-header-cell">备注</div>
-        </div>
         {sorted.length===0 ? (
           <div className="train-list-empty">
             <div className="train-list-empty-text">很抱歉，按您的查询条件，当前未找到从{departureCity||'--'} 到 {arrivalCity||'--'} 的列车。</div>

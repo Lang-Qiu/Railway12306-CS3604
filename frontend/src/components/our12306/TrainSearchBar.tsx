@@ -8,8 +8,8 @@ type Props = { initialDepartureStation: string; initialArrivalStation: string; i
 const TrainSearchBar: React.FC<Props> = ({ initialDepartureStation, initialArrivalStation, initialDepartureDate, onSearch }) => {
   const [tripType, setTripType] = useState<'single'|'round'>('single')
   const [ticketType, setTicketType] = useState<'normal'|'student'>('normal')
-  const [departureStation, setDepartureStation] = useState(initialDepartureStation || '北京')
-  const [arrivalStation, setArrivalStation] = useState(initialArrivalStation || '上海')
+  const [departureStation, setDepartureStation] = useState(initialDepartureStation || '')
+  const [arrivalStation, setArrivalStation] = useState(initialArrivalStation || '')
   const [departureDate, setDepartureDate] = useState(initialDepartureDate || new Date().toISOString().split('T')[0])
   const [returnDate, setReturnDate] = useState(new Date().toISOString().split('T')[0])
   const [errors, setErrors] = useState<Record<string,string>>({})
@@ -33,8 +33,8 @@ const TrainSearchBar: React.FC<Props> = ({ initialDepartureStation, initialArriv
         </div>
         <div className="vertical-divider-blue" />
         <div className="search-field-inline">
-          <label className="search-field-label-inline">出发地</label>
-          <StationInput value={departureStation} placeholder="北京北" type="departure" onChange={setDepartureStation} onSelect={setDepartureStation} />
+          <label className="search-field-label-inline" htmlFor="trainSearchFrom">出发地</label>
+          <StationInput id="trainSearchFrom" value={departureStation} placeholder="北京北" type="departure" onChange={setDepartureStation} onSelect={setDepartureStation} />
           {errors.departureStation && (<div className="field-error">{errors.departureStation}</div>)}
         </div>
         <button className="swap-stations-btn" onClick={handleSwapStations} aria-label="交换出发地和到达地">
@@ -45,8 +45,8 @@ const TrainSearchBar: React.FC<Props> = ({ initialDepartureStation, initialArriv
           </svg>
         </button>
         <div className="search-field-inline">
-          <label className="search-field-label-inline">目的地</label>
-          <StationInput value={arrivalStation} placeholder="上海" type="arrival" onChange={setArrivalStation} onSelect={setArrivalStation} />
+          <label className="search-field-label-inline" htmlFor="trainSearchTo">目的地</label>
+          <StationInput id="trainSearchTo" value={arrivalStation} placeholder="上海" type="arrival" onChange={setArrivalStation} onSelect={setArrivalStation} />
           {errors.arrivalStation && (<div className="field-error">{errors.arrivalStation}</div>)}
         </div>
         <div className="search-field-inline">

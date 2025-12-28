@@ -30,10 +30,8 @@ export const getUserProfile = async (): Promise<UserProfile> => {
     const response = await client.get('/api/user/profile');
     return response.data;
   } catch (error) {
-    console.warn('API call failed, using mock data', error);
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    return MOCK_USER;
+    console.warn('API call failed', error);
+    throw error; // Let the caller handle it (e.g. redirect to login if 401)
   }
 };
 

@@ -37,7 +37,43 @@ function getPublicKey() {
   return publicKeyPem;
 }
 
+// Symmetric encryption for database fields
+const crypto = require('crypto');
+const AES_SECRET = process.env.AES_SECRET || 'your-default-aes-secret-key-32chars'; // Should be 32 chars
+const IV_LENGTH = 16;
+
+function encryptData(text) {
+  if (!text) return text;
+  // Ensure key is 32 bytes
+  const key = crypto.scryptSync(AES_SECRET, 'salt', 32);
+  const iv = crypto.randomBytes(IV_LENGTH);
+  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+  let encrypted = cipher.update(text);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  return iv.toString('hex') + ':' + encrypted.toString('hex');
+}
+
+function decryptData(text) {
+  if (!text) return text;
+  try {
+    const textParts = text.split(':');
+    if (textParts.length !== 2) return text; // Return original if not in format
+    const iv = Buffer.from(textParts[0], 'hex');
+    const encryptedText = Buffer.from(textParts[1], 'hex');
+    const key = crypto.scryptSync(AES_SECRET, 'salt', 32);
+    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+    let decrypted = decipher.update(encryptedText);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString();
+  } catch (e) {
+    console.error('Decryption failed:', e);
+    return text; // Return original if decryption fails
+  }
+}
+
 module.exports = {
   decryptPassword,
   getPublicKey,
+  encryptData,
+  decryptData
 };

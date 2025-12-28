@@ -176,9 +176,10 @@ const HomePage: React.FC = () => {
             <>
               <div className="location-group">
                 <div className="field">
-                  <label>出发地</label>
+                  <label htmlFor="fromStationText">出发地</label>
                   <div className="field-row">
                     <StationInput
+                      id="fromStationText"
                       value={from}
                       placeholder="简拼/全拼/汉字"
                       type="departure"
@@ -191,9 +192,10 @@ const HomePage: React.FC = () => {
                   </div>
                 </div>
                 <div className="field">
-                  <label>到达地</label>
+                  <label htmlFor="toStationText">到达地</label>
                   <div className="field-row">
                     <StationInput
+                      id="toStationText"
                       value={to}
                       placeholder="简拼/全拼/汉字"
                       type="arrival"

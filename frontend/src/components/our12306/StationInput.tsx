@@ -8,11 +8,12 @@ type Props = {
   value: string; 
   placeholder: string; 
   type: 'departure'|'arrival'; 
+  id?: string;
   onChange: (v: string) => void; 
   onSelect: (station: string) => void 
 }
 
-const StationInput: React.FC<Props> = ({ value, placeholder, onChange, onSelect }) => {
+const StationInput: React.FC<Props> = ({ value, placeholder, id, onChange, onSelect }) => {
   const [showPicker, setShowPicker] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [suggestions, setSuggestions] = useState<Station[]>([])
@@ -80,6 +81,7 @@ const StationInput: React.FC<Props> = ({ value, placeholder, onChange, onSelect 
   return (
     <div className="station-input" ref={containerRef}>
       <input 
+        id={id}
         type="text" 
         value={value} 
         placeholder={placeholder} 

@@ -1,5 +1,9 @@
 const initSqlJs = require('sql.js');
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
+
+const DB_FILE_PATH = path.join(__dirname, '../../database/railway.db');
 
 class DatabaseManager {
   constructor() {
@@ -13,17 +17,139 @@ class DatabaseManager {
     }
 
     const SQL = await initSqlJs();
-    this.db = new SQL.Database();
+    
+    // Try to load existing database from file
+    if (fs.existsSync(DB_FILE_PATH)) {
+      try {
+        const filebuffer = fs.readFileSync(DB_FILE_PATH);
+        this.db = new SQL.Database(filebuffer);
+        console.log('Database loaded from disk.');
+      } catch (err) {
+        console.error('Failed to load database from disk, creating new one:', err);
+        this.db = new SQL.Database();
+      }
+    } else {
+      console.log('No existing database found, creating new one.');
+      this.db = new SQL.Database();
+    }
 
+    // Ensure tables exist (idempotent if loaded from disk)
+    this.createTables();
+
+    // --- Schema Migration & Repair ---
+    try {
+      const tableInfo = this.db.exec("PRAGMA table_info(users)")[0].values;
+      const columns = tableInfo.map(c => c[1]);
+      
+      // Check for 'password_hash' vs 'password'
+      if (!columns.includes('password_hash') && columns.includes('password')) {
+        console.log("Migrating 'password' to 'password_hash'...");
+        this.db.run("ALTER TABLE users RENAME COLUMN password TO password_hash");
+      } else if (!columns.includes('password_hash')) {
+        console.log("Adding missing 'password_hash' column...");
+        this.db.run("ALTER TABLE users ADD COLUMN password_hash VARCHAR(255) DEFAULT ''");
+      }
+
+      // Check for 'real_name' vs 'name'
+      if (!columns.includes('real_name') && columns.includes('name')) {
+        console.log("Migrating 'name' to 'real_name'...");
+        this.db.run("ALTER TABLE users RENAME COLUMN name TO real_name");
+      } else if (!columns.includes('real_name')) {
+        console.log("Adding missing 'real_name' column...");
+        this.db.run("ALTER TABLE users ADD COLUMN real_name VARCHAR(50)");
+      }
+
+      // Check for 'id_card' vs 'id_card_number'
+      if (!columns.includes('id_card') && columns.includes('id_card_number')) {
+        console.log("Migrating 'id_card_number' to 'id_card'...");
+        this.db.run("ALTER TABLE users RENAME COLUMN id_card_number TO id_card");
+      } else if (!columns.includes('id_card')) {
+        console.log("Adding missing 'id_card' column...");
+        this.db.run("ALTER TABLE users ADD COLUMN id_card VARCHAR(100)");
+      }
+
+      // Check for 'id_card_hash'
+      if (!columns.includes('id_card_hash')) {
+        console.log("Adding missing 'id_card_hash' column...");
+        this.db.run("ALTER TABLE users ADD COLUMN id_card_hash VARCHAR(64)");
+      }
+
+      // Check for 'discount_type'
+      if (!columns.includes('discount_type')) {
+        console.log("Adding missing 'discount_type' column...");
+        this.db.run("ALTER TABLE users ADD COLUMN discount_type VARCHAR(20) DEFAULT '成人'");
+      }
+
+      // Check for 'failed_login_attempts'
+      if (!columns.includes('failed_login_attempts')) {
+        console.log("Adding missing 'failed_login_attempts' column...");
+        this.db.run("ALTER TABLE users ADD COLUMN failed_login_attempts INTEGER DEFAULT 0");
+      }
+
+      // Check for 'lockout_until'
+      if (!columns.includes('lockout_until')) {
+        console.log("Adding missing 'lockout_until' column...");
+        this.db.run("ALTER TABLE users ADD COLUMN lockout_until DATETIME");
+      }
+
+      // Check for 'last_login'
+      if (!columns.includes('last_login')) {
+        console.log("Adding missing 'last_login' column...");
+        this.db.run("ALTER TABLE users ADD COLUMN last_login DATETIME");
+      }
+
+      this.saveDatabase();
+      console.log("Schema migration completed.");
+
+    } catch (e) {
+      console.error("Schema migration failed:", e);
+      // Fallback: If migration fails badly, we might need to recreate the table
+      // But for now, just logging error is safer than deleting data.
+    }
+
+    // Only insert test data if users table is empty
+    const result = this.db.exec("SELECT count(*) as count FROM users");
+    if (result[0].values[0][0] === 0) {
+      await this.insertTestData();
+      this.saveDatabase();
+    }
+
+    this.isInitialized = true;
+    console.log('Database initialized successfully with sql.js.');
+  }
+
+  saveDatabase() {
+    if (!this.db) return;
+    try {
+      const data = this.db.export();
+      const buffer = Buffer.from(data);
+      // Ensure directory exists
+      const dir = path.dirname(DB_FILE_PATH);
+      if (!fs.existsSync(dir)){
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      fs.writeFileSync(DB_FILE_PATH, buffer);
+      console.log('Database saved to disk.');
+    } catch (err) {
+      console.error('Failed to save database to disk:', err);
+    }
+  }
+
+  getDb() {
+    return this.db;
+  }
+
+  createTables() {
     this.db.run(`
-      CREATE TABLE users (
+      CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username VARCHAR(50) UNIQUE NOT NULL,
-        email VARCHAR(100) UNIQUE NOT NULL,
+        email VARCHAR(100) UNIQUE,
         phone VARCHAR(20) UNIQUE NOT NULL,
         password_hash VARCHAR(255) NOT NULL,
-        id_card VARCHAR(18),
+        id_card VARCHAR(100), -- Increased length for encryption
         real_name VARCHAR(50),
+        discount_type VARCHAR(20) DEFAULT '成人',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         last_login DATETIME,
@@ -33,8 +159,13 @@ class DatabaseManager {
       );
     `);
 
+    // ... (rest of the tables with IF NOT EXISTS) ...
+    // To be concise, I'm just replacing the initDatabase block, 
+    // but the tool requires exact match or complete file rewrite. 
+    // I will rewrite the createTables part to be robust.
+
     this.db.run(`
-      CREATE TABLE email_verification_codes (
+      CREATE TABLE IF NOT EXISTS email_verification_codes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email VARCHAR(100) NOT NULL,
         code VARCHAR(6) NOT NULL,
@@ -47,7 +178,7 @@ class DatabaseManager {
     `);
 
     this.db.run(`
-      CREATE TABLE verification_codes (
+      CREATE TABLE IF NOT EXISTS verification_codes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         phone VARCHAR(20) NOT NULL,
         code VARCHAR(6) NOT NULL,
@@ -60,7 +191,7 @@ class DatabaseManager {
     `);
 
     this.db.run(`
-      CREATE TABLE sessions (
+      CREATE TABLE IF NOT EXISTS sessions (
         id VARCHAR(36) PRIMARY KEY,
         session_id VARCHAR(36) UNIQUE NOT NULL,
         user_id INTEGER NOT NULL,
@@ -71,10 +202,8 @@ class DatabaseManager {
       );
     `);
 
-    // --- NEW TABLES FOR ORDER MODULE (from origin/main) ---
-
     this.db.run(`
-      CREATE TABLE passengers (
+      CREATE TABLE IF NOT EXISTS passengers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         name VARCHAR(50) NOT NULL,
@@ -96,20 +225,17 @@ class DatabaseManager {
     `);
 
     this.db.run(`
-      CREATE TABLE stations (
+      CREATE TABLE IF NOT EXISTS stations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name VARCHAR(50) NOT NULL,
         code VARCHAR(20) NOT NULL UNIQUE
       );
     `);
 
-    // Merged TRAINS table to support both schemas
     this.db.run(`
-      CREATE TABLE trains (
+      CREATE TABLE IF NOT EXISTS trains (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         train_no VARCHAR(20) NOT NULL,
-        
-        -- Fields from HEAD
         train_type VARCHAR(10),
         origin VARCHAR(50),
         destination VARCHAR(50),
@@ -123,8 +249,6 @@ class DatabaseManager {
         soft_sleeper_price REAL,
         hard_sleeper_price REAL,
         dong_sleeper_price REAL,
-
-        -- Fields from origin/main
         start_station_id INTEGER,
         end_station_id INTEGER,
         start_time VARCHAR(20),
@@ -134,7 +258,7 @@ class DatabaseManager {
     `);
 
     this.db.run(`
-      CREATE TABLE seat_types (
+      CREATE TABLE IF NOT EXISTS seat_types (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name VARCHAR(50) NOT NULL,
         code VARCHAR(20)
@@ -142,7 +266,7 @@ class DatabaseManager {
     `);
 
     this.db.run(`
-      CREATE TABLE train_seats (
+      CREATE TABLE IF NOT EXISTS train_seats (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         train_id INTEGER,
         seat_type_id INTEGER,
@@ -155,7 +279,7 @@ class DatabaseManager {
     `);
 
     this.db.run(`
-      CREATE TABLE orders (
+      CREATE TABLE IF NOT EXISTS orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
         train_id INTEGER,
@@ -168,7 +292,7 @@ class DatabaseManager {
     `);
 
     this.db.run(`
-      CREATE TABLE order_items (
+      CREATE TABLE IF NOT EXISTS order_items (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         order_id INTEGER,
         passenger_id INTEGER,
@@ -180,12 +304,8 @@ class DatabaseManager {
         FOREIGN KEY (seat_type_id) REFERENCES seat_types(id)
       );
     `);
-
-    await this.insertTestData();
-
-    this.isInitialized = true;
-    console.log('Database initialized successfully with sql.js.');
   }
+
 
   async insertTestData() {
     const hashedPassword1 = await bcrypt.hash('password123', 10);

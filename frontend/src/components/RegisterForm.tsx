@@ -33,6 +33,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
   const [discountType, setDiscountType] = useState('成人'); // 默认值为"成人"
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [phoneCountryCode, setPhoneCountryCode] = useState('+86 中国'); // 默认值为"+86 中国"
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // 验证状态
@@ -59,6 +60,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
 
   // 优惠类型选项
   const discountTypes = ['成人', '儿童', '学生', '残疾军人'];
+
+  // 手机区号选项
+  const countryCodes = ['+86 中国', '+852 中国香港', '+853 中国澳门', '+886 中国台湾'];
 
   // 用户名验证
   const validateUsername = async (value: string) => {
@@ -477,7 +481,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
             <SelectDropdown
               options={idCardTypes}
               value={idCardType}
-              placeholder="居民身份证"
               onChange={setIdCardType}
               testId="id-card-type-dropdown"
             />
@@ -549,7 +552,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
             <SelectDropdown
               options={discountTypes}
               value={discountType}
-              placeholder="成人"
               onChange={setDiscountType}
               testId="discount-type-dropdown"
             />
@@ -590,10 +592,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
               <div className="phone-input-wrapper">
                 <div className="phone-country-select">
                   <SelectDropdown
-                    options={['+86 中国']}
-                    value="+86 中国"
-                    placeholder="+86 中国"
-                    onChange={() => {}}
+                    options={countryCodes}
+                    value={phoneCountryCode}
+                    onChange={setPhoneCountryCode}
                     testId="country-code-dropdown"
                   />
                 </div>

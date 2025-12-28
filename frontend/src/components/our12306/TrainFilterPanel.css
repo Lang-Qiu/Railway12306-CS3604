@@ -79,6 +79,11 @@
     gap: 4px;
     cursor: pointer;
     user-select: none;
+    color: #000;
+}
+
+.checkbox-label {
+    color: #000;
 }
 
 .filter-all-btn {

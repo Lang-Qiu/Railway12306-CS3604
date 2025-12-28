@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import './TrainsPage.css'
- 
+
 import TrainSearchBar from '../components/our12306/TrainSearchBar'
 import TrainFilterPanel from '../components/our12306/TrainFilterPanel'
 import TrainList from '../components/our12306/TrainList'
- 
+
 import { searchTrains } from '../services/our12306/trainService'
 
 const TrainsPage: React.FC = () => {
@@ -16,7 +16,9 @@ const TrainsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useState<any>({
     departureStation: (location.state as any)?.departureStation || '',
     arrivalStation: (location.state as any)?.arrivalStation || '',
-    departureDate: (location.state as any)?.departureDate || new Date().toISOString().split('T')[0],
+    departureDate: (location.state as any)?.departureDate && !isNaN(new Date((location.state as any)?.departureDate).getTime())
+      ? (location.state as any)?.departureDate
+      : new Date().toISOString().split('T')[0],
     isHighSpeed: (location.state as any)?.isHighSpeed || false,
   })
   const [trains, setTrains] = useState<any[]>([])
@@ -103,23 +105,72 @@ const TrainsPage: React.FC = () => {
     })
   }
 
+  const handleDateChange = (date: string) => {
+    const nextParams = { ...searchParams, departureDate: date }
+    setSearchParams(nextParams)
+    fetchTrains(nextParams)
+  }
+
   const handleFilterChange = (filters: any) => {
     const strategies: Record<string, (xs: any[]) => any[]> = {}
     if (filters.departureTimeRange) {
-      const [start,end] = String(filters.departureTimeRange).split('-')
-      const [sh,sm] = start.split(':').map(Number)
-      const [eh,em] = end.split(':').map(Number)
-      const sMin = sh*60+sm
-      const eMin = eh*60+em
-      strategies.departureTimeRange = (xs) => xs.filter((t) => {
-        const [h,m] = String(t.departureTime||'00:00').split(':').map(Number)
-        const val = h*60+m
-        return val>=sMin && val<=eMin
-      })
+      // Handle both "00:00--24:00" (double dash) and "00:00-24:00" (single dash)
+      let parts = String(filters.departureTimeRange).split('--')
+      if (parts.length !== 2) {
+        // Try splitting by single dash, but handle the case where split might result in empty middle element
+        const dashParts = String(filters.departureTimeRange).split('-')
+        if (dashParts.length === 2) {
+          parts = dashParts
+        } else if (dashParts.length === 3 && dashParts[1] === '') {
+          // Handle '00:00--24:00' split by '-' -> ['00:00', '', '24:00']
+          parts = [dashParts[0], dashParts[2]]
+        }
+      }
+
+      if (parts.length === 2) {
+        const [start, end] = parts
+        const [sh, sm] = start.split(':').map(Number)
+        const [eh, em] = end.split(':').map(Number)
+
+        if (!isNaN(sh) && !isNaN(sm) && !isNaN(eh) && !isNaN(em)) {
+          const sMin = sh * 60 + sm
+          const eMin = eh * 60 + em
+          strategies.departureTimeRange = (xs) => xs.filter((t) => {
+            // Handle both "HH:MM" and full timestamp "YYYY-MM-DD HH:MM:SS"
+            let timeStr = String(t.departureTime || '00:00')
+            if (timeStr.includes(' ')) {
+              timeStr = timeStr.split(' ')[1] // Get time part
+            }
+            const [h, m] = timeStr.split(':').map(Number)
+            if (isNaN(h) || isNaN(m)) return true // Keep if invalid time to avoid empty list
+
+            const val = h * 60 + m
+            return val >= sMin && val <= eMin
+          })
+        }
+      }
     }
     if (filters.trainTypes?.length) {
       const tt = new Set<string>(filters.trainTypes)
-      strategies.trainTypes = (xs) => xs.filter((t) => tt.has(String(t.trainNo || '').charAt(0)))
+      strategies.trainTypes = (xs) => xs.filter((t) => {
+        // Handle GC-HighSpeed/Intercity
+        const trainNo = String(t.trainNo || '')
+        if (!trainNo) return false
+        const firstChar = trainNo.charAt(0)
+
+        // If 'G' or 'C' is selected, match both G and C trains (High Speed / Intercity)
+        if (tt.has('G') || tt.has('C')) {
+          if (firstChar === 'G' || firstChar === 'C') return true
+        }
+
+        // Handle 'OTHER' - trains not starting with G, C, D, Z, T, K
+        if (tt.has('OTHER')) {
+          if (!['G', 'C', 'D', 'Z', 'T', 'K'].includes(firstChar)) return true
+        }
+
+        // Default exact match for D, Z, T, K
+        return tt.has(firstChar)
+      })
     }
     if (filters.departureStations?.length) {
       const dep = new Set<string>(filters.departureStations)
@@ -133,6 +184,7 @@ const TrainsPage: React.FC = () => {
       const st = new Set<string>(filters.seatTypes)
       strategies.seatTypes = (xs) => xs.filter((t) => {
         const seats = t.availableSeats || {}
+        if (!seats) return false
         for (const k of st) { if (seats[k] !== undefined) return true }
         return false
       })
@@ -140,7 +192,10 @@ const TrainsPage: React.FC = () => {
     let out = [...trains]
     const keys = Object.keys(strategies)
     let i = 0
-    while (i < keys.length) { out = strategies[keys[i]](out); i += 1 }
+    while (i < keys.length) {
+      out = strategies[keys[i]](out)
+      i += 1
+    }
     setFilteredTrains(out)
   }
 
@@ -158,6 +213,7 @@ const TrainsPage: React.FC = () => {
         />
         <TrainFilterPanel
           onFilterChange={handleFilterChange}
+          onDateChange={handleDateChange}
           departureStations={filterOptions.departureStations || []}
           arrivalStations={filterOptions.arrivalStations || []}
           seatTypes={filterOptions.seatTypes || []}

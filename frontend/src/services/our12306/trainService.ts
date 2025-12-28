@@ -31,6 +31,8 @@ export function transformTrainData(trains: any[], departureDate: string) {
         const base = Math.floor(Math.random() * (max - min + 1)) + min;
         return Math.max(0, Math.floor(base * totalFactor));
     };
+    
+    const getRandomSeats = () => generateCount(5, 50);
 
     // Helper to ensure price exists if we have seats (Mocking prices if missing)
     const prices: any = {

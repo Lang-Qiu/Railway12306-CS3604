@@ -2,6 +2,9 @@
 const redis = require('redis');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
+const databaseManager = require('../infra-config/database');
+const { encryptData, decryptData } = require('../utils/crypto');
+const crypto = require('crypto');
 
 class InMemoryClient {
   constructor() {
@@ -45,6 +48,9 @@ class JsonDbService {
     if (this.client && this.client.isOpen) {
       return;
     }
+    // Ensure SQLite is initialized
+    await databaseManager.initDatabase();
+
     if (process.env.JSON_DB_INMEMORY === '1') {
       if (!this.client) this.client = new InMemoryClient();
       return;
@@ -53,8 +59,6 @@ class JsonDbService {
     try {
       candidate = redis.createClient({
         // 默认连接到 localhost:6379
-        // 如果您的 Redis 有密码或在不同的主机上，请在此处配置
-        // url: 'redis://:password@hostname:port'
       });
       candidate.on('error', (err) => console.error('Redis Client Error', err));
       await candidate.connect();
@@ -64,7 +68,7 @@ class JsonDbService {
       console.error('❌ Failed to connect to Redis:', error);
       try { if (candidate) await candidate.quit(); } catch (_) {}
       this.client = new InMemoryClient();
-      console.log('⚠️ Using in-memory JSON store fallback.');
+      console.log('⚠️ Using in-memory JSON store fallback for Sessions/Cache.');
     }
   }
 
@@ -76,77 +80,58 @@ class JsonDbService {
   }
 
   /**
-   * Creates a new user in the JSON document store.
-   * This operation is atomic.
+   * Creates a new user in the SQLite database.
+   * This operation is persistent.
    * @param {object} userData - The user data.
    * @returns {string} The new user's ID.
    */
   async createUser(userData) {
     await this.connect();
-    const { username, email, phone, password } = userData;
+    const { username, email, phone, password, idCardType, idCardNumber, name, discountType } = userData;
 
-    // 1. Check for existing username, email, or phone
-    if (await this.client.exists(`username_to_id:${username}`)) {
-      throw new Error('该用户名已被注册');
-    }
-    if (email && await this.client.exists(`email_to_id:${email}`)) {
-      throw new Error('该邮箱已被注册');
-    }
-    if (phone && await this.client.exists(`phone_to_id:${phone}`)) {
-      throw new Error('该手机号已被注册');
-    }
-    if (userData.id_card_type && userData.id_card_number) {
-      const idKey = `idcard_to_id:${userData.id_card_type}:${userData.id_card_number}`;
-      if (await this.client.exists(idKey)) {
-        throw new Error('该证件号码已经被注册过');
-      }
+    // Check uniqueness (SQLite UNIQUE constraints will also enforce this, but good to check early)
+    // Actually, we can rely on try/catch of db.run but explicit checks return better errors.
+    if (await this.findUserBy(username, 'username')) throw new Error('该用户名已被注册');
+    if (email && await this.findUserBy(email, 'email')) throw new Error('该邮箱已被注册');
+    if (phone && await this.findUserBy(phone, 'phone')) throw new Error('该手机号已被注册');
+    
+    if (idCardNumber) {
+        // Hash for searching
+        const idHash = crypto.createHash('sha256').update(idCardNumber).digest('hex');
+        const db = databaseManager.getDb();
+        const existing = db.exec("SELECT id FROM users WHERE id_card_hash = ?", [idHash]);
+        if (existing.length > 0 && existing[0].values.length > 0) {
+             throw new Error('该证件号码已经被注册过');
+        }
     }
 
-    const userId = uuidv4();
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
-
-    const userDocument = {
-      userId,
-      username,
-      email,
-      phone,
-      passwordHash,
-      ...userData, // include other fields like name, id_card_type, etc.
-      registrationDate: new Date().toISOString(),
-      loginInfo: {
-        lastLogin: null,
-        failedLoginAttempts: 0,
-        lockoutUntil: null,
-      },
-    };
-
-    const multi = this.client.multi();
-    multi.set(`users:${userId}`, JSON.stringify(userDocument));
-    multi.set(`username_to_id:${username}`, userId);
-    if (email) {
-      multi.set(`email_to_id:${email}`, userId);
-    }
-    if (phone) {
-      multi.set(`phone_to_id:${phone}`, userId);
-    }
-    if (userData.id_card_type && userData.id_card_number) {
-      multi.set(`idcard_to_id:${userData.id_card_type}:${userData.id_card_number}`, userId);
-    }
+    
+    // Encrypt sensitive data
+    const idCardEncrypted = idCardNumber ? encryptData(idCardNumber) : null;
+    const idHash = idCardNumber ? crypto.createHash('sha256').update(idCardNumber).digest('hex') : null;
 
     try {
-      await multi.exec();
-      console.log(`✅ User created successfully with ID: ${userId}`);
-      return userId;
+      const db = databaseManager.getDb();
+      db.run(
+        `INSERT INTO users (username, email, phone, password_hash, real_name, id_card, id_card_hash, discount_type) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [username, email, phone, passwordHash, name, idCardEncrypted, idHash, discountType]
+      );
+      
+      // Get the ID of the inserted user
+      const res = db.exec("SELECT last_insert_rowid() as id");
+      const userId = res[0].values[0][0];
+      
+      // Persist to disk
+      databaseManager.saveDatabase();
+      
+      console.log(`✅ User created successfully in SQLite with ID: ${userId}`);
+      return userId.toString();
     } catch (error) {
-      console.error('❌ Failed to create user in Redis:', error);
-      // Attempt to clean up if the transaction failed mid-way (though less likely with MULTI/EXEC)
-      await this.client.del(`users:${userId}`);
-      await this.client.del(`username_to_id:${username}`);
-      if (email) await this.client.del(`email_to_id:${email}`);
-      if (phone) await this.client.del(`phone_to_id:${phone}`);
-      if (userData.id_card_type && userData.id_card_number) await this.client.del(`idcard_to_id:${userData.id_card_type}:${userData.id_card_number}`);
-      throw new Error('创建用户时发生数据库错误');
+      console.error('❌ Failed to create user in SQLite:', error);
+      throw new Error('创建用户时发生数据库错误: ' + error.message);
     }
   }
 
@@ -158,29 +143,46 @@ class JsonDbService {
    */
   async findUserBy(identifier, type) {
     await this.connect();
-    const keyMap = {
-      username: `username_to_id:${identifier}`,
-      email: `email_to_id:${identifier}`,
-      phone: `phone_to_id:${identifier}`,
+    const db = databaseManager.getDb();
+    
+    const fieldMap = {
+        'username': 'username',
+        'email': 'email',
+        'phone': 'phone'
     };
+    
+    if (!fieldMap[type]) throw new Error('Invalid identifier type');
+    
+    const sql = `SELECT * FROM users WHERE ${fieldMap[type]} = ?`;
+    const result = db.exec(sql, [identifier]);
+    
+    if (result.length === 0 || result[0].values.length === 0) return null;
+    
+    const row = result[0].values[0];
+    const columns = result[0].columns;
+    const user = {};
+    columns.forEach((col, index) => {
+        user[col] = row[index];
+    });
+    
+    // Map to expected format
+    user.userId = user.id.toString();
+    // Decrypt ID card
+    if (user.id_card) user.idCardNumber = decryptData(user.id_card);
+    
+    // Map snake_case columns to camelCase
+    user.passwordHash = user.password_hash;
+    user.discountType = user.discount_type;
+    user.name = user.real_name;
 
-    const indexKey = keyMap[type];
-    if (!indexKey) {
-      throw new Error('Invalid identifier type specified.');
-    }
-
-    const userId = await this.client.get(indexKey);
-    if (!userId) {
-      return null;
-    }
-
-    const userJson = await this.client.get(`users:${userId}`);
-    if (!userJson) {
-      console.error(`Data inconsistency: Index ${indexKey} points to non-existent user ${userId}`);
-      return null;
-    }
-
-    return JSON.parse(userJson);
+    // Add loginInfo structure expected by authService
+    user.loginInfo = {
+        lastLogin: user.last_login,
+        failedLoginAttempts: user.failed_login_attempts,
+        lockoutUntil: user.lockout_until
+    };
+    
+    return user;
   }
 
   /**
@@ -191,11 +193,54 @@ class JsonDbService {
    */
   async findUserByIdCard(idCardType, idCardNumber) {
     await this.connect();
-    const indexKey = `idcard_to_id:${idCardType}:${idCardNumber}`;
-    const userId = await this.client.get(indexKey);
-    if (!userId) return null;
-    const userJson = await this.client.get(`users:${userId}`);
-    return userJson ? JSON.parse(userJson) : null;
+    const db = databaseManager.getDb();
+    const idHash = crypto.createHash('sha256').update(idCardNumber).digest('hex');
+    
+    const result = db.exec("SELECT * FROM users WHERE id_card_hash = ?", [idHash]);
+    if (result.length === 0 || result[0].values.length === 0) return null;
+    
+    const row = result[0].values[0];
+    const columns = result[0].columns;
+    const user = {};
+    columns.forEach((col, index) => { user[col] = row[index]; });
+    
+    user.userId = user.id.toString();
+    if (user.id_card) user.idCardNumber = decryptData(user.id_card);
+    
+    // Map snake_case to camelCase
+    user.passwordHash = user.password_hash;
+    user.discountType = user.discount_type;
+    user.name = user.real_name;
+    
+    return user;
+  }
+
+  /**
+   * Finds a user by user ID.
+   * @param {string} userId
+   * @returns {object | null}
+   */
+  async getUserById(userId) {
+    await this.connect();
+    const db = databaseManager.getDb();
+    const result = db.exec("SELECT * FROM users WHERE id = ?", [userId]);
+    
+    if (result.length === 0 || result[0].values.length === 0) return null;
+    
+    const row = result[0].values[0];
+    const columns = result[0].columns;
+    const user = {};
+    columns.forEach((col, index) => { user[col] = row[index]; });
+    
+    user.userId = user.id.toString();
+    if (user.id_card) user.idCardNumber = decryptData(user.id_card);
+    
+    // Map snake_case to camelCase
+    user.passwordHash = user.password_hash;
+    user.name = user.real_name;
+    user.discountType = user.discount_type;
+    
+    return user;
   }
 
   /**
@@ -206,27 +251,47 @@ class JsonDbService {
    */
   async updateUser(userId, updates) {
     await this.connect();
-    const userKey = `users:${userId}`;
-
-    const userJson = await this.client.get(userKey);
-    if (!userJson) {
-      throw new Error('User not found.');
-    }
-
-    const userDocument = JSON.parse(userJson);
+    const db = databaseManager.getDb();
     
-    // Merge updates. A deep merge would be better for nested objects.
-    const updatedDocument = { ...userDocument, ...updates };
+    // Construct SQL UPDATE
+    const fields = [];
+    const values = [];
+    
+    if (updates.email) { fields.push("email = ?"); values.push(updates.email); }
+    if (updates.phone) { fields.push("phone = ?"); values.push(updates.phone); }
+    if (updates.discountType) { fields.push("discount_type = ?"); values.push(updates.discountType); }
     if (updates.loginInfo) {
-        updatedDocument.loginInfo = { ...userDocument.loginInfo, ...updates.loginInfo };
+        if (updates.loginInfo.failedLoginAttempts !== undefined) { 
+            fields.push("failed_login_attempts = ?"); values.push(updates.loginInfo.failedLoginAttempts); 
+        }
+        if (updates.loginInfo.lockoutUntil !== undefined) { 
+            fields.push("lockout_until = ?"); values.push(updates.loginInfo.lockoutUntil); 
+        }
+        if (updates.loginInfo.lastLogin !== undefined) { 
+            fields.push("last_login = ?"); values.push(updates.loginInfo.lastLogin); 
+        }
     }
-
-    await this.client.set(userKey, JSON.stringify(updatedDocument));
-    return updatedDocument;
+    
+    if (fields.length === 0) return await this.getUserById(userId);
+    
+    fields.push("updated_at = CURRENT_TIMESTAMP");
+    
+    const sql = `UPDATE users SET ${fields.join(', ')} WHERE id = ?`;
+    values.push(userId);
+    
+    try {
+        db.run(sql, values);
+        databaseManager.saveDatabase();
+        return await this.getUserById(userId);
+    } catch (error) {
+        console.error('Update user error:', error);
+        throw error;
+    }
   }
 
   /**
    * Creates a new session.
+   * (Kept in Redis/Memory)
    * @param {string} sessionId - The ID for the new session.
    * @param {object} sessionData - The data to store in the session.
    * @param {Date} expiresAt - The session's expiration date.

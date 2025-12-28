@@ -120,7 +120,7 @@
   border: 1px solid #cfcfcf;
   padding: 0 5px;
   font-size: 14px;
-  color: #333;
+  color: black;
   background-color: white;
 }
 
@@ -188,7 +188,7 @@
 .btn-cancel {
   background-color: #fff;
   border: 1px solid #ddd;
-  color: #333;
+  color: black;
 }
 
 .btn-save {

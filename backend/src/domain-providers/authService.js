@@ -198,7 +198,7 @@ class AuthService {
   // 生成JWT令牌 (No changes needed)
   generateJwtToken(userId, username) {
     try {
-      const payload = { id: userId, username: username };
+      const payload = { userId: userId, username: username };
       const secret = process.env.JWT_SECRET || 'your-default-secret';
       const options = { expiresIn: '1h' };
       return jwt.sign(payload, secret, options);

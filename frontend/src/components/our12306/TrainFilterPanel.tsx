@@ -16,12 +16,16 @@ const TrainFilterPanel: React.FC<Props> = ({ onFilterChange, departureStations, 
   const [selectedArrivalStations, setSelectedArrivalStations] = useState<string[]>([])
   const [selectedSeatTypes, setSelectedSeatTypes] = useState<string[]>([])
   const [departureTimeRange, setDepartureTimeRange] = useState<string>('00:00--24:00')
+  const [isExpanded, setIsExpanded] = useState<boolean>(true)
 
   useEffect(() => { if (departureDate) setSelectedDate(departureDate) }, [departureDate])
 
   const dateTabs = (() => {
     const tabs: { date: string; display: string; weekDay: string }[] = []
-    const base = departureDate ? new Date(departureDate) : new Date()
+    let base = new Date()
+    if (departureDate && !isNaN(new Date(departureDate).getTime())) {
+      base = new Date(departureDate)
+    }
     let i = -1
     while (i <= 14) {
       const d = new Date(base)
@@ -70,7 +74,7 @@ const TrainFilterPanel: React.FC<Props> = ({ onFilterChange, departureStations, 
     <div className="train-filter-panel">
       <div className="date-filter-tabs">
         {dateTabs.map((tab) => (
-          <button key={tab.date} className={`date-tab ${selectedDate === tab.date ? 'active' : ''}`} onClick={() => setSelectedDate(tab.date)}>
+          <button key={tab.date} className={`date-tab ${selectedDate === tab.date ? 'active' : ''}`} onClick={() => { setSelectedDate(tab.date); if (onDateChange) onDateChange(tab.date) }}>
             <div className="date-tab-date">{tab.display}</div>
           </button>
         ))}
@@ -110,33 +114,37 @@ const TrainFilterPanel: React.FC<Props> = ({ onFilterChange, departureStations, 
             ))}
           </div>
         </div>
-        <div className="filter-row">
-          <div className="filter-label">到达车站：</div>
-          <button className={`filter-all-btn ${selectedArrivalStations.length === 0 ? 'active' : ''}`} onClick={() => { setSelectedArrivalStations([]); trigger({ arrivalStations: [] }) }}>全部</button>
-          <div className="filter-options">
-            {arrivalStations.map((s) => (
-              <label key={s} className="filter-checkbox">
-                <input type="checkbox" checked={selectedArrivalStations.includes(s)} onChange={() => { const next = selectedArrivalStations.includes(s) ? selectedArrivalStations.filter((x) => x !== s) : [...selectedArrivalStations, s]; setSelectedArrivalStations(next); trigger({ arrivalStations: next }) }} />
-                <span className="checkbox-label">{s}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-        <div className="filter-row">
-          <div className="filter-label">车次席别：</div>
-          <button className={`filter-all-btn ${selectedSeatTypes.length === 0 ? 'active' : ''}`} onClick={() => { setSelectedSeatTypes([]); trigger({ seatTypes: [] }) }}>全部</button>
-          <div className="filter-options">
-            {seatTypeOptions.map((t) => (
-              <label key={t} className="filter-checkbox">
-                <input type="checkbox" checked={selectedSeatTypes.includes(t)} onChange={() => { const next = selectedSeatTypes.includes(t) ? selectedSeatTypes.filter((x) => x !== t) : [...selectedSeatTypes, t]; setSelectedSeatTypes(next); trigger({ seatTypes: next }) }} />
-                <span className="checkbox-label">{t}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+        {isExpanded && (
+          <>
+            <div className="filter-row">
+              <div className="filter-label">到达车站：</div>
+              <button className={`filter-all-btn ${selectedArrivalStations.length === 0 ? 'active' : ''}`} onClick={() => { setSelectedArrivalStations([]); trigger({ arrivalStations: [] }) }}>全部</button>
+              <div className="filter-options">
+                {arrivalStations.map((s) => (
+                  <label key={s} className="filter-checkbox">
+                    <input type="checkbox" checked={selectedArrivalStations.includes(s)} onChange={() => { const next = selectedArrivalStations.includes(s) ? selectedArrivalStations.filter((x) => x !== s) : [...selectedArrivalStations, s]; setSelectedArrivalStations(next); trigger({ arrivalStations: next }) }} />
+                    <span className="checkbox-label">{s}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="filter-row">
+              <div className="filter-label">车次席别：</div>
+              <button className={`filter-all-btn ${selectedSeatTypes.length === 0 ? 'active' : ''}`} onClick={() => { setSelectedSeatTypes([]); trigger({ seatTypes: [] }) }}>全部</button>
+              <div className="filter-options">
+                {seatTypeOptions.map((t) => (
+                  <label key={t} className="filter-checkbox">
+                    <input type="checkbox" checked={selectedSeatTypes.includes(t)} onChange={() => { const next = selectedSeatTypes.includes(t) ? selectedSeatTypes.filter((x) => x !== t) : [...selectedSeatTypes, t]; setSelectedSeatTypes(next); trigger({ seatTypes: next }) }} />
+                    <span className="checkbox-label">{t}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
         <div className="filter-summary">
-          <button className="clear-filters-btn" onClick={() => { setSelectedTrainTypes([]); setSelectedDepartureStations([]); setSelectedArrivalStations([]); setSelectedSeatTypes([]); trigger({ trainTypes: [], departureStations: [], arrivalStations: [], seatTypes: [] }) }}>
-            筛选 <span style={{ fontSize: '12px', marginLeft: '2px' }}>▲</span>
+          <button className="clear-filters-btn" onClick={() => setIsExpanded(!isExpanded)}>
+            筛选 <span style={{ fontSize: '12px', marginLeft: '2px' }}>{isExpanded ? '▲' : '▼'}</span>
           </button>
         </div>
       </div>

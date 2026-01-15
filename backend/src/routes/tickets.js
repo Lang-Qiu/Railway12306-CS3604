@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const ticketService = require('../services/ticketService');
 const trainService = require('../services/trainService');
+const logger = require('../utils/logger');
 
 /**
- * 预订车票
+ * Reserve ticket
  * POST /api/tickets/reserve
  */
 router.post('/reserve', async (req, res) => {
@@ -19,47 +20,47 @@ router.post('/reserve', async (req, res) => {
       queryTimestamp 
     } = req.body;
     
-    // 先检查基本参数，如果缺少任何必要参数，抛出错误
+    // Check required parameters
     if (!trainNo || !departureStation || !arrivalStation || !departureDate || !seatType || !passengerId) {
-      throw new Error('缺少必要参数');
+      throw new Error('Missing required parameters');
     }
     
-    // 验证用户已登录（从Authorization header或session中获取）
+    // Validate user login (get from Authorization header or session)
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-      return res.status(401).json({ error: '请先登录！' });
+      return res.status(401).json({ error: 'Please login first!' });
     }
     
-    // 简化处理：从Authorization header中提取userId
-    // 实际应该验证JWT token
+    // Simplified: extract userId from Authorization header
+    // TODO: Should verify JWT token
     let userId = null;
     try {
-      // 假设格式是 "Bearer token"
+      // Assume "Bearer token" format
       const token = authHeader.split(' ')[1];
-      // TODO: 实际应该解析JWT token获取userId
-      userId = token; // 简化处理
+      // TODO: Should parse JWT token to get userId
+      userId = token; // Simplified
     } catch (error) {
-      return res.status(401).json({ error: '请先登录！' });
+      return res.status(401).json({ error: 'Please login first!' });
     }
     
-    // 检查查询时间是否超过5分钟
+    // Check if query expired (5 minutes)
     if (queryTimestamp && ticketService.checkQueryExpired(queryTimestamp)) {
-      return res.status(400).json({ error: '页面内容已过期，请重新查询！' });
+      return res.status(400).json({ error: 'Page content expired, please query again!' });
     }
     
-    // 获取车次详情以检查发车时间
+    // Get train details to check departure time
     const trainDetails = await trainService.getTrainDetails(trainNo);
     if (!trainDetails) {
-      return res.status(400).json({ error: '车次不存在' });
+      return res.status(400).json({ error: 'Train does not exist' });
     }
     
-    // 检查距离发车时间是否不足3小时
+    // Check if less than 3 hours to departure
     const timeCheck = ticketService.checkDepartureTime(departureDate, trainDetails.route.departureTime);
     if (timeCheck.isNearDeparture) {
       return res.status(400).json({ error: timeCheck.message });
     }
     
-    // 检查车次是否有余票
+    // Check ticket availability
     const availableSeats = await trainService.calculateAvailableSeats(
       trainNo, 
       departureStation, 
@@ -67,10 +68,10 @@ router.post('/reserve', async (req, res) => {
     );
     
     if (!availableSeats[seatType] || availableSeats[seatType] === 0) {
-      return res.status(400).json({ error: '手慢了，该车次车票已售罄！' });
+      return res.status(400).json({ error: 'Too slow! Tickets for this train are sold out!' });
     }
     
-    // 预订车票
+    // Reserve ticket
     const result = await ticketService.reserveTicket(
       trainNo, 
       departureStation, 
@@ -85,16 +86,16 @@ router.post('/reserve', async (req, res) => {
       return res.status(400).json({ error: result.error });
     }
     
-    // 预订成功
+    // Reservation successful
     res.status(200).json({
-      message: '预订成功',
+      message: 'Reservation successful',
       orderId: result.orderId,
       seatNo: result.seatNo,
       redirectUrl: '/order-details'
     });
   } catch (error) {
-    console.error('预订车票失败:', error);
-    res.status(500).json({ error: '网络忙，请稍后重试' });
+    logger.error('Failed to reserve ticket', { error });
+    res.status(500).json({ error: 'Network busy, please try again later' });
   }
 });
 

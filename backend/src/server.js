@@ -47,7 +47,7 @@ app.get('/api/health', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  logger.error('Unhandled error', { error: err.stack });
   res.status(500).json({ error: 'Internal server error' });
 });
 
@@ -55,7 +55,7 @@ app.use((err, req, res, next) => {
 let server;
 if (process.env.NODE_ENV !== 'test') {
   server = app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    logger.info(`Server running on port ${PORT}`);
   });
 }
 

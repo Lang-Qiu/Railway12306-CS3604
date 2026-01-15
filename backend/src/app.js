@@ -51,8 +51,8 @@ app.get('/api/health', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+  logger.error('Unhandled error', { error: err.stack });
+  res.status(500).json({ error: 'Internal Server Error' });
 });
 
 // 404 handler
@@ -61,13 +61,13 @@ app.use('*', (req, res) => {
 });
 
 /**
- * 启动定时任务调度器
+ * Start scheduled tasks scheduler
  */
 function startScheduledTasks() {
-  // 启动pending订单超时清理服务
+  // Start pending order cleanup service
   startCleanupScheduler();
   
-  // 每天凌晨2点清理过期车次
+  // Clean up expired trains every day at 2:00 AM
   const cron = require('node-cron');
   cron.schedule('0 2 * * *', async () => {
     logger.info('Executing scheduled task: Cleanup expired trains');
@@ -79,7 +79,7 @@ function startScheduledTasks() {
     }
   });
   
-  // 每天凌晨3点生成第15天的车次数据
+  // Generate Day 15 trains every day at 3:00 AM
   // cron.schedule('0 3 * * *', async () => {
   //   logger.info('Executing scheduled task: Generate Day 15 trains');
   //   try {
@@ -97,7 +97,7 @@ if (require.main === module) {
   app.listen(PORT, () => {
     logger.info(`Server running on port ${PORT}`);
     
-    // 启动所有定时任务
+    // Start all scheduled tasks
     startScheduledTasks();
   });
 }

@@ -2,7 +2,7 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { describe, test, expect, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import TrainListPage from '../../src/pages/TrainListPage'
-import * as svc from '../../src/services/our12306/trainService'
+import * as svc from '../../src/services/trainService'
 
 describe('TrainListPage 发车时间段筛选', () => {
   test('切换时间段后列表数量变化', async () => {

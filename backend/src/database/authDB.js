@@ -1,6 +1,7 @@
 // Database operations for authentication
 import { db } from '../database.js';
 import jwt from 'jsonwebtoken';
+import logger from '../utils/logger.js';
 
 /**
  * Get user session information from token
@@ -52,7 +53,7 @@ export async function getUserSession(token) {
       email: session.email
     };
   } catch (error) {
-    console.error('Error getting user session:', error);
+    logger.error('Error getting user session', { error });
     return null;
   }
 }
@@ -77,7 +78,7 @@ export async function findUserByCredential(credential) {
     const user = stmt.get(credential, credential, credential);
     return user || null;  // Convert undefined to null
   } catch (error) {
-    console.error('Error finding user by credential:', error);
+    logger.error('Error finding user by credential', { error });
     return null;
   }
 }
@@ -102,7 +103,7 @@ export async function getUserById(userId) {
     const user = stmt.get(userId);
     return user || null;  // Convert undefined to null
   } catch (error) {
-    console.error('Error getting user by ID:', error);
+    logger.error('Error getting user by ID', { error });
     return null;
   }
 }
@@ -130,7 +131,7 @@ export async function verifyPassword(userId, password) {
     // For now, just compare plain text (INSECURE - replace with bcrypt)
     return user.password === password;
   } catch (error) {
-    console.error('Error verifying password:', error);
+    logger.error('Error verifying password', { error });
     return false;
   }
 }
@@ -190,18 +191,16 @@ export async function createVerificationCode(userId, phone) {
     stmt.run(userId, 'sms', phone, code, new Date().toISOString(), expiresAt.toISOString());
     
     // Print verification code to terminal (since we can't send real SMS)
-    console.log('\n========================================');
-    console.log('📱 短信验证码 SMS Verification Code');
-    console.log('========================================');
-    console.log(`用户ID (User ID): ${userId}`);
-    console.log(`手机号 (Phone): ${phone}`);
-    console.log(`验证码 (Code): ${code}`);
-    console.log(`有效期 (Valid until): ${expiresAt.toISOString()}`);
-    console.log('========================================\n');
+    logger.info('SMS Verification Code (Simulated)', {
+      userId,
+      phone,
+      code,
+      validUntil: expiresAt.toISOString()
+    });
     
     return code;
   } catch (error) {
-    console.error('Error creating verification code:', error);
+    logger.error('Error creating verification code', { error });
     throw error;
   }
 }
@@ -260,18 +259,16 @@ export async function createEmailVerificationCode(userId, email) {
     stmt.run(userId, 'email', email, code, new Date().toISOString(), expiresAt.toISOString());
     
     // Print verification code to terminal (since we can't send real emails)
-    console.log('\n========================================');
-    console.log('📧 邮箱验证码 Email Verification Code');
-    console.log('========================================');
-    console.log(`用户ID (User ID): ${userId}`);
-    console.log(`邮箱 (Email): ${email}`);
-    console.log(`验证码 (Code): ${code}`);
-    console.log(`有效期 (Valid until): ${expiresAt.toISOString()}`);
-    console.log('========================================\n');
+    logger.info('Email Verification Code (Simulated)', {
+      userId,
+      email,
+      code,
+      validUntil: expiresAt.toISOString()
+    });
     
     return code;
   } catch (error) {
-    console.error('Error creating email verification code:', error);
+    logger.error('Error creating email verification code', { error });
     throw error;
   }
 }
@@ -317,7 +314,7 @@ export async function verifyCode(userId, code) {
     
     return true;
   } catch (error) {
-    console.error('Error verifying code:', error);
+    logger.error('Error verifying code', { error });
     return false;
   }
 }
@@ -343,7 +340,7 @@ export async function checkVerificationCodeFrequency(userId) {
     
     return result.count === 0;
   } catch (error) {
-    console.error('Error checking verification code frequency:', error);
+    logger.error('Error checking verification code frequency', { error });
     return false;
   }
 }
@@ -416,7 +413,7 @@ export async function createSession(userId) {
     
     return token;
   } catch (error) {
-    console.error('Error creating session:', error);
+    logger.error('Error creating session', { error });
     throw error;
   }
 }
@@ -504,7 +501,7 @@ export async function createUser(userData) {
     
     return userId;
   } catch (error) {
-    console.error('Error creating user:', error);
+    logger.error('Error creating user', { error });
     throw error;
   }
 }

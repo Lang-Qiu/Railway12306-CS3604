@@ -1,5 +1,5 @@
 {
-  "name": "our-12306-backend",
+  "name": "lqiu-12306-backend",
   "version": "1.0.0",
   "description": "12306 Railway Booking System Backend",
   "main": "src/app.js",

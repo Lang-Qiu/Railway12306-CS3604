@@ -85,7 +85,7 @@ const HomePage: React.FC = () => {
 
   const handleLoginClick = () => navigate('/login');
   const handleRegisterClick = () => navigate('/register');
-  const handlePersonalCenterClick = () => navigate('/personal-info');
+  const handlePersonalCenterClick = () => navigate('/information');
 
   const swapStations = () => {
     setFrom((prevFrom) => {
@@ -99,12 +99,23 @@ const HomePage: React.FC = () => {
 
   const submit = () => {
     // setErr('')
+    // 订单查询
+    if (mode === 'order') {
+      if (!orderType || !orderKeyword) {
+        alert('请输入订单类型和关键字')
+        return
+      }
+      // 如果已登录，跳转到订单中心，否则跳转到登录页
+      // 这里简化处理，假设需要跳转到订单列表页
+      navigate('/orders')
+      return
+    }
     if (mode === 'refund') {
       if (!refundStart || !refundEnd) {
         // setErr('请填写开始与结束日期')
         return
       }
-      navigate(`/trains?mode=refund&type=${refundQueryType}&start=${encodeURIComponent(refundStart)}&end=${encodeURIComponent(refundEnd)}&kw=${encodeURIComponent(refundKeyword)}`)
+      navigate(`/train?mode=refund&type=${refundQueryType}&start=${encodeURIComponent(refundStart)}&end=${encodeURIComponent(refundEnd)}&kw=${encodeURIComponent(refundKeyword)}`)
       return
     }
     if (!from || !to || !date) {
@@ -125,7 +136,7 @@ const HomePage: React.FC = () => {
     if (mode === 'round') params.set('returnDate', returnDate)
     if (student) params.set('student', '1')
     if (highspeed && (mode === 'single' || mode === 'round')) params.set('highspeed', '1')
-    navigate(`/trains?${params.toString()}`)
+    navigate(`/train?${params.toString()}`)
   }
 
   const isHighspeedVisible = mode === 'single' || mode === 'round'

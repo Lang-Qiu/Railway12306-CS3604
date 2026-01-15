@@ -18,7 +18,7 @@ class DatabaseConfig {
       driver: sqlite3.Database
     })
 
-    // 创建用户表
+    // Create users table
     await db.exec(`
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,7 +35,7 @@ class DatabaseConfig {
       )
     `)
 
-    // 创建短信验证码表
+    // Create SMS verification codes table
     await db.exec(`
       CREATE TABLE IF NOT EXISTS sms_codes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,7 +49,7 @@ class DatabaseConfig {
       )
     `)
 
-    // 创建会话表
+    // Create sessions table
     await db.exec(`
       CREATE TABLE IF NOT EXISTS sessions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,7 +64,7 @@ class DatabaseConfig {
 
     if (isTest) {
       this.testDb = db
-      // 插入测试数据
+      // Insert test data
       await this.insertTestData(db)
     } else {
       this.db = db
@@ -74,7 +74,7 @@ class DatabaseConfig {
   }
 
   async insertTestData(db) {
-    // 插入测试用户
+    // Insert test users
     await db.run(`
       INSERT OR IGNORE INTO users (username, email, phone, password_hash, real_name, id_card) 
       VALUES 
@@ -82,7 +82,7 @@ class DatabaseConfig {
         ('user2', 'user2@example.com', '13900139000', 'hashedpassword456', '李四', '110101199002022345')
     `)
 
-    // 插入有效的短信验证码
+    // Insert valid SMS verification codes
     const now = Date.now()
     await db.run(`
       INSERT OR IGNORE INTO sms_codes (phone_number, code, created_at, expires_at) 

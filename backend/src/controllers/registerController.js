@@ -1,94 +1,95 @@
 /**
- * 注册控制器
- * 文件：backend/src/controllers/registerController.js
+ * Register Controller
+ * File: backend/src/controllers/registerController.js
  * 
- * 处理所有注册相关的业务逻辑
+ * Handles all registration related business logic
  */
 
 const registrationDbService = require('../services/registrationDbService');
 const sessionService = require('../services/sessionService');
 const passengerService = require('../services/passengerService');
 const { v4: uuidv4 } = require('uuid');
+const logger = require('../utils/logger');
 
 class RegisterController {
   /**
-   * 验证用户名
+   * Validate username
    */
   async validateUsername(req, res) {
     try {
       const { username } = req.body;
 
-      // 验证用户名长度
+      // Validate username length
       if (!username || username.length < 6) {
         return res.status(400).json({
           valid: false,
-          error: '用户名长度不能少于6个字符！'
+          error: 'Username must be at least 6 characters long!'
         });
       }
 
       if (username.length > 30) {
         return res.status(400).json({
           valid: false,
-          error: '用户名长度不能超过30个字符！'
+          error: 'Username cannot exceed 30 characters!'
         });
       }
 
-      // 验证用户名格式：必须以字母开头，只能包含字母、数字和下划线
+      // Validate username format: must start with a letter, can only contain letters, numbers and underscores
       const usernameRegex = /^[a-zA-Z][a-zA-Z0-9_]*$/;
       if (!usernameRegex.test(username)) {
         return res.status(400).json({
           valid: false,
-          error: '用户名只能由字母、数字和_组成，须以字母开头！'
+          error: 'Username can only contain letters, numbers and _, and must start with a letter!'
         });
       }
 
-      // 检查用户名是否已存在
+      // Check if username already exists
       const existingUser = await registrationDbService.findUserByUsername(username);
       if (existingUser) {
         return res.status(409).json({
           valid: false,
-          error: '该用户名已经占用，请重新选择用户名！'
+          error: 'This username is already taken, please choose another one!'
         });
       }
 
       res.status(200).json({
         valid: true,
-        message: '用户名可用'
+        message: 'Username is available'
       });
     } catch (error) {
-      console.error('Validate username error:', error);
+      logger.error('Validate username error', { error });
       res.status(500).json({
         valid: false,
-        error: '服务器错误'
+        error: 'Server Error'
       });
     }
   }
 
   /**
-   * 验证密码
+   * Validate password
    */
   async validatePassword(req, res) {
     try {
       const { password } = req.body;
 
-      // 验证密码长度
+      // Validate password length
       if (!password || password.length < 6) {
         return res.status(400).json({
           valid: false,
-          error: '密码长度不能少于6个字符！'
+          error: 'Password must be at least 6 characters long!'
         });
       }
 
-      // 验证密码只包含字母、数字和下划线
+      // Validate password only contains letters, numbers and underscores
       const passwordRegex = /^[a-zA-Z0-9_]+$/;
       if (!passwordRegex.test(password)) {
         return res.status(400).json({
           valid: false,
-          error: '格式错误，必须且只能包含字母、数字和下划线中的两种或两种以上！'
+          error: 'Format error, must contain at least two of the following: letters, numbers, underscores!'
         });
       }
 
-      // 验证密码必须包含至少两种字符类型
+      // Validate password must contain at least two character types
       const hasLetter = /[a-zA-Z]/.test(password);
       const hasNumber = /[0-9]/.test(password);
       const hasUnderscore = /_/.test(password);
@@ -97,25 +98,25 @@ class RegisterController {
       if (typeCount < 2) {
         return res.status(400).json({
           valid: false,
-          error: '格式错误，必须且只能包含字母、数字和下划线中的两种或两种以上！'
+          error: 'Format error, must contain at least two of the following: letters, numbers, underscores!'
         });
       }
 
       res.status(200).json({
         valid: true,
-        message: '密码格式正确'
+        message: 'Password format is correct'
       });
     } catch (error) {
-      console.error('Validate password error:', error);
+      logger.error('Validate password error', { error });
       res.status(500).json({
         valid: false,
-        error: '服务器错误'
+        error: 'Server Error'
       });
     }
   }
 
   /**
-   * 验证姓名
+   * Validate name
    */
   async validateName(req, res) {
     try {
@@ -124,11 +125,11 @@ class RegisterController {
       if (!name) {
         return res.status(400).json({
           valid: false,
-          error: '请输入姓名！'
+          error: 'Please enter your name!'
         });
       }
 
-      // 计算字符长度（1个汉字算2个字符）
+      // Calculate character length (1 Chinese character counts as 2 characters)
       const charLength = name.split('').reduce((len, char) => {
         return len + (/[\u4e00-\u9fa5]/.test(char) ? 2 : 1);
       }, 0);
@@ -136,75 +137,75 @@ class RegisterController {
       if (charLength < 3 || charLength > 30) {
         return res.status(400).json({
           valid: false,
-          error: '允许输入的字符串在3-30个字符之间！'
+          error: 'Allowed input string length is between 3-30 characters!'
         });
       }
 
-      // 验证只包含中英文字符、点和单空格
+      // Validate only contains Chinese/English characters, dots and single spaces
       const nameRegex = /^[\u4e00-\u9fa5a-zA-Z.\s]+$/;
       if (!nameRegex.test(name)) {
         return res.status(400).json({
           valid: false,
-          error: '请输入姓名！'
+          error: 'Please enter your name!'
         });
       }
 
       res.status(200).json({
         valid: true,
-        message: '姓名格式正确'
+        message: 'Name format is correct'
       });
     } catch (error) {
-      console.error('Validate name error:', error);
+      logger.error('Validate name error', { error });
       res.status(500).json({
         valid: false,
-        error: '服务器错误'
+        error: 'Server Error'
       });
     }
   }
 
   /**
-   * 验证证件号码
+   * Validate ID card
    */
   async validateIdCard(req, res) {
     try {
       const { idCardType, idCardNumber } = req.body;
 
-      // 先验证格式，后验证长度
+      // Validate format first, then length
       if (idCardNumber) {
-        // 验证只包含数字和字母
+        // Validate only contains numbers and letters
         const idCardRegex = /^[a-zA-Z0-9]+$/;
         if (!idCardRegex.test(idCardNumber)) {
           return res.status(400).json({
             valid: false,
-            error: '输入的证件编号中包含中文信息或特殊字符！'
+            error: 'ID number contains invalid characters!'
           });
         }
       }
 
-      // 验证证件号码长度
+      // Validate ID card number length
       if (!idCardNumber || idCardNumber.length !== 18) {
         return res.status(400).json({
           valid: false,
-          error: '请正确输入18位证件号码！'
+          error: 'Please enter a valid 18-digit ID number!'
         });
       }
 
-      // 注意：证件号码是否已注册的检查在点击"下一步"时进行，这里只做格式验证
+      // Note: Check if ID number is already registered happens when clicking "Next", here only format validation
       res.status(200).json({
         valid: true,
-        message: '证件号码格式正确'
+        message: 'ID number format is correct'
       });
     } catch (error) {
-      console.error('Validate ID card error:', error);
+      logger.error('Validate ID card error', { error });
       res.status(500).json({
         valid: false,
-        error: '服务器错误'
+        error: 'Server Error'
       });
     }
   }
 
   /**
-   * 验证邮箱
+   * Validate email
    */
   async validateEmail(req, res) {
     try {
@@ -213,71 +214,71 @@ class RegisterController {
       if (!email) {
         return res.status(200).json({
           valid: true,
-          message: '邮箱格式正确'
+          message: 'Email format is correct'
         });
       }
 
-      // 验证邮箱格式
+      // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         return res.status(400).json({
           valid: false,
-          error: '请输入有效的电子邮件地址！'
+          error: 'Please enter a valid email address!'
         });
       }
 
       res.status(200).json({
         valid: true,
-        message: '邮箱格式正确'
+        message: 'Email format is correct'
       });
     } catch (error) {
-      console.error('Validate email error:', error);
+      logger.error('Validate email error', { error });
       res.status(500).json({
         valid: false,
-        error: '服务器错误'
+        error: 'Server Error'
       });
     }
   }
 
   /**
-   * 验证手机号
+   * Validate phone number
    */
   async validatePhone(req, res) {
     try {
       const { phone } = req.body;
 
-      // 验证手机号长度
+      // Validate phone number length
       if (!phone || phone.length !== 11) {
         return res.status(400).json({
           valid: false,
-          error: '您输入的手机号码不是有效的格式！'
+          error: 'The mobile number you entered is not in a valid format!'
         });
       }
 
-      // 验证只包含数字
+      // Validate only contains numbers
       const phoneRegex = /^[0-9]+$/;
       if (!phoneRegex.test(phone)) {
         return res.status(400).json({
           valid: false,
-          error: '您输入的手机号码不是有效的格式！'
+          error: 'The mobile number you entered is not in a valid format!'
         });
       }
 
       res.status(200).json({
         valid: true,
-        message: '手机号码格式正确'
+        message: 'Phone number format is correct'
       });
     } catch (error) {
-      console.error('Validate phone error:', error);
+      logger.error('Validate phone error', { error });
       res.status(500).json({
         valid: false,
-        error: '服务器错误'
+        error: 'Server Error'
       });
     }
   }
 
   /**
-   * 用户注册
+   * User registration
    */
   async register(req, res) {
     try {
@@ -294,63 +295,63 @@ class RegisterController {
         agreedToTerms
       } = req.body;
 
-      // 验证必填字段
+      // Validate required fields
       if (!username || !password || !confirmPassword || !idCardType || 
           !name || !idCardNumber || !discountType || !phone) {
         return res.status(400).json({
-          error: '请填写完整信息！'
+          error: 'Please fill in all information!'
         });
       }
 
-      // 验证密码一致性
+      // Validate password consistency
       if (password !== confirmPassword) {
         return res.status(400).json({
-          error: '确认密码与密码不一致！'
+          error: 'Password confirmation does not match!'
         });
       }
 
-      // 验证用户协议
+      // Validate user agreement
       if (!agreedToTerms) {
         return res.status(400).json({
-          error: '请确认服务条款！'
+          error: 'Please confirm the terms of service!'
         });
       }
 
-      // 检查用户名是否已存在
+      // Check if username already exists
       const existingUser = await registrationDbService.findUserByUsername(username);
       if (existingUser) {
         return res.status(409).json({
-          error: '该用户名已经占用，请重新选择用户名！'
+          error: 'This username is already taken, please choose another one!'
         });
       }
 
-      // 检查证件号是否已注册
+      // Check if ID number is already registered
       const existingIdCard = await registrationDbService.findUserByIdCardNumber(idCardType, idCardNumber);
       if (existingIdCard) {
         return res.status(409).json({
-          error: '该证件号码已经被注册过，请确认是否您本人注册，"是"请使用原账号登录，"不是"请通过铁路12306App办理抢注或持该证件到就近的办理客运业务的铁路车站办理被抢注处理，完成后即可继续注册，或致电12306客服咨询。'
+          error: 'This ID number has already been registered. Please confirm if you registered it yourself. If "Yes", please log in with your original account. If "No", please go to the nearest railway station with passenger service to handle the registration conflict, then you can continue to register, or call 12306 customer service for consultation.'
         });
       }
 
-      // 检查手机号是否已被其他用户使用
+      // Check if phone number is already used by another user
       const existingPhone = await registrationDbService.findUserByPhone(phone);
       if (existingPhone) {
         return res.status(409).json({
-          error: '您输入的手机号码已被其他注册用户使用，请确认是否本人注册。如果此手机号是本人注册，您可使用此手机号进行登录，或返回登录页点击忘记密码进行重置密码;如果手机号不是您注册的，您可更换手机号码或致电12306客服协助处理。'
+          error: 'The mobile number you entered is already used by another registered user. Please confirm if it is your own registration. If this mobile number is registered by you, you can use this number to log in, or go back to the login page and click Forgot Password to reset your password. If the mobile number is not registered by you, you can change your mobile number or call 12306 customer service for assistance.'
         });
       }
 
-      // 检查邮箱是否已被其他用户使用（如果用户填写了邮箱）
+      // Check if email is already used by another user (if provided)
       if (email) {
         const existingEmail = await registrationDbService.findUserByEmail(email);
         if (existingEmail) {
           return res.status(409).json({
-            error: '您输入的邮箱已被其他注册用户使用，请确认是否本人注册。如果此邮箱是本人注册，您可使用此邮箱进行登录，或返回登录页点击忘记密码进行重置密码;如果邮箱不是您注册的，您可更换邮箱或致电12306客服协助处理。'
+            error: 'The email you entered is already used by another registered user. Please confirm if it is your own registration. If this email is registered by you, you can use this email to log in, or go back to the login page and click Forgot Password to reset your password. If the email is not registered by you, you can change your email or call 12306 customer service for assistance.'
           });
         }
       }
 
-      // 创建会话，存储用户数据
+      // Create session, store user data
       const sessionId = await sessionService.createSession({
         username,
         password,
@@ -363,43 +364,43 @@ class RegisterController {
       });
 
       res.status(201).json({
-        message: '注册信息已提交，请进行验证',
+        message: 'Registration information submitted, please proceed with verification',
         sessionId: sessionId
       });
     } catch (error) {
-      console.error('Register error:', error);
+      logger.error('Register error', { error });
       res.status(500).json({
-        error: '服务器错误'
+        error: 'Server Error'
       });
     }
   }
 
   /**
-   * 发送注册验证码
+   * Send registration verification code
    */
   async sendRegistrationVerificationCode(req, res) {
     try {
       const { sessionId, phone: reqPhone, email: reqEmail } = req.body;
 
-      // 验证会话
+      // Validate session
       const session = await sessionService.getSession(sessionId);
       if (!session) {
         return res.status(400).json({
-          error: '会话无效或已过期'
+          error: 'Session invalid or expired'
         });
       }
 
-      // 从会话或请求中获取 phone 和 email
+      // Get phone and email from session or request
       const sessionData = session.user_data;
       const phone = reqPhone || sessionData.phone;
       const email = reqEmail || sessionData.email;
 
-      // 检查发送频率限制
+      // Check send frequency limit
       if (email) {
         const canSendEmail = await sessionService.checkEmailSendFrequency(email);
         if (!canSendEmail) {
           return res.status(429).json({
-            error: '请求验证码过于频繁，请稍后再试！'
+            error: 'Verification code request too frequent, please try again later!'
           });
         }
       }
@@ -408,93 +409,86 @@ class RegisterController {
         const canSendSms = await sessionService.checkSmsSendFrequency(phone, 'registration');
         if (!canSendSms) {
           return res.status(429).json({
-            error: '请求验证码过于频繁，请稍后再试！'
+            error: 'Verification code request too frequent, please try again later!'
           });
         }
       }
 
-      // 发送邮箱验证码（如果提供了email）
+      // Send email verification code (if email provided)
       if (email) {
         await registrationDbService.createEmailVerificationCode(email);
       }
 
-      // 发送短信验证码（如果提供了phone）
+      // Send SMS verification code (if phone provided)
       let smsCode = null;
       if (phone) {
         smsCode = await registrationDbService.createSmsVerificationCode(phone, 'registration');
-        console.log(`\n=================================`);
-        console.log(`📱 注册验证码已生成`);
-        console.log(`手机号: ${phone}`);
-        console.log(`验证码: ${smsCode}`);
-        console.log(`有效期: 5分钟`);
-        console.log(`=================================\n`);
+        logger.info('Registration verification code generated', { phone, smsCode, expiry: '5 minutes' });
       }
 
       res.status(200).json({
-        message: '验证码发送成功',
-        // 开发环境下返回验证码，生产环境应该移除
+        message: 'Verification code sent successfully',
+        // Return verification code in dev environment, should be removed in production
         verificationCode: smsCode
       });
     } catch (error) {
-      console.error('Send verification code error:', error);
+      logger.error('Send verification code error', { error });
       res.status(500).json({
-        error: '服务器错误'
+        error: 'Server Error'
       });
     }
   }
 
   /**
-   * 完成注册
+   * Complete registration
    */
   async completeRegistration(req, res) {
     try {
       const { sessionId, smsCode, emailCode } = req.body;
       
-      console.log('\n🔍 完成注册请求:');
-      console.log('SessionId:', sessionId);
-      console.log('提交的验证码:', smsCode);
+      logger.info('Complete registration request', { sessionId, smsCode });
 
-      // 验证会话
+      // Validate session
       const session = await sessionService.getSession(sessionId);
       if (!session) {
-        console.log('❌ 会话不存在或已过期');
+        logger.warn('Session does not exist or expired');
         return res.status(400).json({
-          error: '会话无效或已过期'
+          error: 'Session invalid or expired'
         });
       }
 
       const userData = session.user_data;
-      console.log('✅ 会话有效，用户数据:', { phone: userData.phone, username: userData.username });
+      logger.info('Session valid, user data', { phone: userData.phone, username: userData.username });
 
-      // 验证短信验证码（如果提供了smsCode）
+      // Validate SMS verification code (if smsCode provided)
       if (smsCode) {
-        console.log(`🔐 验证手机号 ${userData.phone} 的验证码 ${smsCode}`);
+        logger.info(`Verifying SMS code ${smsCode} for phone ${userData.phone}`);
         const verifyResult = await registrationDbService.verifySmsCode(userData.phone, smsCode);
-        console.log('验证结果:', verifyResult);
+        logger.debug('Verification result', { verifyResult });
         if (!verifyResult.success) {
-          console.log('❌ 验证码错误:', verifyResult.error);
+          logger.warn('Verification code error', { error: verifyResult.error });
           return res.status(400).json({
             error: verifyResult.error
           });
         }
-        console.log('✅ 验证码验证通过');
+        logger.info('Verification code validated');
       }
 
-      // 验证邮箱验证码（如果提供了emailCode）
+      // Validate email verification code (if emailCode provided)
       if (emailCode) {
         const isValidEmail = await registrationDbService.verifyEmailCode(userData.email, emailCode);
         if (!isValidEmail) {
           return res.status(400).json({
-            error: '验证码错误或已过期'
+            error: 'Verification code incorrect or expired'
           });
         }
       }
 
-      // 创建用户
+      // Create user
       try {
         const userId = await registrationDbService.createUser(userData);
         
-        // 自动添加注册人本人为乘车人
+        // Automatically add registrant as passenger
         try {
           await passengerService.createPassenger(userId, {
             name: userData.name,
@@ -503,23 +497,23 @@ class RegisterController {
             discountType: userData.discountType || userData.discount_type,
             phone: userData.phone
           });
-          console.log('✅ 注册时自动添加乘车人成功');
+          logger.info('Automatically added registrant as passenger');
         } catch (passengerError) {
-          // 如果创建乘车人失败（如证件号已存在），记录日志但不影响注册流程
-          console.warn('⚠️ 注册时自动添加乘车人失败:', passengerError.message);
+          // If creating passenger fails (e.g. ID already exists), log warning but don't fail registration
+          logger.warn('Failed to automatically add registrant as passenger', { error: passengerError.message });
         }
         
-        // 删除会话
+        // Delete session
         await sessionService.deleteSession(sessionId);
 
         res.status(201).json({
-          message: '恭喜您注册成功，请到登录页面进行登录！',
+          message: 'Congratulations! Registration successful. Please login on the login page!',
           userId: userId
         });
       } catch (error) {
-        // 如果是用户已存在的错误，返回具体信息
+        // If user already exists error, return specific info
         if (error.message && (
-          error.message.includes('已被注册') || 
+          error.message.includes('already registered') || 
           error.message === 'User already exists'
         )) {
           return res.status(409).json({
@@ -529,44 +523,44 @@ class RegisterController {
         throw error;
       }
     } catch (error) {
-      console.error('Complete registration error:', error);
+      logger.error('Complete registration error', { error });
       res.status(500).json({
-        error: '注册失败，请稍后重试'
+        error: 'Registration failed, please try again later'
       });
     }
   }
 
   /**
-   * 获取服务条款
+   * Get service terms
    */
   async getServiceTerms(req, res) {
     try {
       res.status(200).json({
-        title: '服务条款',
-        content: '中国铁路客户服务中心网站服务条款内容...'
+        title: 'Terms of Service',
+        content: 'China Railway Customer Service Center Website Terms of Service Content...'
       });
     } catch (error) {
-      console.error('Get service terms error:', error);
+      logger.error('Get service terms error', { error });
       res.status(500).json({
-        error: '服务器错误'
+        error: 'Server Error'
       });
     }
   }
 
   /**
-   * 获取隐私政策
+   * Get privacy policy
    */
   async getPrivacyPolicy(req, res) {
     try {
       res.status(200).json({
-        title: '隐私权政策',
+        title: 'Privacy Policy',
         englishTitle: 'NOTICE',
-        content: '隐私权政策内容...'
+        content: 'Privacy Policy Content...'
       });
     } catch (error) {
-      console.error('Get privacy policy error:', error);
+      logger.error('Get privacy policy error', { error });
       res.status(500).json({
-        error: '服务器错误'
+        error: 'Server Error'
       });
     }
   }

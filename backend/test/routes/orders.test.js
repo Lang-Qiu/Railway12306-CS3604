@@ -88,7 +88,7 @@ describe('Orders API', () => {
     }
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('orderId');
-    expect(res.body.message).toBe('订单提交成功');
+    expect(res.body.message).toBe('Order submitted successfully');
   });
 
   test('should get order details by ID', async () => {

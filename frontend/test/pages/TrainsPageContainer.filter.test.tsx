@@ -15,7 +15,7 @@ describe('TrainsPageContainer filters', () => {
       ]
     })
     render(
-      <MemoryRouter initialEntries={["/trains?from=北京&to=上海&date=2025-11-16&highspeed=1"]}>
+      <MemoryRouter initialEntries={["/train?from=北京&to=上海&date=2025-11-16&highspeed=1"]}>
         <TrainsPageContainer />
       </MemoryRouter>
     )

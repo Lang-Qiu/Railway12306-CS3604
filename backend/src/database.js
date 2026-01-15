@@ -23,10 +23,10 @@ function getDatabase() {
 }
 
 /**
- * 执行查询（返回多行）
- * @param {string} sql - SQL语句
- * @param {Array} params - 参数
- * @returns {Promise<Array>} 查询结果
+ * Execute query (return multiple rows)
+ * @param {string} sql - SQL statement
+ * @param {Array} params - Parameters
+ * @returns {Promise<Array>} Query result
  */
 function query(sql, params = []) {
   return new Promise((resolve, reject) => {
@@ -42,10 +42,10 @@ function query(sql, params = []) {
 }
 
 /**
- * 执行查询（返回单行）
- * @param {string} sql - SQL语句
- * @param {Array} params - 参数
- * @returns {Promise<Object|null>} 查询结果
+ * Execute query (return single row)
+ * @param {string} sql - SQL statement
+ * @param {Array} params - Parameters
+ * @returns {Promise<Object|null>} Query result
  */
 function queryOne(sql, params = []) {
   return new Promise((resolve, reject) => {
@@ -61,10 +61,10 @@ function queryOne(sql, params = []) {
 }
 
 /**
- * 执行更新/插入/删除操作
- * @param {string} sql - SQL语句
- * @param {Array} params - 参数
- * @returns {Promise<Object>} 包含lastID和changes的对象
+ * Execute update/insert/delete operation
+ * @param {string} sql - SQL statement
+ * @param {Array} params - Parameters
+ * @returns {Promise<Object>} Object containing lastID and changes
  */
 function run(sql, params = []) {
   return new Promise((resolve, reject) => {
@@ -83,13 +83,13 @@ function run(sql, params = []) {
 }
 
 /**
- * 关闭数据库连接
+ * Close database connection
  */
 function close() {
   if (dbInstance) {
     dbInstance.close((err) => {
       if (err) {
-        console.error('关闭数据库连接失败:', err.message);
+        logger.error('Failed to close database connection', { error: err.message });
       }
       dbInstance = null;
     });

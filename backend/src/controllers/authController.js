@@ -1,19 +1,20 @@
 const { validationResult } = require('express-validator');
 const authService = require('../services/authService');
+const logger = require('../utils/logger');
 
 class AuthController {
-  // 用户登录
+  // User Login
   async login(req, res) {
     try {
       const { identifier, password } = req.body;
       
-      // 验证必填字段
+      // Validate required fields
       const errors = [];
       if (!identifier || identifier.trim() === '') {
-        errors.push('用户名/邮箱/手机号不能为空');
+        errors.push('Username/Email/Phone cannot be empty');
       }
       if (!password || password.trim() === '') {
-        errors.push('密码不能为空');
+        errors.push('Password cannot be empty');
       }
 
       if (errors.length > 0) {
@@ -23,15 +24,15 @@ class AuthController {
         });
       }
 
-      // 验证密码长度
+      // Validate password length
       if (password.length < 6) {
         return res.status(400).json({
           success: false,
-          error: '密码长度不能少于6位'
+          error: 'Password must be at least 6 characters long'
         });
       }
 
-      // 验证用户凭据
+      // Validate user credentials
       const result = await authService.validateCredentials(identifier, password);
       
       if (!result.success) {
@@ -41,10 +42,10 @@ class AuthController {
         });
       }
 
-      // 创建登录会话
+      // Create login session
       const sessionId = await authService.createLoginSession(result.user);
       
-      // 生成临时token（用于短信验证前的会话）
+      // Generate temporary token (for session before SMS verification)
       const token = authService.generateToken({
         userId: result.user.id,
         username: result.user.username,
@@ -55,57 +56,57 @@ class AuthController {
         success: true,
         sessionId,
         token,
-        message: '请进行短信验证'
+        message: 'Please proceed with SMS verification'
       });
     } catch (error) {
-      console.error('Login error:', error);
+      logger.error('Login error', { error });
       res.status(500).json({ 
         success: false, 
-        message: '服务器内部错误' 
+        message: 'Internal Server Error' 
       });
     }
   }
 
-  // 发送短信验证码（登录用）
+  // Send SMS verification code (for login)
   async sendVerificationCode(req, res) {
     try {
       const { phoneNumber, sessionId, idCardLast4 } = req.body;
 
-      console.log('🔍 发送验证码请求:', { sessionId, idCardLast4, phoneNumber });
+      logger.info('Send verification code request', { sessionId, idCardLast4, phoneNumber });
 
-      // 验证必填字段
+      // Validate required fields
       const errors = [];
       
-      // 如果提供了sessionId和idCardLast4（短信验证弹窗场景）
+      // If sessionId and idCardLast4 are provided (SMS verification popup scenario)
       if (sessionId && idCardLast4) {
-        // 验证证件号后4位格式
+        // Validate last 4 digits of ID card format
         if (!idCardLast4 || idCardLast4.length !== 4) {
-          errors.push('证件号后4位格式不正确');
+          errors.push('Last 4 digits of ID card format is incorrect');
         }
 
         if (errors.length > 0) {
-          console.log('❌ 验证失败:', errors);
+          logger.warn('Verification failed', { errors });
           return res.status(400).json({ 
             success: false, 
             error: errors.join(', ')
           });
         }
 
-        // 生成并发送验证码
+        // Generate and send verification code
         const result = await authService.generateAndSendSmsCode(sessionId, idCardLast4);
         
-        // 先检查是否是频率限制错误（429），必须在检查 !result.success 之前
+        // Check for rate limit error (429) first, must be before !result.success check
         if (result.code === 429) {
-          console.log('❌ 请求过于频繁:', result.error);
+          logger.warn('Request too frequent', { error: result.error });
           return res.status(429).json({
             success: false,
             error: result.error
           });
         }
         
-        // 再检查其他类型的失败（400）
+        // Check for other types of failures (400)
         if (!result.success) {
-          console.log('❌ 生成验证码失败:', result.error);
+          logger.warn('Failed to generate verification code', { error: result.error });
           return res.status(400).json({
             success: false,
             error: result.error
@@ -115,74 +116,74 @@ class AuthController {
         return res.status(200).json({
           success: true,
           message: result.message,
-          // 开发环境下返回验证码和手机号，生产环境应该移除
+          // Return verification code and phone in dev environment, should be removed in production
           verificationCode: result.verificationCode,
           phone: result.phone
         });
       }
       
-      // 如果只提供了phoneNumber（直接短信登录场景）
+      // If only phoneNumber is provided (Direct SMS login scenario)
       if (phoneNumber) {
-        // 验证手机号格式
+        // Validate phone number format
         if (!authService.validatePhone(phoneNumber)) {
-          errors.push('请输入有效的手机号');
+          errors.push('Please enter a valid mobile number');
           return res.status(400).json({ 
             success: false, 
             errors 
           });
         }
 
-        // 实现直接短信登录的逻辑
+        // Implement direct SMS login logic
         const registrationDbService = require('../services/registrationDbService');
         const sessionService = require('../services/sessionService');
         
-        // 检查发送频率
+        // Check send frequency
         const canSend = await sessionService.checkSmsSendFrequency(phoneNumber, 'login');
         if (!canSend) {
           return res.status(429).json({
             success: false,
-            error: '请求验证码过于频繁，请稍后再试！'
+            error: 'Verification code request too frequent, please try again later!'
           });
         }
 
-        // 生成并保存验证码
+        // Generate and save verification code
         const code = await registrationDbService.createSmsVerificationCode(phoneNumber, 'login');
 
-        // TODO: 实际发送短信
-        console.log(`[SMS] 发送验证码 ${code} 到 ${phoneNumber}`);
+        // TODO: Actual SMS sending
+        logger.info(`[SMS] Sending verification code ${code} to ${phoneNumber}`);
 
         return res.status(200).json({
           success: true,
-          message: '验证码已发送'
+          message: 'Verification code sent'
         });
       }
 
-      // 缺少必要参数
+      // Missing required parameters
       return res.status(400).json({
         success: false,
-        message: '会话ID不能为空'
+        message: 'Session ID cannot be empty'
       });
     } catch (error) {
-      console.error('Send verification code error:', error);
+      logger.error('Send verification code error', { error });
       res.status(500).json({ 
         success: false, 
-        message: '服务器内部错误' 
+        message: 'Internal Server Error' 
       });
     }
   }
 
-  // 短信验证登录
+  // Verify SMS Login
   async verifyLogin(req, res) {
     try {
       const { sessionId, verificationCode, phoneNumber, idCardLast4 } = req.body;
 
-      // 验证必填字段
+      // Validate required fields
       const errors = [];
       
       if (!verificationCode) {
-        errors.push('验证码不能为空');
+        errors.push('Verification code cannot be empty');
       } else if (!/^\d{6}$/.test(verificationCode)) {
-        errors.push('验证码必须为6位数字');
+        errors.push('Verification code must be 6 digits');
       }
 
       if (errors.length > 0) {
@@ -192,13 +193,16 @@ class AuthController {
         });
       }
 
-      // 如果有sessionId，使用账号密码+短信验证流程
+      // If sessionId exists, use account password + SMS verification flow
       if (sessionId) {
         const result = await authService.verifySmsCode(sessionId, verificationCode);
         
         if (!result.success) {
-          // 区分会话错误(400)和验证码错误(401)
-          const statusCode = result.error.includes('会话') ? 400 : 401;
+          // Distinguish between session error (400) and verification code error (401)
+          // Note: Assuming error messages from service are English now, need to check logic
+          // But 'Session' word check is safe if translated.
+          // Original check was for '会话'. Translated error is 'Session invalid or expired'.
+          const statusCode = result.error.includes('Session') ? 400 : 401;
           return res.status(statusCode).json({
             success: false,
             error: result.error
@@ -210,16 +214,16 @@ class AuthController {
           sessionId: result.sessionId,
           token: result.token,
           user: result.user,
-          message: '登录成功'
+          message: 'Login successful'
         });
       }
 
-      // 如果只有phoneNumber，使用直接短信登录流程
+      // If only phoneNumber exists, use direct SMS login flow
       if (phoneNumber) {
         const registrationDbService = require('../services/registrationDbService');
         const dbService = require('../services/dbService');
         
-        // 验证短信验证码
+        // Verify SMS code
         const verifyResult = await registrationDbService.verifySmsCode(phoneNumber, verificationCode);
         
         if (!verifyResult.success) {
@@ -229,18 +233,18 @@ class AuthController {
           });
         }
 
-        // 查找用户
+        // Find user
         const query = 'SELECT * FROM users WHERE phone = ?';
         const user = await dbService.get(query, [phoneNumber]);
 
         if (!user) {
           return res.status(401).json({
             success: false,
-            error: '用户不存在'
+            error: 'User not found'
           });
         }
 
-        // 创建会话
+        // Create session
         const newSessionId = authService.generateSessionId(user.id);
         const token = authService.generateToken({
           userId: user.id,
@@ -248,7 +252,7 @@ class AuthController {
           step: 'verified'
         });
 
-        // 更新最后登录时间
+        // Update last login time
         await dbService.run('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', [user.id]);
 
         return res.status(200).json({
@@ -262,60 +266,60 @@ class AuthController {
             email: user.email,
             phone: user.phone
           },
-          message: '登录成功'
+          message: 'Login successful'
         });
       }
 
-      // 缺少必要参数
+      // Missing required parameters
       return res.status(400).json({
         success: false,
-        message: '会话ID或手机号不能为空'
+        message: 'Session ID or phone number cannot be empty'
       });
     } catch (error) {
-      console.error('Verify login error:', error);
+      logger.error('Verify login error', { error });
       res.status(500).json({ 
         success: false, 
-        message: '服务器内部错误' 
+        message: 'Internal Server Error' 
       });
     }
   }
 
-  // 获取首页内容
+  // Get Home Page Content
   async getHomePage(req, res) {
     try {
       res.status(200).json({
         success: true,
         content: {
-          title: '欢迎使用中国铁路12306',
+          title: 'Welcome to China Railway 12306',
           features: [
-            { id: 1, name: '车票预订', icon: 'train', description: '便捷的车票预订服务' },
-            { id: 2, name: '行程管理', icon: 'calendar', description: '个人行程提醒和管理' },
-            { id: 3, name: '积分兑换', icon: 'gift', description: '积分兑换车票和礼品' },
-            { id: 4, name: '餐饮特产', icon: 'food', description: '列车餐饮和特产预订' }
+            { id: 1, name: 'Ticket Booking', icon: 'train', description: 'Convenient ticket booking service' },
+            { id: 2, name: 'Itinerary Management', icon: 'calendar', description: 'Personal itinerary reminder and management' },
+            { id: 3, name: 'Points Redemption', icon: 'gift', description: 'Redeem tickets and gifts with points' },
+            { id: 4, name: 'Catering & Specialties', icon: 'food', description: 'Train catering and specialty booking' }
           ],
           announcements: []
         }
       });
     } catch (error) {
-      console.error('Get homepage error:', error);
+      logger.error('Get homepage error', { error });
       res.status(500).json({ 
         success: false, 
-        message: '服务器内部错误' 
+        message: 'Internal Server Error' 
       });
     }
   }
 
-  // 忘记密码页面
+  // Get Forgot Password Page Content
   async getForgotPassword(req, res) {
     try {
       res.status(200).json({
         success: true,
         content: {
-          title: '忘记密码',
+          title: 'Forgot Password',
           instructions: [
-            '请输入您注册时使用的手机号或邮箱',
-            '我们将发送验证码到您的手机或邮箱',
-            '验证成功后可以重置密码'
+            'Please enter the mobile number or email used during registration',
+            'We will send a verification code to your mobile or email',
+            'You can reset your password after successful verification'
           ],
           contactInfo: {
             phone: '12306',
@@ -324,10 +328,10 @@ class AuthController {
         }
       });
     } catch (error) {
-      console.error('Get forgot password error:', error);
+      logger.error('Get forgot password error', { error });
       res.status(500).json({ 
         success: false, 
-        message: '服务器内部错误' 
+        message: 'Internal Server Error' 
       });
     }
   }

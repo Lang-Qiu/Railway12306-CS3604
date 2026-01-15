@@ -4,28 +4,28 @@ const authController = require('../controllers/authController');
 
 const router = express.Router();
 
-// API-POST-Login: 用户登录接口
+// API-POST-Login: User login interface
 router.post('/login', [
-  body('identifier').notEmpty().withMessage('用户名/邮箱/手机号不能为空'),
-  body('password').isLength({ min: 6 }).withMessage('密码长度不能少于6位')
+  body('identifier').notEmpty().withMessage('Username/Email/Phone cannot be empty'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
 ], authController.login);
 
-// API-POST-SendVerificationCode: 发送短信验证码接口
+// API-POST-SendVerificationCode: Send SMS verification code interface
 router.post('/send-verification-code', [
-  body('sessionId').notEmpty().withMessage('会话ID不能为空'),
-  body('idCardLast4').isLength({ min: 4, max: 4 }).withMessage('请输入证件号后4位')
+  body('sessionId').notEmpty().withMessage('Session ID cannot be empty'),
+  body('idCardLast4').isLength({ min: 4, max: 4 }).withMessage('Please enter the last 4 digits of ID card')
 ], authController.sendVerificationCode);
 
-// API-POST-VerifyLogin: 短信验证登录接口
+// API-POST-VerifyLogin: SMS verification login interface
 router.post('/verify-login', [
-  body('sessionId').notEmpty().withMessage('会话ID不能为空'),
-  body('verificationCode').isLength({ min: 6, max: 6 }).withMessage('请输入6位验证码')
+  body('sessionId').notEmpty().withMessage('Session ID cannot be empty'),
+  body('verificationCode').isLength({ min: 6, max: 6 }).withMessage('Please enter 6-digit verification code')
 ], authController.verifyLogin);
 
-// API-GET-HomePage: 获取首页内容接口
+// API-GET-HomePage: Get homepage content interface
 router.get('/homepage', authController.getHomePage);
 
-// API-GET-ForgotPassword: 忘记密码页面接口
+// API-GET-ForgotPassword: Forgot password page interface
 router.get('/forgot-password', authController.getForgotPassword);
 
 module.exports = router;

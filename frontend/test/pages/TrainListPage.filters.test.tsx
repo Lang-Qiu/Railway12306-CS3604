@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { describe, test, expect, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import TrainListPage from '../../src/pages/TrainListPage'
-import * as svc from '../../src/services/our12306/trainService'
+import * as svc from '../../src/services/trainService'
 
 describe('TrainListPage 筛选策略映射', () => {
   test('按类型与车站筛选后计数正确', async () => {

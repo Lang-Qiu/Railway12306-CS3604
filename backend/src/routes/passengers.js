@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const passengerService = require('../services/passengerService');
 const { authenticateUser } = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 /**
- * 获取用户乘客列表
+ * Get user passengers list
  * GET /api/passengers
  */
 router.get('/', authenticateUser, async (req, res) => {
@@ -15,15 +16,15 @@ router.get('/', authenticateUser, async (req, res) => {
     
     res.status(200).json({ passengers });
   } catch (error) {
-    console.error('获取乘客列表失败:', error);
+    logger.error('Failed to get passenger list', { error });
     const status = error.status || 500;
-    const message = error.message || '获取乘客列表失败';
+    const message = error.message || 'Failed to get passenger list';
     res.status(status).json({ error: message });
   }
 });
 
 /**
- * 搜索乘客
+ * Search passengers
  * POST /api/passengers/search
  */
 router.post('/search', authenticateUser, async (req, res) => {
@@ -31,9 +32,9 @@ router.post('/search', authenticateUser, async (req, res) => {
     
     const { keyword } = req.body;
     
-    // 验证关键词
+    // Validate keyword
     if (keyword === undefined || keyword === null) {
-      return res.status(400).json({ error: '请提供搜索关键词' });
+      return res.status(400).json({ error: 'Please provide search keyword' });
     }
     
     const userId = req.user.id;
@@ -41,15 +42,15 @@ router.post('/search', authenticateUser, async (req, res) => {
     
     res.status(200).json({ passengers });
   } catch (error) {
-    console.error('搜索乘客失败:', error);
+    logger.error('Failed to search passengers', { error });
     const status = error.status || 500;
-    const message = error.message || '搜索失败';
+    const message = error.message || 'Search failed';
     res.status(status).json({ error: message });
   }
 });
 
 /**
- * 添加乘客
+ * Add passenger
  * POST /api/passengers
  */
 router.post('/', authenticateUser, async (req, res) => {
@@ -57,9 +58,9 @@ router.post('/', authenticateUser, async (req, res) => {
     
     const { name, idCardType, idCardNumber, discountType, phone } = req.body;
     
-    // 验证必填字段
+    // Validate required fields
     if (!name || !idCardType || !idCardNumber || !discountType) {
-      return res.status(400).json({ error: '参数错误' });
+      return res.status(400).json({ error: 'Invalid parameters' });
     }
     
     const userId = req.user.id;
@@ -73,15 +74,15 @@ router.post('/', authenticateUser, async (req, res) => {
     
     res.status(201).json(result);
   } catch (error) {
-    console.error('添加乘客失败:', error);
+    logger.error('Failed to add passenger', { error });
     const status = error.status || 500;
-    const message = error.message || '添加乘客失败';
+    const message = error.message || 'Failed to add passenger';
     res.status(status).json({ error: message });
   }
 });
 
 /**
- * 更新乘客信息
+ * Update passenger info
  * PUT /api/passengers/:passengerId
  */
 router.put('/:passengerId', authenticateUser, async (req, res) => {
@@ -101,15 +102,15 @@ router.put('/:passengerId', authenticateUser, async (req, res) => {
     
     res.status(200).json(result);
   } catch (error) {
-    console.error('更新乘客失败:', error);
+    logger.error('Failed to update passenger', { error });
     const status = error.status || 500;
-    const message = error.message || '更新乘客失败';
+    const message = error.message || 'Failed to update passenger';
     res.status(status).json({ error: message });
   }
 });
 
 /**
- * 删除乘客
+ * Delete passenger
  * DELETE /api/passengers/:passengerId
  */
 router.delete('/:passengerId', authenticateUser, async (req, res) => {
@@ -118,25 +119,25 @@ router.delete('/:passengerId', authenticateUser, async (req, res) => {
     const { passengerId } = req.params;
     const userId = req.user.id;
     
-    console.log('=== 删除乘客路由 ===');
-    console.log('req.user:', req.user);
-    console.log('passengerId:', passengerId);
-    console.log('userId 来自 req.user.id:', userId);
+    logger.debug('Deleting passenger route called', {
+      user: req.user,
+      passengerId,
+      userId
+    });
     
     const result = await passengerService.deletePassenger(userId, passengerId);
     
     res.status(200).json(result);
   } catch (error) {
-    console.error('删除乘客失败:', error);
-    console.error('错误堆栈:', error.stack);
+    logger.error('Failed to delete passenger', { error, stack: error.stack });
     const status = error.status || 500;
-    const message = error.message || '删除乘客失败';
+    const message = error.message || 'Failed to delete passenger';
     res.status(status).json({ error: message });
   }
 });
 
 /**
- * 获取乘客详细信息
+ * Get passenger details
  * GET /api/passengers/:passengerId
  */
 router.get('/:passengerId', authenticateUser, async (req, res) => {
@@ -149,9 +150,9 @@ router.get('/:passengerId', authenticateUser, async (req, res) => {
     
     res.status(200).json(passenger);
   } catch (error) {
-    console.error('获取乘客详情失败:', error);
+    logger.error('Failed to get passenger details', { error });
     const status = error.status || 500;
-    const message = error.message || '获取乘客详情失败';
+    const message = error.message || 'Failed to get passenger details';
     res.status(status).json({ error: message });
   }
 });

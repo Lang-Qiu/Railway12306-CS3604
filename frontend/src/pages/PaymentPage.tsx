@@ -164,7 +164,7 @@ const PaymentPage: React.FC = () => {
 
   const handleNavigateToPersonalCenter = () => {
     if (isLoggedIn) {
-      navigate('/personal-info');
+      navigate('/information');
     } else {
       navigate('/login');
     }
@@ -172,7 +172,7 @@ const PaymentPage: React.FC = () => {
 
   const handleMy12306Click = () => {
     if (isLoggedIn) {
-      navigate('/personal-info');
+      navigate('/information');
     } else {
       navigate('/login');
     }

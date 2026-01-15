@@ -332,7 +332,7 @@ const PassengerManagementPage = () => {
 
   const handleNavigateToPersonalCenter = () => {
     if (isLoggedIn) {
-      navigate('/personal-info');
+      navigate('/information');
     } else {
       navigate('/login');
     }

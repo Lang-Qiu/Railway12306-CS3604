@@ -22,7 +22,7 @@ const BookingFailedModal: React.FC<BookingFailedModalProps> = ({
 
   const handleNavigateToTrains = () => {
     onClose();
-    navigate('/trains');
+    navigate('/train');
   };
 
   return (

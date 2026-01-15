@@ -25,11 +25,12 @@ const MainNavigation: React.FC<MainNavigationProps> = ({
 
   const isHomePage = location.pathname === '/';
   // 车票相关的页面：车次列表、订单填写、历史订单、个人信息、手机核验、乘客管理
-  const isTrainsPage = location.pathname === '/trains' 
-    || location.pathname === '/order' 
+  const isTrainsPage = location.pathname === '/train' 
     || location.pathname === '/orders' 
-    || location.pathname === '/personal-info' 
-    || location.pathname === '/phone-verification' 
+    || location.pathname === '/order' // Keep for compatibility with old links during transition
+    || location.pathname === '/information'
+    || location.pathname === '/personal-info' // Keep for compatibility
+    || location.pathname === '/phone-verification'
     || location.pathname === '/passengers';
 
   const handleMouseEnter = (dropdownName: string) => {
@@ -115,10 +116,10 @@ const MainNavigation: React.FC<MainNavigationProps> = ({
                 </tr>
                 {/* 第一行内容 */}
                 <tr>
-                  <td><Link to="/trains" style={{color: 'inherit', textDecoration: 'none'}}>单程</Link></td>
+                  <td><Link to="/train" style={{color: 'inherit', textDecoration: 'none'}}>单程</Link></td>
                   <td>往返</td>
-                  <td>退票</td>
-                  <td>改签</td>
+                  <td><Link to="/orders" style={{color: 'inherit', textDecoration: 'none'}}>退票</Link></td>
+                  <td><Link to="/orders" style={{color: 'inherit', textDecoration: 'none'}}>改签</Link></td>
                   <td>中铁银通卡</td>
                   <td>国际列车</td>
                 </tr>
@@ -126,7 +127,7 @@ const MainNavigation: React.FC<MainNavigationProps> = ({
                 <tr>
                   <td>中转换乘</td>
                   <td>计次·定期票</td>
-                  <td>变更到站</td>
+                  <td><Link to="/orders" style={{color: 'inherit', textDecoration: 'none'}}>变更到站</Link></td>
                   <td></td>
                   <td></td>
                   <td></td>

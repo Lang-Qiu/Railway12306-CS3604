@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
@@ -21,12 +21,15 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/trains" element={<TrainListPage />} />
+          <Route path="/train" element={<TrainListPage />} />
+          <Route path="/trains" element={<Navigate to="/train" replace />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/order" element={<OrderPage />} />
-          <Route path="/personal-info" element={<PersonalInfoPage />} />
+          <Route path="/orders" element={<OrderPage />} />
+          <Route path="/order" element={<Navigate to="/orders" replace />} />
+          <Route path="/information" element={<PersonalInfoPage />} />
+          <Route path="/personal-info" element={<Navigate to="/information" replace />} />
           <Route path="/phone-verification" element={<PhoneVerificationPage />} />
           <Route path="/passengers" element={<PassengerManagementPage />} />
           <Route path="/orders" element={<OrderHistoryPage />} />

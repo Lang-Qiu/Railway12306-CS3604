@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const orderService = require('../services/orderService');
 const { authenticateUser } = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 /**
- * 获取支付页面数据
+ * Get payment page data
  * GET /api/payment/:orderId
  */
 router.get('/:orderId', authenticateUser, async (req, res) => {
@@ -14,23 +15,23 @@ router.get('/:orderId', authenticateUser, async (req, res) => {
     
     const paymentData = await orderService.getPaymentPageData(orderId, userId);
     
-    // 计算剩余时间
+    // Calculate remaining time
     const timeRemaining = await orderService.getOrderTimeRemaining(orderId);
     
     res.status(200).json({
       ...paymentData,
-      timeRemaining // 剩余秒数
+      timeRemaining // remaining seconds
     });
   } catch (error) {
-    console.error('获取支付页面数据失败:', error);
+    logger.error('Failed to get payment page data', { error });
     const status = error.status || 500;
-    const message = error.message || '获取支付页面数据失败';
+    const message = error.message || 'Failed to get payment page data';
     res.status(status).json({ error: message });
   }
 });
 
 /**
- * 确认支付
+ * Confirm payment
  * POST /api/payment/:orderId/confirm
  */
 router.post('/:orderId/confirm', authenticateUser, async (req, res) => {
@@ -42,15 +43,15 @@ router.post('/:orderId/confirm', authenticateUser, async (req, res) => {
     
     res.status(200).json(result);
   } catch (error) {
-    console.error('确认支付失败:', error);
+    logger.error('Failed to confirm payment', { error });
     const status = error.status || 500;
-    const message = error.message || '支付失败';
+    const message = error.message || 'Payment failed';
     res.status(status).json({ error: message });
   }
 });
 
 /**
- * 取消订单
+ * Cancel order
  * POST /api/payment/:orderId/cancel
  */
 router.post('/:orderId/cancel', authenticateUser, async (req, res) => {
@@ -62,15 +63,15 @@ router.post('/:orderId/cancel', authenticateUser, async (req, res) => {
     
     res.status(200).json(result);
   } catch (error) {
-    console.error('取消订单失败:', error);
+    logger.error('Failed to cancel order', { error });
     const status = error.status || 500;
-    const message = error.message || '取消订单失败';
+    const message = error.message || 'Failed to cancel order';
     res.status(status).json({ error: message });
   }
 });
 
 /**
- * 检查用户是否有未支付的订单
+ * Check if user has unpaid orders
  * GET /api/payment/check-unpaid
  */
 router.get('/check-unpaid', authenticateUser, async (req, res) => {
@@ -81,15 +82,15 @@ router.get('/check-unpaid', authenticateUser, async (req, res) => {
     
     res.status(200).json({ hasUnpaidOrder: hasUnpaid });
   } catch (error) {
-    console.error('检查未支付订单失败:', error);
+    logger.error('Failed to check unpaid orders', { error });
     const status = error.status || 500;
-    const message = error.message || '检查失败';
+    const message = error.message || 'Check failed';
     res.status(status).json({ error: message });
   }
 });
 
 /**
- * 获取订单剩余支付时间
+ * Get order remaining payment time
  * GET /api/payment/:orderId/time-remaining
  */
 router.get('/:orderId/time-remaining', authenticateUser, async (req, res) => {
@@ -97,16 +98,16 @@ router.get('/:orderId/time-remaining', authenticateUser, async (req, res) => {
     const { orderId } = req.params;
     const userId = req.user.id;
     
-    // 验证订单属于当前用户
+    // Verify order belongs to current user
     const paymentData = await orderService.getPaymentPageData(orderId, userId);
     
     const timeRemaining = await orderService.getOrderTimeRemaining(orderId);
     
     res.status(200).json({ timeRemaining });
   } catch (error) {
-    console.error('获取剩余时间失败:', error);
+    logger.error('Failed to get remaining time', { error });
     const status = error.status || 500;
-    const message = error.message || '获取失败';
+    const message = error.message || 'Failed to get';
     res.status(status).json({ error: message });
   }
 });

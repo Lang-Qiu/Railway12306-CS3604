@@ -156,7 +156,7 @@ const RegisterPage: React.FC = () => {
   
   const handleMy12306Click = () => {
     if (isLoggedIn) {
-      navigate('/personal-info')
+      navigate('/information')
     } else {
       navigate('/login')
     }
@@ -171,7 +171,7 @@ const RegisterPage: React.FC = () => {
         isLoggedIn={isLoggedIn}
         onLoginClick={handleNavigateToLogin}
         onRegisterClick={handleNavigateToRegister}
-        onPersonalCenterClick={isLoggedIn ? () => navigate('/personal-info') : handleNavigateToLogin}
+        onPersonalCenterClick={isLoggedIn ? () => navigate('/information') : handleNavigateToLogin}
       />
       <main className="register-main">
         {/* 面包屑导航 */}

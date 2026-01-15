@@ -96,7 +96,7 @@ const SuccessfulPurchasePage: React.FC = () => {
 
   const handleNavigateToPersonalCenter = () => {
     if (isLoggedIn) {
-      navigate('/personal-info');
+      navigate('/information');
     } else {
       navigate('/login');
     }
@@ -115,7 +115,7 @@ const SuccessfulPurchasePage: React.FC = () => {
   };
 
   const handleViewOrderDetails = () => {
-    navigate('/orders', { state: { orderId } });
+    navigate('/orders');
   };
 
   const username = isLoggedIn ? (localStorage.getItem('username') || localStorage.getItem('userId') || '用户') : '';

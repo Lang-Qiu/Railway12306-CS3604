@@ -1,31 +1,32 @@
-// 用户信息相关API路由
+// User info API routes
 const express = require('express');
 const router = express.Router();
 const userInfoDbService = require('../services/userInfoDbService');
 const { authenticateUser } = require('../middleware/auth');
 const registrationDbService = require('../services/registrationDbService');
 const sessionService = require('../services/sessionService');
+const logger = require('../utils/logger');
 
-// 简单的认证中间件（用于测试环境）
+// Simple auth middleware (for test environment)
 const testAuth = (req, res, next) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   
   if (!token) {
-    return res.status(401).json({ error: '请先登录' });
+    return res.status(401).json({ error: 'Please login first' });
   }
   
-  // 测试环境的token验证（仅用于自动化测试）
+  // Test environment token validation (only for automation testing)
   if (token === 'valid-test-token') {
     req.user = { id: 1, username: 'test-user-123' };
     return next();
   }
   
-  // 所有其他情况使用真实认证
+  // All other cases use real authentication
   return authenticateUser(req, res, next);
 };
 
 /**
- * API-GET-UserInfo: 获取用户个人信息
+ * API-GET-UserInfo: Get user personal info
  * GET /api/user/info
  */
 router.get('/info', testAuth, async (req, res) => {
@@ -35,18 +36,18 @@ router.get('/info', testAuth, async (req, res) => {
     const userInfo = await userInfoDbService.getUserInfo(userId);
     
     if (!userInfo) {
-      return res.status(404).json({ error: '用户不存在' });
+      return res.status(404).json({ error: 'User does not exist' });
     }
     
     res.status(200).json(userInfo);
   } catch (error) {
-    console.error('获取用户信息失败:', error);
-    res.status(500).json({ error: '获取用户信息失败' });
+    logger.error('Failed to get user info', { error });
+    res.status(500).json({ error: 'Failed to get user info' });
   }
 });
 
 /**
- * API-PUT-UserEmail: 更新用户邮箱
+ * API-PUT-UserEmail: Update user email
  * PUT /api/user/email
  */
 router.put('/email', testAuth, async (req, res) => {
@@ -55,29 +56,29 @@ router.put('/email', testAuth, async (req, res) => {
     const { email } = req.body;
     
     if (!email) {
-      return res.status(400).json({ error: '邮箱不能为空' });
+      return res.status(400).json({ error: 'Email cannot be empty' });
     }
     
     const success = await userInfoDbService.updateUserEmail(userId, email);
     
     if (success) {
-      res.status(200).json({ message: '邮箱更新成功' });
+      res.status(200).json({ message: 'Email updated successfully' });
     } else {
-      res.status(500).json({ error: '更新邮箱失败' });
+      res.status(500).json({ error: 'Failed to update email' });
     }
   } catch (error) {
-    console.error('更新邮箱失败:', error);
+    logger.error('Failed to update email', { error });
     
-    if (error.message === '请输入有效的电子邮件地址！') {
+    if (error.message === 'Please enter a valid email address!') {
       return res.status(400).json({ error: error.message });
     }
     
-    res.status(500).json({ error: '更新邮箱失败' });
+    res.status(500).json({ error: 'Failed to update email' });
   }
 });
 
 /**
- * API-POST-UpdatePhoneRequest: 请求更新用户手机号（发送验证码）
+ * API-POST-UpdatePhoneRequest: Request to update phone (send verification code)
  * POST /api/user/phone/update-request
  */
 router.post('/phone/update-request', testAuth, async (req, res) => {
@@ -85,81 +86,74 @@ router.post('/phone/update-request', testAuth, async (req, res) => {
     const userId = req.user.id;
     const { newPhone, password } = req.body;
     
-    // 验证新手机号格式
+    // Validate new phone format
     if (!newPhone) {
-      return res.status(400).json({ error: '手机号不能为空' });
+      return res.status(400).json({ error: 'Phone number cannot be empty' });
     }
     
     if (!/^\d{11}$/.test(newPhone)) {
-      return res.status(400).json({ error: '您输入的手机号码不是有效的格式！' });
+      return res.status(400).json({ error: 'Invalid phone number format!' });
     }
     
-    // 验证登录密码
+    // Validate login password
     if (!password) {
-      return res.status(400).json({ error: '输入登录密码！' });
+      return res.status(400).json({ error: 'Please enter login password!' });
     }
     
-    // 从数据库获取用户信息
+    // Get user info from database
     const bcrypt = require('bcryptjs');
     const db = require('../database');
     const user = await db.query('SELECT * FROM users WHERE id = ?', [userId]);
     
     if (!user || user.length === 0) {
-      return res.status(404).json({ error: '用户不存在' });
+      return res.status(404).json({ error: 'User does not exist' });
     }
     
-    // 验证密码
+    // Validate password
     const passwordMatch = await bcrypt.compare(password, user[0].password);
     if (!passwordMatch) {
-      return res.status(401).json({ error: '登录密码错误' });
+      return res.status(401).json({ error: 'Incorrect login password' });
     }
     
-    // 检查新手机号是否已被其他用户使用
+    // Check if new phone is already used by another user
     const existingUser = await db.query('SELECT id FROM users WHERE phone = ? AND id != ?', [newPhone, userId]);
     if (existingUser && existingUser.length > 0) {
-      return res.status(409).json({ error: '该手机号已被使用' });
+      return res.status(409).json({ error: 'This phone number is already in use' });
     }
     
-    // 检查发送频率限制（1分钟内不能重复发送）
+    // Check send frequency limit (1 minute)
     const canSend = await sessionService.checkSmsSendFrequency(newPhone, 'phone-update');
     if (!canSend) {
       return res.status(429).json({
-        error: '请求验证码过于频繁，请稍后再试！'
+        error: 'Verification code request too frequent, please try again later!'
       });
     }
     
-    // 使用统一的验证码服务生成并保存验证码
+    // Generate and save verification code
     const verificationCode = await registrationDbService.createSmsVerificationCode(newPhone, 'phone-update');
     
-    // 输出验证码到控制台（模拟发送短信）
-    console.log(`\n=================================`);
-    console.log(`📱 手机号更新验证码已生成`);
-    console.log(`手机号: ${newPhone}`);
-    console.log(`验证码: ${verificationCode}`);
-    console.log(`有效期: 5分钟`);
-    console.log(`用途: phone-update`);
-    console.log(`=================================\n`);
+    // Output code to log (Simulate SMS sending)
+    logger.info(`[SMS] Phone update code generated: ${verificationCode} for ${newPhone} (valid 5 min)`);
     
     const responseData = {
-      message: '验证码已发送',
-      // 返回sessionId用于前端兼容，但验证时使用手机号
+      message: 'Verification code sent',
+      // Return sessionId for frontend compatibility
       sessionId: 'phone-update-session',
-      // 开发环境下返回验证码和手机号（与登录页保持一致）
+      // Return code in dev environment
       verificationCode: verificationCode,
       phone: newPhone
     };
     
-    console.log('✅ 准备返回响应:', responseData);
+    logger.info('Returning phone update response', responseData);
     res.status(200).json(responseData);
-    console.log('✅ 响应已发送');
   } catch (error) {
-    console.error('发送验证码失败:', error);
-    res.status(500).json({ error: '发送验证码失败' });
+    logger.error('Failed to send verification code', { error });
+    res.status(500).json({ error: 'Failed to send verification code' });
   }
 });
 
 /**
- * API-POST-ConfirmPhoneUpdate: 确认更新用户手机号（验证验证码）
+ * API-POST-ConfirmPhoneUpdate: Confirm phone update (verify code)
  * POST /api/user/phone/confirm-update
  */
 router.post('/phone/confirm-update', testAuth, async (req, res) => {
@@ -167,51 +161,47 @@ router.post('/phone/confirm-update', testAuth, async (req, res) => {
     const userId = req.user.id;
     const { newPhone, verificationCode } = req.body;
     
-    // 验证必需参数
+    // Validate required parameters
     if (!newPhone) {
-      return res.status(400).json({ error: '手机号不能为空' });
+      return res.status(400).json({ error: 'Phone number cannot be empty' });
     }
     
     if (!verificationCode) {
-      return res.status(400).json({ error: '验证码不能为空' });
+      return res.status(400).json({ error: 'Verification code cannot be empty' });
     }
     
-    // 使用统一的验证码验证服务
+    // Verify SMS code
     const verifyResult = await registrationDbService.verifySmsCode(newPhone, verificationCode);
     
     if (!verifyResult.success) {
-      return res.status(400).json({ error: verifyResult.error || '验证码错误或已过期' });
+      return res.status(400).json({ error: verifyResult.error || 'Invalid or expired verification code' });
     }
     
-    // 再次检查新手机号是否已被其他用户使用
+    // Check again if new phone is used
     const bcrypt = require('bcryptjs');
     const db = require('../database');
     const existingUser = await db.query('SELECT id FROM users WHERE phone = ? AND id != ?', [newPhone, userId]);
     if (existingUser && existingUser.length > 0) {
-      return res.status(409).json({ error: '该手机号已被使用' });
+      return res.status(409).json({ error: 'This phone number is already in use' });
     }
     
-    // 更新用户手机号
+    // Update user phone
     const success = await userInfoDbService.updateUserPhone(userId, newPhone);
     
     if (success) {
-      console.log(`\n=================================`);
-      console.log(`✅ 手机号更新成功`);
-      console.log(`用户ID: ${userId}`);
-      console.log(`新手机号: ${newPhone}`);
-      console.log(`=================================\n`);
-      res.status(200).json({ message: '手机号更新成功' });
+      logger.info(`Phone number updated successfully for user ${userId} to ${newPhone}`);
+      res.status(200).json({ message: 'Phone number updated successfully' });
     } else {
-      res.status(500).json({ error: '更新手机号失败' });
+      res.status(500).json({ error: 'Failed to update phone number' });
     }
   } catch (error) {
-    console.error('更新手机号失败:', error);
-    res.status(500).json({ error: '更新手机号失败' });
+    logger.error('Failed to update phone number', { error });
+    res.status(500).json({ error: 'Failed to update phone number' });
   }
 });
 
 /**
- * API-PUT-UserDiscountType: 更新用户优惠类型
+ * API-PUT-UserDiscountType: Update user discount type
  * PUT /api/user/discount-type
  */
 router.put('/discount-type', testAuth, async (req, res) => {
@@ -220,29 +210,29 @@ router.put('/discount-type', testAuth, async (req, res) => {
     const { discountType } = req.body;
     
     if (!discountType) {
-      return res.status(400).json({ error: '优惠类型不能为空' });
+      return res.status(400).json({ error: 'Discount type cannot be empty' });
     }
     
     const success = await userInfoDbService.updateUserDiscountType(userId, discountType);
     
     if (success) {
-      res.status(200).json({ message: '优惠类型更新成功' });
+      res.status(200).json({ message: 'Discount type updated successfully' });
     } else {
-      res.status(500).json({ error: '更新优惠类型失败' });
+      res.status(500).json({ error: 'Failed to update discount type' });
     }
   } catch (error) {
-    console.error('更新优惠类型失败:', error);
+    logger.error('Failed to update discount type', { error });
     
-    if (error.message === '无效的优惠类型') {
+    if (error.message === 'Invalid discount type') {
       return res.status(400).json({ error: error.message });
     }
     
-    res.status(500).json({ error: '更新优惠类型失败' });
+    res.status(500).json({ error: 'Failed to update discount type' });
   }
 });
 
 /**
- * API-GET-UserOrders: 获取用户订单列表
+ * API-GET-UserOrders: Get user order list
  * GET /api/user/orders
  */
 router.get('/orders', testAuth, async (req, res) => {
@@ -253,7 +243,7 @@ router.get('/orders', testAuth, async (req, res) => {
     let orders;
     
     if (keyword) {
-      // 使用搜索功能
+      // Use search
       orders = await userInfoDbService.searchOrders(userId, {
         keyword,
         startDate,
@@ -261,7 +251,7 @@ router.get('/orders', testAuth, async (req, res) => {
         searchType
       });
     } else {
-      // 使用普通查询
+      // Normal query
       orders = await userInfoDbService.getUserOrders(userId, {
         startDate,
         endDate,
@@ -271,8 +261,8 @@ router.get('/orders', testAuth, async (req, res) => {
     
     res.status(200).json({ orders });
   } catch (error) {
-    console.error('获取订单列表失败:', error);
-    res.status(500).json({ error: '获取订单列表失败' });
+    logger.error('Failed to get order list', { error });
+    res.status(500).json({ error: 'Failed to get order list' });
   }
 });
 

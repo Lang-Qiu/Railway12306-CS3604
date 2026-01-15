@@ -4,9 +4,10 @@ const orderService = require('../services/orderService');
 const passengerService = require('../services/passengerService');
 const { authenticateUser } = require('../middleware/auth');
 const { checkUnpaidOrder } = require('../middleware/bookingRestriction');
+const logger = require('../utils/logger');
 
 /**
- * 获取订单填写页面信息
+ * Get order filling page info
  * GET /api/orders/new
  */
 router.get('/new', authenticateUser, checkUnpaidOrder, async (req, res) => {
@@ -14,14 +15,14 @@ router.get('/new', authenticateUser, checkUnpaidOrder, async (req, res) => {
     
     const { trainNo, departureStation, arrivalStation, departureDate } = req.query;
     
-    // 验证必填参数
+    // Validate required parameters
     if (!trainNo || !departureStation || !arrivalStation || !departureDate) {
-      return res.status(400).json({ error: '参数错误' });
+      return res.status(400).json({ error: 'Invalid parameters' });
     }
     
     const userId = req.user.id;
     
-    // 获取车次信息、票价、余票
+    // Get train info, fares, available seats
     const availableSeatTypes = await orderService.getAvailableSeatTypes({
       trainNo,
       departureStation,
@@ -29,17 +30,17 @@ router.get('/new', authenticateUser, checkUnpaidOrder, async (req, res) => {
       departureDate
     });
     
-    // 获取用户乘客列表
+    // Get user passengers
     const passengers = await passengerService.getUserPassengers(userId);
     
-    // 获取默认席别
+    // Get default seat type
     const defaultSeat = await orderService.getDefaultSeatType(trainNo);
     
-    // 获取车次时间信息（使用 trainService）
+    // Get train time details (use trainService)
     const trainService = require('../services/trainService');
     const trainDetails = await trainService.getTrainTimeDetails(trainNo, departureStation, arrivalStation);
     
-    // 构建票价和余票信息
+    // Build fare and available seats info
     const fareInfo = {};
     const availableSeats = {};
     availableSeatTypes.forEach(st => {
@@ -65,24 +66,24 @@ router.get('/new', authenticateUser, checkUnpaidOrder, async (req, res) => {
       defaultSeatType: defaultSeat.seatType
     });
   } catch (error) {
-    console.error('获取订单页面信息失败:', error);
+    logger.error('Failed to get order page info', { error });
     const status = error.status || 500;
-    const message = error.message || '加载订单页失败';
+    const message = error.message || 'Failed to load order page';
     res.status(status).json({ error: message });
   }
 });
 
 /**
- * 获取有票席别列表（公开API，不需要登录）
+ * Get available seat types list (Public API, no login required)
  * GET /api/orders/available-seat-types
  */
 router.get('/available-seat-types', async (req, res) => {
   try {
     const { trainNo, departureStation, arrivalStation, departureDate } = req.query;
     
-    // 验证必填参数
+    // Validate required parameters
     if (!trainNo || !departureStation || !arrivalStation || !departureDate) {
-      return res.status(400).json({ error: '参数错误' });
+      return res.status(400).json({ error: 'Invalid parameters' });
     }
     
     const seatTypes = await orderService.getAvailableSeatTypes({
@@ -92,7 +93,7 @@ router.get('/available-seat-types', async (req, res) => {
       departureDate
     });
     
-    // 转换格式
+    // Format output
     const formattedSeatTypes = seatTypes.map(st => ({
       type: st.seat_type,
       price: st.price,
@@ -101,15 +102,15 @@ router.get('/available-seat-types', async (req, res) => {
     
     res.status(200).json({ seatTypes: formattedSeatTypes });
   } catch (error) {
-    console.error('获取席别信息失败:', error);
+    logger.error('Failed to get seat types info', { error });
     const status = error.status || 500;
-    const message = error.message || '获取席别信息失败';
+    const message = error.message || 'Failed to get seat types info';
     res.status(status).json({ error: message });
   }
 });
 
 /**
- * 提交订单
+ * Submit order
  * POST /api/orders/submit
  */
 router.post('/submit', authenticateUser, async (req, res) => {
@@ -117,14 +118,14 @@ router.post('/submit', authenticateUser, async (req, res) => {
     
     const { trainNo, departureStation, arrivalStation, departureDate, passengers } = req.body;
     
-    // 验证至少选择一名乘客
+    // Validate at least one passenger selected
     if (!passengers || passengers.length === 0) {
-      return res.status(400).json({ error: '请选择乘车人！' });
+      return res.status(400).json({ error: 'Please select passengers!' });
     }
     
     const userId = req.user.id;
     
-    // 创建订单
+    // Create order
     const result = await orderService.createOrder({
       userId,
       trainNo,
@@ -136,15 +137,15 @@ router.post('/submit', authenticateUser, async (req, res) => {
     
     res.status(200).json(result);
   } catch (error) {
-    console.error('提交订单失败:', error);
+    logger.error('Failed to submit order', { error });
     const status = error.status || 500;
-    const message = error.message || '网络忙，请稍后再试';
+    const message = error.message || 'Network busy, please try again later';
     res.status(status).json({ error: message });
   }
 });
 
 /**
- * 获取订单核对信息
+ * Get order confirmation info
  * GET /api/orders/:orderId/confirmation
  */
 router.get('/:orderId/confirmation', authenticateUser, async (req, res) => {
@@ -157,15 +158,15 @@ router.get('/:orderId/confirmation', authenticateUser, async (req, res) => {
     
     res.status(200).json(orderDetails);
   } catch (error) {
-    console.error('获取订单信息失败:', error);
+    logger.error('Failed to get order info', { error });
     const status = error.status || 500;
-    const message = error.message || '获取订单信息失败';
+    const message = error.message || 'Failed to get order info';
     res.status(status).json({ error: message });
   }
 });
 
 /**
- * 确认订单
+ * Confirm order
  * POST /api/orders/:orderId/confirm
  */
 router.post('/:orderId/confirm', authenticateUser, async (req, res) => {
@@ -178,9 +179,9 @@ router.post('/:orderId/confirm', authenticateUser, async (req, res) => {
     
     res.status(200).json(result);
   } catch (error) {
-    console.error('确认订单失败:', error);
+    logger.error('Failed to confirm order', { error });
     const status = error.status || 500;
-    const message = error.message || '确认订单失败';
+    const message = error.message || 'Failed to confirm order';
     res.status(status).json({ error: message });
   }
 });

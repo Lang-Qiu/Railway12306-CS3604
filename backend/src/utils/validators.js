@@ -1,33 +1,33 @@
 /**
- * 统一验证工具类
+ * Unified validation utilities
  */
 const validators = {
-  // 验证用户名格式：6-30位，字母开头，只能包含字母、数字、下划线
+  // Validate username format: 6-30 chars, starts with letter, alphanumeric and underscore only
   validateUsername: (username) => {
     const usernameRegex = /^[a-zA-Z][a-zA-Z0-9_]{5,29}$/;
     return usernameRegex.test(username);
   },
 
-  // 验证邮箱格式
+  // Validate email format
   validateEmail: (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   },
 
-  // 验证手机号格式
+  // Validate phone number format
   validatePhone: (phone) => {
     const phoneRegex = /^1[3-9]\d{9}$/;
     return phoneRegex.test(phone);
   },
 
-  // 验证身份证号格式 (简单正则)
+  // Validate ID card format (simple regex)
   validateIdCard: (idCard) => {
-    // 15位或18位身份证
+    // 15 or 18 digits
     const idCardRegex = /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/;
     return idCardRegex.test(idCard);
   },
 
-  // 识别标识符类型
+  // Identify identifier type
   identifyIdentifierType: (identifier) => {
     if (validators.validateEmail(identifier)) {
       return 'email';

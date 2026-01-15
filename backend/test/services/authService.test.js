@@ -14,7 +14,7 @@ describe('AuthService', () => {
     try {
       // 插入测试用户（用户名）
       await dbService.run(
-        'INSERT OR REPLACE INTO users (username, password, name, id_card_number, phone, email) VALUES (?, ?, ?, ?, ?, ?)',
+        'INSERT OR REPLACE INTO users (username, password_hash, real_name, id_card, phone, email) VALUES (?, ?, ?, ?, ?, ?)',
         ['testuser', hashedPassword, '测试用户', '110101199001011234', '13800138000', 'test@example.com']
       )
     } catch (error) {
@@ -69,74 +69,12 @@ describe('AuthService', () => {
     })
   })
 
-  describe.skip('validateIdCard', () => {
-    it('应该验证有效的身份证号', () => {
-      const validIdCard = '110101199001011234'
-      const result = authService.validateIdCard(validIdCard)
-      
-      expect(result).toBe(true)
-    })
-
-    it('应该拒绝无效的身份证号', () => {
-      const invalidIdCard = '123456789'
-      const result = authService.validateIdCard(invalidIdCard)
-      
-      expect(result).toBe(false)
-    })
-
-    it('应该拒绝空身份证号', () => {
-      const result = authService.validateIdCard('')
-      
-      expect(result).toBe(false)
-    })
-  })
-
-  describe.skip('generateSmsCode', () => {
-    it('应该生成6位数字验证码', () => {
-      const code = authService.generateSmsCode()
-      
-      expect(typeof code).toBe('string')
-      expect(code).toMatch(/^\d{6}$/)
-    })
-
-    it('应该生成不同的验证码', () => {
-      const code1 = authService.generateSmsCode()
-      const code2 = authService.generateSmsCode()
-      
-      // 虽然可能相同，但概率很低
-      expect(code1).toMatch(/^\d{6}$/)
-      expect(code2).toMatch(/^\d{6}$/)
-    })
-  })
-
-  describe.skip('verifySmsCode', () => {
-    it('应该验证正确的短信验证码', async () => {
-      const phoneNumber = '13800138000'
-      const code = '123456'
-      
-      const result = await authService.verifySmsCode(phoneNumber, code)
-      
-      expect(result).toHaveProperty('isValid', true)
-    })
-
-    it('应该拒绝错误的验证码', async () => {
-      const phoneNumber = '13800138000'
-      const code = '000000'
-      
-      const result = await authService.verifySmsCode(phoneNumber, code)
-      
-      expect(result).toHaveProperty('isValid', false)
-    })
-
-    it('应该拒绝过期的验证码', async () => {
-      const phoneNumber = '13800138000'
-      const code = '999999'  // 假设这是过期的验证码
-      
-      const result = await authService.verifySmsCode(phoneNumber, code)
-      
-      expect(result).toHaveProperty('isValid', false)
-    })
-  })
+  // NOTE: validateIdCard, generateSmsCode, verifySmsCode tests removed
+  // These methods have been moved to other services:
+  // - validateIdCard → registerController.validateIdCardNumber()
+  // - generateSmsCode → registrationDbService.createVerificationCode()
+  // - verifySmsCode → registrationDbService.verifySmsCode()
+  // All functionality is covered by integration tests and service-specific tests
 
   describe.skip('generateJwtToken', () => {
     it('应该生成有效的JWT令牌', () => {
@@ -152,6 +90,28 @@ describe('AuthService', () => {
       const token2 = authService.generateJwtToken(456)
       
       expect(token1).not.toBe(token2)
+    })
+  })
+
+  describe('identifyIdentifierType', () => {
+    it('应该识别用户名', () => {
+      const type = authService.identifyIdentifierType('testuser')
+      expect(type).toBe('username')
+    })
+
+    it('应该识别邮箱', () => {
+      const type = authService.identifyIdentifierType('test@example.com')
+      expect(type).toBe('email')
+    })
+
+    it('应该识别手机号', () => {
+      const type = authService.identifyIdentifierType('13800138000')
+      expect(type).toBe('phone')
+    })
+
+    it('应该处理无效格式', () => {
+      const type = authService.identifyIdentifierType('invalid@')
+      expect(type).toBe('invalid')
     })
   })
 })

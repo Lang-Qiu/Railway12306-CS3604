@@ -1,20 +1,20 @@
 id: REQ-06-06
-name: 超时提示弹窗
-functional_description: 支付超时后的提示。
+name: 支付超时提示组件
+functional_description: 当订单超过有效期后，向用户反馈订单已失效的信息。
 ui_description: |
-  模态框。
-  提示“支付超时，请重新购票”。
+  采用模态对话框形式阻断操作。
+  核心文案："支付超时，请重新购票"。
 input_parameters: null
 output_parameters: null
 preconditions:
-  - 倒计时结束且用户尝试操作
+  - 倒计时归零且用户尝试进行任何操作
 postconditions:
-  - 确认后跳转车次列表
+  - 确认操作：重定向至车次查询页
 business_rules:
-  - 订单自动作废
+  - 订单状态自动变更为"已作废"
 exceptions: null
 scenarios:
-  - name: 超时操作
+  - name: 响应超时操作
     steps:
-      - action: 超时后点击支付
-      - expectation: 弹出超时提示。
+      - action: 在订单失效后点击支付按钮
+      - expectation: 系统弹出超时提示框。

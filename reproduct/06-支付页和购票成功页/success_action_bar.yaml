@@ -1,18 +1,18 @@
 id: REQ-06-10
-name: 成功页操作栏
-functional_description: 继续购票或查看详情。
+name: 结果页后续操作栏
+functional_description: 引导用户进行后续业务操作或查询历史记录。
 ui_description: |
-  继续购票按钮。
-  查询订单详情按钮（橙色）。
+  配置“继续购票”按钮，支持快速发起新订单。
+  配置“查询订单详情”按钮（橙色主操作），引导至订单中心。
 input_parameters: null
 output_parameters: null
 preconditions: null
 postconditions:
-  - 跳转相应页面
+  - 触发相应的路由跳转
 business_rules: null
 exceptions: null
 scenarios:
-  - name: 查看详情
+  - name: 访问订单详情
     steps:
-      - action: 点击查询订单详情
-      - expectation: 跳转至订单中心。
+      - action: 点击“查询订单详情”
+      - expectation: 系统导航至个人中心的订单详情页。

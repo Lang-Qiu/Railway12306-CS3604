@@ -1,1 +1,12 @@
-﻿/* restored from backup */
+/* restored from backup */
+
+.phone-verification-panel .form-input.phone-input,
+.phone-verification-panel .form-input.password-input {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+.phone-verification-panel .country-code {
+  color: #000000 !important;
+  background-color: #ffffff !important; /* Also ensure background is white for consistency */
+}

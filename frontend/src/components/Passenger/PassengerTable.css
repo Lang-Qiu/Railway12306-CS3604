@@ -1,1 +1,23 @@
-﻿/* restored from backup */
+/* restored from backup */
+
+.verification-badge {
+  display: inline-block;
+  white-space: nowrap;
+  font-size: 14px;
+  color: #000000 !important;
+  background: none !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+.verification-badge::before,
+.verification-badge::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Ensure no other styles interfere with the text display */
+.verification-text {
+  display: inline;
+}
+

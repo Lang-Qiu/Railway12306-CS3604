@@ -136,7 +136,16 @@ const TrainListPage: React.FC = () => {
       console.log('Loading complete!');
     } catch (error: any) {
       console.error('查询车次失败:', error);
-      setError(error.message || '查询失败，请稍后重试');
+      
+      // 如果是"无法匹配该到达城市"等验证错误，不显示错误信息，而是显示空列表（触发"很抱歉..."提示）
+      const errorMessage = error.message || '';
+      if (errorMessage.includes('无法匹配') || errorMessage.includes('城市')) {
+        console.log('Suppressing validation error and showing empty list:', errorMessage);
+        setError(''); // 清除错误，显示空列表提示
+      } else {
+        setError(errorMessage || '查询失败，请稍后重试');
+      }
+      
       setTrains([]);
       setFilteredTrains([]);
       setIsLoading(false);

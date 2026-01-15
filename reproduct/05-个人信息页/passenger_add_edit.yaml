@@ -1,24 +1,24 @@
 id: REQ-05-07
-name: 乘车人添加与编辑
-functional_description: 添加或修改乘车人信息。
+name: 乘车人信息维护表单
+functional_description: 提供新增或更新乘车人详细信息的功能界面。
 ui_description: |
-  表单：姓名、证件类型/号码、手机号、优惠类型。
-  保存按钮、取消按钮。
+  表单区域包含：姓名录入、证件类型选择、证件号码录入、手机号码录入、优惠类型选择。
+  底部配置“保存”与“取消”操作按钮。
 input_parameters:
   - name: passenger_info
     type: object
 output_parameters: null
 preconditions: null
 postconditions:
-  - 验证通过后保存至数据库
+  - 数据校验通过后持久化至数据库
 business_rules:
-  - 证件号格式校验
-  - 姓名校验
-  - 判重逻辑
+  - 强制执行证件号码格式有效性校验
+  - 执行姓名字符合法性校验
+  - 执行数据库查重逻辑，避免重复添加
 exceptions:
-  - 已存在提示
+  - 记录已存在时的错误反馈
 scenarios:
-  - name: 添加乘车人
+  - name: 新增乘车人记录
     steps:
-      - action: 填写完整信息点击保存
-      - expectation: 提示成功并返回列表。
+      - action: 填写所有必填项并点击保存
+      - expectation: 系统提示操作成功并导航回列表页。

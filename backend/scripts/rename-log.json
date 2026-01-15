@@ -1,0 +1,47 @@
+{
+  "timestamp": "2025-11-22T17:45:10.933Z",
+  "items": [
+    {
+      "old": "E:\\LQiu\\CS3604\\12306_Follow\\backend\\src\\config",
+      "proposed": "E:\\LQiu\\CS3604\\12306_Follow\\backend\\src\\infra-config",
+      "status": "renamed",
+      "method": "git",
+      "error": null
+    },
+    {
+      "old": "E:\\LQiu\\CS3604\\12306_Follow\\backend\\src\\constants",
+      "proposed": "E:\\LQiu\\CS3604\\12306_Follow\\backend\\src\\message-catalog",
+      "status": "renamed",
+      "method": "git",
+      "error": null
+    },
+    {
+      "old": "E:\\LQiu\\CS3604\\12306_Follow\\backend\\src\\controllers",
+      "proposed": "E:\\LQiu\\CS3604\\12306_Follow\\backend\\src\\request-handlers",
+      "status": "renamed",
+      "method": "git",
+      "error": null
+    },
+    {
+      "old": "E:\\LQiu\\CS3604\\12306_Follow\\backend\\src\\middleware",
+      "proposed": "E:\\LQiu\\CS3604\\12306_Follow\\backend\\src\\request-interceptors",
+      "status": "renamed",
+      "method": "git",
+      "error": null
+    },
+    {
+      "old": "E:\\LQiu\\CS3604\\12306_Follow\\backend\\src\\routes",
+      "proposed": "E:\\LQiu\\CS3604\\12306_Follow\\backend\\src\\route-manifests",
+      "status": "renamed",
+      "method": "git",
+      "error": null
+    },
+    {
+      "old": "E:\\LQiu\\CS3604\\12306_Follow\\backend\\src\\services",
+      "proposed": "E:\\LQiu\\CS3604\\12306_Follow\\backend\\src\\domain-providers",
+      "status": "renamed",
+      "method": "git",
+      "error": null
+    }
+  ]
+}

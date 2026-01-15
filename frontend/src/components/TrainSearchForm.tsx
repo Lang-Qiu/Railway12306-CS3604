@@ -56,11 +56,8 @@ const TrainSearchForm: React.FC<TrainSearchFormProps> = ({ onNavigateToTrainList
         });
         return;
       }
-      setErrors({
-        departure: departureResult.error || '无法匹配该出发城市',
-        general: departureResult.error || '无法匹配该出发城市'
-      });
-      return;
+      // 不阻止跳转，而是让列表页处理"无结果"的情况
+      console.log('Departure city validation failed but proceeding:', departureResult.error);
     }
 
     // 验证到达城市是否合法
@@ -73,11 +70,8 @@ const TrainSearchForm: React.FC<TrainSearchFormProps> = ({ onNavigateToTrainList
         });
         return;
       }
-      setErrors({
-        arrival: arrivalResult.error || '无法匹配该到达城市',
-        general: arrivalResult.error || '无法匹配该到达城市'
-      });
-      return;
+      // 不阻止跳转，而是让列表页处理"无结果"的情况
+      console.log('Arrival city validation failed but proceeding:', arrivalResult.error);
     }
 
     // 所有验证通过，跳转到车次列表页

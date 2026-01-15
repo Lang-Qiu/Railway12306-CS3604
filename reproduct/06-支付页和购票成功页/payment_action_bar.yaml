@@ -1,22 +1,22 @@
 id: REQ-06-04
-name: 支付操作栏
-functional_description: 取消订单或发起支付。
+name: 支付功能操作栏
+functional_description: 提供订单生命周期管理的核心操作入口，支持支付发起与订单撤销。
 ui_description: |
-  取消订单按钮（白底灰边）。
-  网上支付按钮（橙底白字）。
+  取消控件：采用白底灰边样式，视觉层级较低。
+  支付控件：采用橙底白字高亮样式，作为主操作按钮。
 input_parameters: null
 output_parameters: null
 preconditions:
-  - 倒计时未结束
+  - 订单处于有效期内（倒计时未归零）
 postconditions:
-  - 点击支付跳转成功页
-  - 点击取消弹出确认框
+  - 支付成功：重定向至购票成功页
+  - 触发取消：唤起二次确认弹窗
 business_rules:
-  - 支付前检查订单状态
+  - 发起支付前必须校验订单实时状态
 exceptions:
-  - 支付失败提示
+  - 支付网关返回失败时的错误反馈
 scenarios:
-  - name: 点击支付
+  - name: 发起在线支付
     steps:
-      - action: 点击网上支付
-      - expectation: 按钮变“处理中”，跳转成功页。
+      - action: 点击"网上支付"按钮
+      - expectation: 按钮状态更为"处理中..."，随后跳转至支付结果页。

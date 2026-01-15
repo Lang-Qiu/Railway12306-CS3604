@@ -65,7 +65,7 @@ const PassengerTable: React.FC<PassengerTableProps> = ({
               </td>
               <td className="verification-cell">
                 <span className="verification-badge">
-                  <span className="verification-icon">✓</span>
+                  <span className="verification-text">通过</span>
                 </span>
               </td>
               <td className="action-cell">

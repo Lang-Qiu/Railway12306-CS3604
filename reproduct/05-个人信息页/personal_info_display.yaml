@@ -1,11 +1,11 @@
 id: REQ-05-03
-name: 个人信息展示面板
-functional_description: 展示用户基本信息、联系方式及附加信息。
+name: 用户档案展示视图
+functional_description: 聚合展示用户的基本身份信息、联系方式及扩展属性。
 ui_description: |
-  分块展示。
-  基本信息：姓名、证件号等（只读）。
-  联系方式：手机、邮箱（可编辑）。
-  编辑按钮：点击进入编辑模式。
+  采用分块布局设计。
+  基本信息区：展示姓名、证件号码等只读字段。
+  联系方式区：展示手机号、邮箱，支持进入编辑模式。
+  配置“编辑”操作入口。
 input_parameters:
   - name: user_info
     type: object
@@ -13,11 +13,11 @@ output_parameters: null
 preconditions: null
 postconditions: null
 business_rules:
-  - 手机号脱敏显示
-  - 核验状态颜色区分
+  - 手机号码必须进行脱敏处理（中间四位掩码）
+  - 根据核验状态显示不同的指示颜色
 exceptions: null
 scenarios:
-  - name: 编辑邮箱
+  - name: 修改邮箱地址
     steps:
-      - action: 点击邮箱旁编辑
-      - expectation: 变为输入框。
+      - action: 点击邮箱信息旁的编辑图标
+      - expectation: 文本显示转换为输入框编辑模式。

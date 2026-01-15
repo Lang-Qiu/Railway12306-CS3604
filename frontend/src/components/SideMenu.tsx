@@ -87,14 +87,12 @@ const SideMenu = ({ currentSection, onMenuClick }: SideMenuProps) => {
             >
               查看个人信息
             </div>
-            <div className="menu-item disabled">账号安全</div>
             <div
               className={`menu-item ${selectedItem === 'phone-verification' ? 'selected' : ''}`}
               onClick={() => handleClick('phone-verification')}
             >
               手机核验
             </div>
-            <div className="menu-item disabled">账号注销</div>
           </div>
         )}
       </div>
@@ -121,7 +119,6 @@ const SideMenu = ({ currentSection, onMenuClick }: SideMenuProps) => {
             >
               乘车人
             </div>
-            <div className="menu-item disabled">地址管理</div>
           </div>
         )}
       </div>

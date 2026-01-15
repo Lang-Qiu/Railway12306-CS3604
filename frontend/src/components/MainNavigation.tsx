@@ -63,7 +63,14 @@ const MainNavigation: React.FC<MainNavigationProps> = ({
   return (
     <nav className="main-navigation">
       <div className="nav-container">
-        <Link to="/" className={`nav-item ${isHomePage ? 'active' : ''}`}>首页</Link>
+        <Link 
+          to="/" 
+          className={`nav-item ${isHomePage ? 'active' : ''}`}
+          onMouseEnter={() => handleMouseEnter('home')}
+          onMouseLeave={handleMouseLeave}
+        >
+          首页
+        </Link>
         
         {/* 车票菜单项带下拉 */}
         <div 

@@ -1,10 +1,10 @@
 id: REQ-04-02
-name: 列车信息展示
-functional_description: 展示当前预订的车次详细信息。
+name: 车次详情概览面板
+functional_description: 直观呈现当前预订车次的关键行程信息及票务状态。
 ui_description: |
-  浅蓝背景面板。
-  显示：日期、车次、出发/到达站及时间。
-  票价信息：各席别票价及余票状态。
+  采用浅蓝色调的背景面板设计。
+  核心展示项：发车日期、车次编号、起止车站及对应时刻。
+  票务详情：分列展示各等级席位的票价及实时余票状态。
 input_parameters:
   - name: train_info
     type: object
@@ -12,10 +12,10 @@ output_parameters: null
 preconditions: null
 postconditions: null
 business_rules:
-  - 票价仅供参考提示
+  - 必须显著提示“票价仅供参考”的免责声明
 exceptions: null
 scenarios:
-  - name: 查看车次
+  - name: 核对车次信息
     steps:
-      - action: 页面加载
-      - expectation: 显示正确的车次和时间。
+      - action: 页面初始化加载完成
+      - expectation: 面板准确显示预订车次的行程及时间信息。

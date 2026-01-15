@@ -88,18 +88,8 @@ const TrainSearchBar: React.FC<TrainSearchBarProps> = ({
     setIsLoading(true);
 
     try {
-      // 调用车次搜索API
-      const result = await searchTrains(
-        departureStation,
-        arrivalStation,
-        departureDate
-      );
-      
-      if (!result.success) {
-        throw new Error(result.error || '查询失败');
-      }
-
-      // API调用成功，通过回调传递搜索参数
+      // 直接调用回调传递搜索参数，不在此处进行API验证
+      // 让父组件(TrainListPage)统一处理搜索和错误展示
       onSearch({
         departureStation,
         arrivalStation,

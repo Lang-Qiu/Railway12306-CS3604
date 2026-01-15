@@ -1,19 +1,19 @@
 id: REQ-06-07
-name: 购票成功页布局
-functional_description: 支付成功后的反馈页面。
+name: 购票成功结果页框架
+functional_description: 支付交易完成后的结果反馈与信息聚合页面。
 ui_description: |
-  顶部成功Banner。
-  中部订单详情。
-  底部操作按钮。
+  顶部区域：部署醒目的成功状态横幅。
+  核心区域：展示订单详细快照及乘车凭证信息。
+  底部区域：配置后续业务操作入口。
 input_parameters: null
 output_parameters: null
 preconditions:
-  - 支付成功回调
+  - 系统已接收到支付成功的网关回调
 postconditions: null
 business_rules: null
 exceptions: null
 scenarios:
-  - name: 展示成功页
+  - name: 结果页渲染
     steps:
-      - action: 支付完成
-      - expectation: 显示“交易已成功”。
+      - action: 支付流程结束
+      - expectation: 界面首屏展示“交易已成功”的反馈信息。

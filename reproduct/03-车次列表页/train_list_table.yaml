@@ -1,11 +1,11 @@
 id: REQ-03-04
-name: 车次列表表格
-functional_description: 展示车次详细信息及余票。
+name: 车次数据展示表格
+functional_description: 以表格形式呈现车次详情、运行时刻及各席位余票状态。
 ui_description: |
-  表头：车次、出发/到达站、时间、历时、各席位余票、备注。
-  行：奇偶变色。
-  余票显示：有/无/数字/--。
-  预订按钮：橙色，无票时置灰。
+  列标题包含：车次号、起止车站、发到时间、运行总时长、各等级席位余票情况、备注信息。
+  数据行采用斑马纹（奇偶行变色）样式。
+  余票状态指示：充足（有）、售罄（无）、紧张（具体数字）、无此席别（--）。
+  操作控件：预订按钮（橙色），不可用状态下呈灰色。
 input_parameters:
   - name: train_list
     type: array
@@ -13,12 +13,12 @@ output_parameters: null
 preconditions: null
 postconditions: null
 business_rules:
-  - 根据余票状态显示不同颜色（绿/黑/灰）
-  - 点击表头可排序（时间/历时）
+  - 依据余票数量动态调整显示颜色（充足绿色/紧张黑色/售罄灰色）
+  - 支持点击列头进行数据排序（如按发车时间、运行时长）
 exceptions:
-  - 无数据时显示空状态提示
+  - 列表为空时的缺省状态提示
 scenarios:
-  - name: 查看余票
+  - name: 查阅余票详情
     steps:
-      - action: 查看某车次二等座
-      - expectation: 显示“有”或具体张数。
+      - action: 观察某车次二等座信息
+      - expectation: 界面显示“有”或具体的剩余票数。

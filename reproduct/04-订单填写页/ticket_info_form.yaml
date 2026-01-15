@@ -1,24 +1,24 @@
 id: REQ-04-04
-name: 票据信息填写
-functional_description: 为已选乘客设置席别、票种。
+name: 票务信息配置表单
+functional_description: 针对已选定的乘车人进行席别指定及票种设置。
 ui_description: |
-  表格形式。
-  列：席别（下拉）、票种（下拉）、姓名、证件号。
-  操作：删除按钮。
+  采用结构化表格形式展示。
+  包含列项：席别选择（下拉）、票种类型（下拉）、乘车人姓名、证件号码。
+  每行配置独立的删除操作控件。
 input_parameters:
   - name: passenger_tickets
     type: array
 output_parameters: null
 preconditions:
-  - 已选择乘客
+  - 已完成至少一名乘车人的选择
 postconditions:
-  - 更新订单总价
+  - 实时触发订单总金额的重新计算
 business_rules:
-  - 席别默认选中二等座（或查询页选中的）
-  - 姓名证件号不可编辑（从联系人带出）
+  - 席别默认值策略：优先继承查询页选择，否则默认二等座
+  - 身份信息字段（姓名/证件号）锁定不可编辑，强制从联系人数据继承
 exceptions: null
 scenarios:
-  - name: 修改席别
+  - name: 调整席位等级
     steps:
-      - action: 将二等座改为一等座
-      - expectation: 票价更新。
+      - action: 将席别从“二等座”切换为“一等座”
+      - expectation: 对应行的票价及订单总额自动更新。

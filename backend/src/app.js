@@ -16,7 +16,7 @@ const passwordResetRoutes = require('./routes/passwordReset');
 const { startCleanupScheduler } = require('./services/pendingOrderCleanupService');
 const trainCleanupService = require('./services/trainCleanupService');
 const cancellationCleanupService = require('./services/cancellationCleanupService');
-const { generateDay15Trains } = require('../database/generate-daily-trains');
+// const { generateDay15Trains } = require('../database/generate-daily-trains');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -79,15 +79,15 @@ function startScheduledTasks() {
   });
   
   // 每天凌晨3点生成第15天的车次数据
-  cron.schedule('0 3 * * *', async () => {
-    console.log('\n执行定时任务：生成第15天车次数据...');
-    try {
-      const result = await generateDay15Trains(require('sqlite3').verbose().Database);
-      console.log('生成结果:', result);
-    } catch (error) {
-      console.error('生成车次数据失败:', error);
-    }
-  });
+  // cron.schedule('0 3 * * *', async () => {
+  //   console.log('\n执行定时任务：生成第15天车次数据...');
+  //   try {
+  //     const result = await generateDay15Trains(require('sqlite3').verbose().Database);
+  //     console.log('生成结果:', result);
+  //   } catch (error) {
+  //     console.error('生成车次数据失败:', error);
+  //   }
+  // });
   
   console.log('定时任务已启动：');
   console.log('  - 每天凌晨2点：清理过期车次');

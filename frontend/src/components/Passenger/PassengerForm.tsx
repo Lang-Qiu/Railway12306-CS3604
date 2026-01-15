@@ -118,12 +118,14 @@ const PassengerForm: React.FC<PassengerFormProps> = ({
         ) : (
           <>
             <FormRow label="证件类型" required>
-              <SelectDropdown
-                options={idCardTypes}
-                value={formData.idCardType}
-                onChange={(val) => handleChange('idCardType', val)}
-                placeholder="请选择证件类型"
-              />
+              <div className="passenger-input-wrapper">
+                <SelectDropdown
+                  options={idCardTypes}
+                  value={formData.idCardType}
+                  onChange={(val) => handleChange('idCardType', val)}
+                  placeholder="请选择证件类型"
+                />
+              </div>
             </FormRow>
 
             <FormRow label="姓名" required error={errors.name}>
@@ -135,8 +137,8 @@ const PassengerForm: React.FC<PassengerFormProps> = ({
                   onChange={(e) => handleChange('name', e.target.value)}
                   placeholder="请输入姓名"
                 />
-                <span className="passenger-hint">姓名填写规则（用于身份核验）</span>
               </div>
+              <span className="passenger-hint passenger-hint-block">姓名填写规则（用于身份核验）</span>
             </FormRow>
 
             <FormRow label="证件号码" required error={errors.idCardNumber}>
@@ -148,8 +150,8 @@ const PassengerForm: React.FC<PassengerFormProps> = ({
                   onChange={(e) => handleChange('idCardNumber', e.target.value)}
                   placeholder="请填写证件号码"
                 />
-                <span className="passenger-hint">用于身份核验，请正确填写。</span>
               </div>
+              <span className="passenger-hint passenger-hint-block">用于身份核验，请正确填写。</span>
             </FormRow>
           </>
         )}
@@ -191,12 +193,14 @@ const PassengerForm: React.FC<PassengerFormProps> = ({
         <h3 className="passenger-section-title">附加信息</h3>
 
         <FormRow label="优惠(待)类型" required>
-          <SelectDropdown
-            options={discountTypes}
-            value={formData.discountType}
-            onChange={(val) => handleChange('discountType', val)}
-            placeholder="请选择优惠类型"
-          />
+          <div className="passenger-input-wrapper">
+            <SelectDropdown
+              options={discountTypes}
+              value={formData.discountType}
+              onChange={(val) => handleChange('discountType', val)}
+              placeholder="请选择优惠类型"
+            />
+          </div>
         </FormRow>
       </div>
 

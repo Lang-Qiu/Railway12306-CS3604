@@ -1,20 +1,20 @@
 id: REQ-06-05
-name: 交易提示弹窗
-functional_description: 取消订单时的二次确认。
+name: 订单撤销确认弹窗
+functional_description: 在用户尝试取消订单时提供的二次确认机制，防止误操作。
 ui_description: |
-  模态框。
-  问号图标 + 警告文字（一天取消3次限制）。
+  采用模态对话框形式。
+  内容包含问号图标及警示文案（明确告知单日取消次数限制）。
 input_parameters: null
 output_parameters: null
 preconditions:
-  - 点击取消订单
+  - 用户触发了"取消订单"操作
 postconditions:
-  - 确认取消则释放座位
+  - 确认操作：触发订单取消流程并释放席位
 business_rules:
-  - 记录取消次数
+  - 系统需记录并累计当日取消次数
 exceptions: null
 scenarios:
-  - name: 确认取消
+  - name: 执行订单取消
     steps:
-      - action: 点击确认
-      - expectation: 订单取消，返回列表页。
+      - action: 在弹窗中点击"确认"
+      - expectation: 订单被取消，页面跳转回车次查询列表。

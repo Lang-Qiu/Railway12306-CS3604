@@ -1,10 +1,10 @@
 id: REQ-03-01
-name: 车次列表页布局
-functional_description: 页面整体结构，包含顶部导航、搜索栏、筛选面板、列表区域及底部。
+name: 车票查询结果页结构布局
+functional_description: 定义页面的宏观架构，涵盖顶部导航区、查询控制区、筛选组件区、数据展示区及页脚。
 ui_description: |
-  背景白色。
-  从上到下：TopNav -> SearchBar -> FilterPanel -> ListArea -> BottomNav。
-  内容最大宽度1200px。
+  页面底色设定为纯白。
+  垂直布局顺序：顶部导航栏 -> 搜索控制栏 -> 筛选条件面板 -> 车次列表容器 -> 底部导航栏。
+  主体内容区域限制最大宽度为1200像素。
 input_parameters: null
 output_parameters: null
 preconditions: null
@@ -12,7 +12,7 @@ postconditions: null
 business_rules: null
 exceptions: null
 scenarios:
-  - name: 页面加载
+  - name: 页面初始化加载
     steps:
-      - action: 进入页面
-      - expectation: 各区域正常显示。
+      - action: 访问车次列表页
+      - expectation: 所有功能区块按预期渲染显示。

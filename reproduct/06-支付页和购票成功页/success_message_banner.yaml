@@ -1,10 +1,10 @@
 id: REQ-06-08
-name: 成功提示Banner
-functional_description: 醒目的成功状态提示及通知说明。
+name: 交易成功状态横幅
+functional_description: 以高视觉权重展示交易成功状态及关键索引信息。
 ui_description: |
-  淡绿背景。
-  大号对勾图标。
-  显示订单号。
+  视觉风格：淡绿色背景搭配大尺寸确认图标。
+  核心内容：包含订单编号及交易成功文案。
+  辅助信息：集成后续通知方式的说明。
 input_parameters:
   - name: order_number
     type: string
@@ -14,7 +14,7 @@ postconditions: null
 business_rules: null
 exceptions: null
 scenarios:
-  - name: 查看订单号
+  - name: 获取订单索引
     steps:
-      - action: 页面加载
-      - expectation: 看到EA开头的订单号。
+      - action: 页面初始化完成
+      - expectation: 清晰可见以“EA”开头的订单编号。

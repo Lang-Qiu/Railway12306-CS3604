@@ -1,18 +1,18 @@
 id: REQ-04-01
-name: 订单填写页布局
-functional_description: 页面整体结构，包含列车信息、乘客选择、票据填写及提交区域。
+name: 订单录入页结构布局
+functional_description: 定义页面的整体框架，整合列车信息展示、乘客选择、票务信息填写及订单提交功能。
 ui_description: |
-  背景白色。
-  从上到下：顶部导航 -> 列车信息 -> 乘客信息 -> 提交与提示 -> 底部导航。
+  页面背景统一为白色。
+  垂直布局顺序：页头导航栏 -> 列车详情区 -> 乘客信息区 -> 提交操作与提示区 -> 页脚导航栏。
 input_parameters: null
 output_parameters: null
 preconditions:
-  - 从车次列表页跳转而来
+  - 用户已从车次列表页发起预订请求
 postconditions: null
 business_rules: null
 exceptions: null
 scenarios:
-  - name: 页面展示
+  - name: 页面初始化展示
     steps:
-      - action: 进入页面
-      - expectation: 显示选中的车次信息及默认乘客列表。
+      - action: 访问订单填写页
+      - expectation: 正确渲染选定的车次详情及默认的乘客选择列表。

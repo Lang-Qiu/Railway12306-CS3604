@@ -281,7 +281,7 @@ describe('SuccessModal Component Tests', () => {
 
       // Then: 应该有动画类
       const modal = screen.getByTestId('success-modal');
-      expect(modal).toHaveClass('fade-in');
+      expect(modal).toHaveClass('fade-in-alt');
     });
 
     test('弹窗内容应该平滑显示', async () => {

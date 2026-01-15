@@ -1,10 +1,10 @@
 id: REQ-05-01
-name: 个人中心整体布局
-functional_description: 包含顶部、侧边栏菜单、右侧内容区及底部。
+name: 个人中心框架布局
+functional_description: 定义个人中心页面的整体结构，涵盖顶部导航、侧边菜单、内容区域及页脚。
 ui_description: |
-  左侧固定菜单。
-  右侧根据路由显示不同面板。
-  面包屑导航显示当前位置。
+  左侧部署固定式导航菜单。
+  右侧内容区域依据路由动态渲染不同功能面板。
+  顶部设置面包屑导航组件指示当前层级。
 input_parameters: null
 output_parameters: null
 preconditions: null
@@ -12,7 +12,7 @@ postconditions: null
 business_rules: null
 exceptions: null
 scenarios:
-  - name: 页面结构
+  - name: 页面结构初始化
     steps:
-      - action: 进入个人中心
-      - expectation: 左侧显示菜单，右侧显示默认的个人信息。
+      - action: 访问个人中心首页
+      - expectation: 左侧菜单正确渲染，右侧默认加载个人信息概览。

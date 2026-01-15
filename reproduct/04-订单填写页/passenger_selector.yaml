@@ -1,9 +1,9 @@
 id: REQ-04-03
-name: 乘客选择器
-functional_description: 从常用联系人中勾选乘客。
+name: 常用联系人选择组件
+functional_description: 提供从已保存的联系人列表中快速勾选添加乘车人的功能。
 ui_description: |
-  复选框列表。
-  支持姓名搜索。
+  采用复选框列表布局呈现。
+  集成基于姓名的实时检索功能。
 input_parameters:
   - name: passengers
     type: array
@@ -11,16 +11,16 @@ output_parameters:
   - name: selected_passengers
     type: array
 preconditions:
-  - 用户已登录且有联系人
+  - 用户处于登录状态且账号下存在联系人数据
 postconditions:
-  - 勾选后自动填充下方表单
+  - 勾选操作触发下方票务表单的自动填充
 business_rules:
-  - 勾选即添加，取消即移除
-  - 支持多选
+  - 勾选即时添加乘车人，取消勾选即时移除
+  - 支持多名乘车人的批量选择
 exceptions:
-  - 无联系人显示空状态
+  - 联系人列表为空时的缺省状态展示
 scenarios:
-  - name: 勾选乘客
+  - name: 添加乘车人
     steps:
-      - action: 勾选“张三”
-      - expectation: 下方出现张三的票据填写行。
+      - action: 勾选联系人“张三”
+      - expectation: 票务填写区自动生成张三的购票信息行。

@@ -1,20 +1,20 @@
 id: REQ-06-01
-name: 支付页整体布局
-functional_description: 包含倒计时、订单信息、支付操作区及广告提示。
+name: 支付页面框架布局
+functional_description: 定义支付流程页面的整体结构，整合倒计时状态、订单详情展示、支付操作及辅助信息区域。
 ui_description: |
-  背景白色。
-  顶部：倒计时条（蓝色边框）。
-  中部：订单信息卡片（渐变蓝标题）。
-  底部：广告与温馨提示。
+  页面底色统一为白色。
+  顶部区域：部署席位锁定状态栏（带蓝色边框修饰）。
+  核心区域：居中展示订单详情卡片（标题栏采用渐变蓝背景）。
+  底部区域：配置广告位展示区及温馨提示面板。
 input_parameters: null
 output_parameters: null
 preconditions:
-  - 订单已创建但未支付
+  - 订单已成功创建且处于待支付状态
 postconditions: null
 business_rules: null
 exceptions: null
 scenarios:
-  - name: 页面加载
+  - name: 支付页初始化
     steps:
-      - action: 进入支付页
-      - expectation: 显示倒计时和订单详情。
+      - action: 系统导航至支付页面
+      - expectation: 正确渲染剩余支付时间及订单关键信息。

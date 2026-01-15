@@ -1,0 +1,8 @@
+{
+  "config": "infra-config",
+  "constants": "message-catalog",
+  "controllers": "request-handlers",
+  "middleware": "request-interceptors",
+  "routes": "route-manifests",
+  "services": "domain-providers"
+}

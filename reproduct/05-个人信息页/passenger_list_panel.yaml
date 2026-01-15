@@ -1,10 +1,10 @@
 id: REQ-05-06
-name: 乘车人列表展示
-functional_description: 列表展示所有常用乘车人。
+name: 乘车人名录管理面板
+functional_description: 以列表形式集中展示并管理所有常用乘车人信息。
 ui_description: |
-  表格形式：姓名、证件、手机、核验状态。
-  操作：编辑、删除。
-  头部：搜索框、添加按钮。
+  采用表格布局呈现：包含姓名、证件信息、手机号码及核验状态列。
+  操作列提供“编辑”与“删除”功能图标。
+  顶部配置关键词搜索栏及“添加”快捷按钮。
 input_parameters:
   - name: passenger_list
     type: array
@@ -12,11 +12,11 @@ output_parameters: null
 preconditions: null
 postconditions: null
 business_rules:
-  - 分页展示（若数据多）
-  - 支持姓名搜索
+  - 数据量过大时启用分页显示机制
+  - 支持基于姓名的模糊检索
 exceptions: null
 scenarios:
-  - name: 搜索乘车人
+  - name: 检索特定乘车人
     steps:
-      - action: 输入“李四”搜索
-      - expectation: 列表过滤显示。
+      - action: 在搜索框输入“李四”
+      - expectation: 列表实时更新，仅显示匹配的记录。

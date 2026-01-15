@@ -1,10 +1,10 @@
 id: REQ-06-09
-name: 成功页订单详情
-functional_description: 支付成功后的订单快照。
+name: 已付订单详情面板
+functional_description: 提供支付完成后的订单快照，确认最终行程与席位。
 ui_description: |
-  类似支付页的订单展示。
-  状态显示为“已支付”（橙色）。
-  站点名称特大红色字体。
+  布局结构：复用标准订单展示组件，增加支付状态标识。
+  状态显示：订单状态统一标记为“已支付”（橙色高亮）。
+  视觉强调：起止站点名称采用特大号红色字体突出。
 input_parameters:
   - name: paid_order_info
     type: object
@@ -12,10 +12,10 @@ output_parameters: null
 preconditions: null
 postconditions: null
 business_rules:
-  - 显示支付状态
+  - 必须明确标识支付完成状态
 exceptions: null
 scenarios:
-  - name: 确认状态
+  - name: 确认支付结果
     steps:
-      - action: 查看表格
-      - expectation: 状态列显示已支付。
+      - action: 查阅订单明细表
+      - expectation: 状态列明确显示“已支付”。

@@ -1,9 +1,9 @@
 id: REQ-03-02
-name: 车次搜索栏
-functional_description: 顶部可修改查询条件的区域。
+name: 车次查询控制栏
+functional_description: 位于页面顶部，用于调整和重新提交查询请求的交互区域。
 ui_description: |
-  浅蓝背景。
-  包含：单程/往返切换、出发地、目的地、日期输入框、交换按钮、查询按钮。
+  背景色调为浅蓝色。
+  组件构成：行程模式切换（单程/往返）、起止地点录入域、日期选择器、地点互换控件及查询执行按钮。
 input_parameters:
   - name: from_station
     type: string
@@ -14,14 +14,14 @@ input_parameters:
 output_parameters: null
 preconditions: null
 postconditions:
-  - 触发新查询
+  - 触发新的查询请求
 business_rules:
-  - 默认填充首页传来的参数
-  - 校验规则同首页
+  - 自动回填从首页传递的查询参数
+  - 输入校验逻辑与首页保持一致
 exceptions:
-  - 输入无效时提示错误
+  - 输入非法数据时的错误反馈
 scenarios:
-  - name: 修改日期查询
+  - name: 调整日期重新查询
     steps:
-      - action: 修改日期，点击查询
-      - expectation: 列表刷新。
+      - action: 更改出发日期并点击查询
+      - expectation: 列表数据根据新日期刷新。

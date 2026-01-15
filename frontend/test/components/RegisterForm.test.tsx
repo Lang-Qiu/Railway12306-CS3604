@@ -93,7 +93,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('用户名长度不能少于6个字符！')).toBeInTheDocument();
+        expect(screen.getByText('用户名至少6个字符')).toBeInTheDocument();
       });
     });
 
@@ -108,7 +108,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('用户名长度不能超过30个字符！')).toBeInTheDocument();
+        expect(screen.getByText('用户名不超过30个字符')).toBeInTheDocument();
       });
     });
 
@@ -123,7 +123,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('用户名只能由字母、数字和_组成，须以字母开头！')).toBeInTheDocument();
+        expect(screen.getByText('用户名以字母开头，含字母/数字/下划线')).toBeInTheDocument();
       });
     });
 
@@ -138,7 +138,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('用户名只能由字母、数字和_组成，须以字母开头！')).toBeInTheDocument();
+        expect(screen.getByText('用户名以字母开头，含字母/数字/下划线')).toBeInTheDocument();
       });
     });
 
@@ -196,7 +196,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('密码长度不能少于6个字符！')).toBeInTheDocument();
+        expect(screen.getByText('密码至少6个字符')).toBeInTheDocument();
       });
     });
 
@@ -211,7 +211,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('格式错误，必须且只能包含字母、数字和下划线中的两种或两种以上！')).toBeInTheDocument();
+        expect(screen.getByText('密码仅含字母/数字/下划线，至少两种组合')).toBeInTheDocument();
       });
     });
 
@@ -226,7 +226,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('格式错误，必须且只能包含字母、数字和下划线中的两种或两种以上！')).toBeInTheDocument();
+        expect(screen.getByText('密码仅含字母/数字/下划线，至少两种组合')).toBeInTheDocument();
       });
     });
 
@@ -263,7 +263,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('确认密码与密码不一致！')).toBeInTheDocument();
+        expect(screen.getByText('两次输入的密码不一致')).toBeInTheDocument();
       });
     });
 
@@ -349,7 +349,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('允许输入的字符串在3-30个字符之间！')).toBeInTheDocument();
+        expect(screen.getByText('姓名长度需在3–30字符')).toBeInTheDocument();
       });
     });
 
@@ -364,7 +364,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('允许输入的字符串在3-30个字符之间！')).toBeInTheDocument();
+        expect(screen.getByText('姓名长度需在3–30字符')).toBeInTheDocument();
       });
     });
 
@@ -379,7 +379,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('请输入姓名！')).toBeInTheDocument();
+        expect(screen.getByText('姓名格式不正确')).toBeInTheDocument();
       });
     });
 
@@ -430,7 +430,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('请正确输入18位证件号码！')).toBeInTheDocument();
+        expect(screen.getByText('证件号需为18位且校验通过')).toBeInTheDocument();
       });
     });
 
@@ -445,7 +445,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('输入的证件编号中包含中文信息或特殊字符！')).toBeInTheDocument();
+        expect(screen.getByText('证件号仅限字母或数字')).toBeInTheDocument();
       });
     });
 
@@ -523,7 +523,7 @@ describe('RegisterForm Component Tests', () => {
     test('邮箱不包含@符号时应提示错误', async () => {
       // Given: 渲染组件
       render(<RegisterForm onSubmit={mockOnSubmit} onNavigateToLogin={mockOnNavigateToLogin} />);
-      const emailInput = screen.getByPlaceholderText(/请正确填写邮箱地址/);
+      const emailInput = screen.getByPlaceholderText(/请正确填写您的邮箱地址/);
 
       // When: 输入不包含@的邮箱
       await userEvent.type(emailInput, 'invalidemail.com');
@@ -531,14 +531,14 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('请输入有效的电子邮件地址！')).toBeInTheDocument();
+        expect(screen.getByText('邮箱格式不正确')).toBeInTheDocument();
       });
     });
 
     test('符合规范的邮箱不应显示错误', async () => {
       // Given: 渲染组件
       render(<RegisterForm onSubmit={mockOnSubmit} onNavigateToLogin={mockOnNavigateToLogin} />);
-      const emailInput = screen.getByPlaceholderText(/请正确填写邮箱地址/);
+      const emailInput = screen.getByPlaceholderText(/请正确填写您的邮箱地址/);
 
       // When: 输入符合规范的邮箱
       await userEvent.type(emailInput, 'user@example.com');
@@ -546,7 +546,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 不应该显示错误提示
       await waitFor(() => {
-        expect(screen.queryByText('请输入有效的电子邮件地址！')).not.toBeInTheDocument();
+        expect(screen.queryByText('邮箱格式不正确')).not.toBeInTheDocument();
       });
     });
   });
@@ -564,7 +564,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('您输入的手机号码不是有效的格式！')).toBeInTheDocument();
+        expect(screen.getByText('手机号码格式不正确')).toBeInTheDocument();
       });
     });
 
@@ -591,7 +591,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('您输入的手机号码不是有效的格式！')).toBeInTheDocument();
+        expect(screen.getByText('手机号码格式不正确')).toBeInTheDocument();
       });
     });
 
@@ -606,8 +606,8 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 不应该显示错误提示
       await waitFor(() => {
-        expect(screen.queryByText('您输入的手机号码不是有效的格式！')).not.toBeInTheDocument();
-        expect(screen.queryByText('您输入的手机号码不是有效的格式！')).not.toBeInTheDocument();
+        expect(screen.queryByText('手机号码格式不正确')).not.toBeInTheDocument();
+        expect(screen.queryByText('手机号码格式不正确')).not.toBeInTheDocument();
       });
     });
   });
@@ -624,7 +624,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('请确认服务条款！')).toBeInTheDocument();
+        expect(screen.getByText('请勾选并同意服务条款')).toBeInTheDocument();
       });
     });
 
@@ -640,7 +640,7 @@ describe('RegisterForm Component Tests', () => {
 
       // Then: 应该显示错误提示
       await waitFor(() => {
-        expect(screen.getByText('请填写完整信息！')).toBeInTheDocument();
+        expect(screen.getByText('请填写所有必填项')).toBeInTheDocument();
       });
     });
 

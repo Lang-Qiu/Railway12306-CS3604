@@ -1,24 +1,24 @@
 id: REQ-04-06
-name: 订单核对弹窗
-functional_description: 最终确认订单信息。
+name: 订单信息核对模态框
+functional_description: 在最终提交前提供订单关键信息的二次确认视图。
 ui_description: |
-  模态框。
-  显示车次、乘客列表、总价。
-  按钮：返回修改、确认。
+  采用模态对话框形式呈现。
+  内容涵盖车次详情、乘车人列表及订单总金额。
+  底部配置操作按钮组：支持“返回修改”与“确认提交”。
 input_parameters:
   - name: order_info
     type: object
 output_parameters: null
 preconditions:
-  - 点击提交订单且校验通过
+  - 用户已点击提交订单且通过前置校验
 postconditions:
-  - 确认后进入排队或支付流程
+  - 确认后导向排队系统或支付网关
 business_rules:
-  - 显示积分信息
-  - 提示随机分配席位
+  - 需展示本次交易预计可获积分
+  - 明确提示席位分配机制为随机分配
 exceptions: null
 scenarios:
-  - name: 确认订单
+  - name: 执行订单确认
     steps:
-      - action: 核对无误，点击确认
-      - expectation: 跳转支付页或排队等待。
+      - action: 检查信息无误后点击确认按钮
+      - expectation: 系统跳转至支付页面或显示排队等待状态。

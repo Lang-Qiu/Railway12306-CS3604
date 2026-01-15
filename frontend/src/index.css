@@ -1,1 +1,16 @@
-﻿/* restored from backup */
+/* restored from backup */
+
+body, html, :root {
+  font-family: "Microsoft YaHei", "微软雅黑", sans-serif !important;
+}
+
+/* Ensure all elements inherit this font unless specifically overridden */
+* {
+  font-family: "Microsoft YaHei", "微软雅黑", sans-serif !important;
+}
+
+/* Explicitly target form elements which often don't inherit font-family */
+input, button, select, textarea {
+  font-family: "Microsoft YaHei", "微软雅黑", sans-serif !important;
+}
+

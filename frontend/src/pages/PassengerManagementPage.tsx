@@ -96,9 +96,28 @@ const PassengerManagementPage = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('获取到乘客数据:', data);
-        setPassengers(data.passengers || []);
-        setFilteredPassengers(data.passengers || []);
-        console.log('乘客列表设置成功，数量:', (data.passengers || []).length);
+        
+        // 确保新添加的乘客（通常ID较大或创建时间较晚）显示在后面
+        let newPassengers = data.passengers || [];
+        
+        // 尝试根据ID排序，假设ID是递增的（例如数据库自增ID或时间戳ID）
+        // 如果没有ID或无法比较，则保持原样
+        if (newPassengers.length > 0 && newPassengers[0].id) {
+            newPassengers.sort((a: any, b: any) => {
+                // 如果ID是数字字符串，转换为数字比较
+                const idA = parseInt(a.id);
+                const idB = parseInt(b.id);
+                if (!isNaN(idA) && !isNaN(idB)) {
+                    return idA - idB; // 升序，新ID（大）在后
+                }
+                // 否则按字符串比较
+                return String(a.id).localeCompare(String(b.id));
+            });
+        }
+
+        setPassengers(newPassengers);
+        setFilteredPassengers(newPassengers);
+        console.log('乘客列表设置成功，数量:', newPassengers.length);
       } else {
         const errorText = await response.text();
         console.error('API错误响应:', errorText);

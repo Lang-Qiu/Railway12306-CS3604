@@ -1,0 +1,29 @@
+id: REQ-02-10
+name: 注册-身份信息输入
+functional_description: 姓名、证件类型、证件号码的输入与校验。
+ui_description: |
+  证件类型下拉框（默认身份证）。
+  姓名输入框。
+  证件号码输入框。
+input_parameters:
+  - name: real_name
+    type: string
+  - name: id_type
+    type: string
+  - name: id_number
+    type: string
+output_parameters: null
+preconditions: null
+postconditions:
+  - 格式及唯一性校验
+business_rules:
+  - 姓名需填写真实姓名
+  - 证件号码需符合格式
+  - 实名制校验
+exceptions:
+  - 格式错误提示
+scenarios:
+  - name: 选择证件类型
+    steps:
+      - action: 选择护照
+      - expectation: 下拉框显示“外国护照”。

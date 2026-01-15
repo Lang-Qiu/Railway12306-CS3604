@@ -1,0 +1,18 @@
+id: REQ-06-10
+name: 成功页操作栏
+functional_description: 继续购票或查看详情。
+ui_description: |
+  继续购票按钮。
+  查询订单详情按钮（橙色）。
+input_parameters: null
+output_parameters: null
+preconditions: null
+postconditions:
+  - 跳转相应页面
+business_rules: null
+exceptions: null
+scenarios:
+  - name: 查看详情
+    steps:
+      - action: 点击查询订单详情
+      - expectation: 跳转至订单中心。

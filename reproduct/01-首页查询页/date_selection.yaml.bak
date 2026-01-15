@@ -1,0 +1,28 @@
+id: REQ-01-07
+name: 出发日期选择
+functional_description: 选择出发日期，支持日历选择。
+ui_description: |
+  输入框，右侧显示日历图标。
+  点击弹出日历控件。
+input_parameters:
+  - name: selected_date
+    type: date
+    description: 用户选择的日期
+output_parameters:
+  - name: final_date
+    type: date
+preconditions:
+  - 处于车票查询表单中
+postconditions:
+  - 输入框显示格式化后的日期（yyyy-MM-dd）
+business_rules:
+  - 默认显示当前日期（若未选）
+  - 只能选择预售期内的日期（如未来15天）
+  - 不能选择过去的时间
+exceptions:
+  - 尝试输入非法日期格式，自动纠正或提示
+scenarios:
+  - name: 选择日期
+    steps:
+      - action: 点击日期框，选择明天
+      - expectation: 输入框显示明天的日期。

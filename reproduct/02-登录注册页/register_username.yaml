@@ -1,0 +1,25 @@
+id: REQ-02-08
+name: 注册-用户名设定
+functional_description: 用户名的录入与有效性验证。
+ui_description: |
+  强制必填项。
+  失焦后反馈校验状态（绿勾或红字错误提示）。
+input_parameters:
+  - name: username
+    type: string
+output_parameters: null
+preconditions: null
+postconditions:
+  - 校验合格展示绿勾
+business_rules:
+  - 长度限制6-30位，允许字母、数字或下划线
+  - 首字符必须为字母
+  - 需进行唯一性核查（后端交互）
+exceptions:
+  - 格式违规警示
+  - 用户名被占用警示
+scenarios:
+  - name: 占用测试
+    steps:
+      - action: 录入已存在的用户名并失焦
+      - expectation: 弹出“该用户名已经占用”提示。

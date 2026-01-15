@@ -1,0 +1,211 @@
+id: REQ-Test-1
+name: 首页及查询页面测试方案
+functional_description: 基于《01-首页查询页.md》中定义的业务场景，梳理如下测试用例集合。
+children:
+  - id: REQ-Test-1-1
+    name: 必填项校验测试
+    children:
+      - id: REQ-Test-1-1-1
+        name: 缺失出发地
+        scenarios:
+          - name: H-1.2.1 缺失出发地
+            steps:
+              - action: 用户停留在首页或查询页，且车票查询表单中未填写出发地信息
+                expectation: 系统处于待命状态
+              - action: 点击“查询”操作
+                expectation: 系统弹出“请选择出发地”提示
+      - id: REQ-Test-1-1-2
+        name: 缺失到达地
+        scenarios:
+          - name: H-1.2.2 缺失到达地
+            steps:
+              - action: 用户停留在首页或查询页，且车票查询表单中未填写到达地信息
+                expectation: 系统处于待命状态
+              - action: 点击“查询”操作
+                expectation: 系统弹出“请选择到达地”提示
+
+  - id: REQ-Test-1-2
+    name: 数据合法性校验测试
+    children:
+      - id: REQ-Test-1-2-1
+        name: 出发地无效
+        scenarios:
+          - name: H-1.2.3 出发地无效
+            steps:
+              - action: 在出发地输入框中填写了不支持的城市名称
+                expectation: 系统处于待命状态
+              - action: 点击“查询”操作
+                expectation: 系统提示“无法匹配该出发地”；下拉框展示相似站点推荐；允许用户点击推荐项进行自动填充
+      - id: REQ-Test-1-2-2
+        name: 到达地无效
+        scenarios:
+          - name: H-1.2.4 到达地无效
+            steps:
+              - action: 在到达地输入框中填写了不支持的城市名称
+                expectation: 系统处于待命状态
+              - action: 点击“查询”操作
+                expectation: 系统提示“无法匹配该到达地”；下拉框展示相似站点推荐；允许用户点击推荐项进行自动填充
+
+  - id: REQ-Test-1-3
+    name: 推荐与选择功能测试
+    children:
+      - id: REQ-Test-1-3-1
+        name: 出发地智能推荐
+        scenarios:
+          - name: H-1.2.5 出发地智能推荐（下拉展示所有站点）
+            steps:
+              - action: 用户停留在首页或查询页
+                expectation: 系统处于待命状态
+              - action: 激活（点击）出发地输入框
+                expectation: 下拉列表展示所有支持的站点（支持搜索筛选）
+      - id: REQ-Test-1-3-2
+        name: 到达地智能推荐
+        scenarios:
+          - name: H-1.2.6 到达地智能推荐（下拉展示所有站点）
+            steps:
+              - action: 用户停留在首页或查询页
+                expectation: 系统处于待命状态
+              - action: 激活（点击）到达地输入框
+                expectation: 下拉列表展示所有支持的站点（支持搜索筛选）
+      - id: REQ-Test-1-3-3
+        name: 出发日期选择推荐
+        scenarios:
+          - name: H-1.2.7 出发日期选择推荐（限制为已售票日期）
+            steps:
+              - action: 用户停留在首页或查询页
+                expectation: 系统处于待命状态
+              - action: 点击出发日期选择控件
+                expectation: 弹出日历组件；仅允许选择已开放售票的日期；过期或未开票日期不可选
+
+  - id: REQ-Test-1-4
+    name: 交互体验测试
+    children:
+      - id: REQ-Test-1-4-1
+        name: 站点互换功能
+        scenarios:
+          - name: H-1.2.8 出发地与到达地互换
+            steps:
+              - action: 在查询表单中已指定出发地或到达地
+                expectation: 系统处于待命状态
+              - action: 点击“交换”图标/按钮
+                expectation: 两个输入框的内容互换；相关字段属性与校验规则随之迁移
+      - id: REQ-Test-1-4-2
+        name: 日期自动填充
+        scenarios:
+          - name: H-1.2.9 自动填充当前日期
+            steps:
+              - action: 用户位于车票查询界面，尚未指定出发日期或未进行日期操作
+                expectation: 系统处于待命状态
+              - action: 页面加载完成或表单获得焦点
+                expectation: 自动填入当前日期（基于本地时间）；不可选日期状态保持禁用
+
+  - id: REQ-Test-1-5
+    name: 查询业务流程测试
+    children:
+      - id: REQ-Test-1-5-1
+        name: 查询成功流程
+        scenarios:
+          - name: H-1.2.10-1 查询成功
+            steps:
+              - action: 填写有效的出发地、到达地及出发日期
+                expectation: 系统处于待命状态
+              - action: 点击“查询”，后端正常返回
+                expectation: 100毫秒内完成向车次列表页的跳转；列表页正确展示符合条件的车次信息（包括高铁/动车筛选结果）
+      - id: REQ-Test-1-5-2
+        name: 查询失败流程
+        scenarios:
+          - name: H-1.2.10-2 查询失败
+            steps:
+              - action: 填写有效的出发地、到达地及出发日期
+                expectation: 系统处于待命状态
+              - action: 点击“查询”，后端未能正常返回
+                expectation: 超过100毫秒未跳转；弹出提示“查询失败，请稍后重试”；页面保持当前状态，输入内容不丢失
+
+  - id: REQ-Test-1-6
+    name: 登录与注册测试
+    children:
+      - id: REQ-Test-1-6-1
+        name: 登录操作
+        scenarios:
+          - name: H-1.3.1-1 点击登录（成功）
+            steps:
+              - action: 用户处于未登录状态
+                expectation: 系统处于待命状态
+              - action: 点击“登录”按钮，系统响应正常
+                expectation: 100毫秒内跳转至登录页面
+          - name: H-1.3.1-2 点击登录（失败）
+            steps:
+              - action: 用户处于未登录状态
+                expectation: 系统处于待命状态
+              - action: 点击“登录”按钮，系统响应异常
+                expectation: 超过100毫秒未跳转；提示“登录失败，请稍后重试”
+      - id: REQ-Test-1-6-2
+        name: 注册操作
+        scenarios:
+          - name: H-1.3.2-1 点击注册（成功）
+            steps:
+              - action: 用户未注册且未登录
+                expectation: 系统处于待命状态
+              - action: 点击“注册”按钮，系统响应正常
+                expectation: 100毫秒内跳转至注册页面
+          - name: H-1.3.2-2 点击注册（失败）
+            steps:
+              - action: 用户未注册且未登录
+                expectation: 系统处于待命状态
+              - action: 点击“注册”按钮，系统响应异常
+                expectation: 超过100毫秒未跳转；提示“注册失败，请稍后重试”
+      - id: REQ-Test-1-6-3
+        name: 登录状态展示
+        scenarios:
+          - name: H-1.3.3 已登录入口状态
+            steps:
+              - action: 用户已处于登录状态
+                expectation: 系统处于待命状态
+              - action: 页面加载完毕
+                expectation: 顶部导航栏仅呈现“个人中心”，隐藏“登录”与“注册”入口
+
+  - id: REQ-Test-1-7
+    name: 个人中心及快捷入口测试
+    children:
+      - id: REQ-Test-1-7-1
+        name: 跳转个人中心
+        scenarios:
+          - name: H-1.4.1-1 跳转个人中心（成功）
+            steps:
+              - action: 用户已登录
+                expectation: 系统处于待命状态
+              - action: 点击“个人中心”链接，系统响应正常
+                expectation: 100毫秒内跳转至当前用户的个人中心页面
+          - name: H-1.4.1-2 跳转个人中心（失败）
+            steps:
+              - action: 用户已登录
+                expectation: 系统处于待命状态
+              - action: 点击“个人中心”链接，系统响应异常
+                expectation: 超过100毫秒未跳转；提示“前往个人中心失败，请稍后重试”
+          - name: H-1.4.2-1 未登录状态点击个人中心（成功）
+            steps:
+              - action: 用户未登录
+                expectation: 系统处于待命状态
+              - action: 点击“个人中心”链接，系统响应正常
+                expectation: 100毫秒内跳转至登录页面
+          - name: H-1.4.2-2 未登录状态点击个人中心（失败）
+            steps:
+              - action: 用户未登录
+                expectation: 系统处于待命状态
+              - action: 点击“个人中心”链接，系统响应异常
+                expectation: 超过100毫秒未跳转；提示“请先登录12306账号！”
+      - id: REQ-Test-1-7-2
+        name: 车票查询快捷通道
+        scenarios:
+          - name: H-1.5-1 车票查询快捷通道（成功）
+            steps:
+              - action: 用户位于首页或查询页
+                expectation: 系统处于待命状态
+              - action: 点击“车票查询”链接，系统响应正常
+                expectation: 100毫秒内跳转至车票查询页面
+          - name: H-1.5-2 车票查询快捷通道（失败）
+            steps:
+              - action: 用户位于首页或查询页
+                expectation: 系统处于待命状态
+              - action: 点击“车票查询”链接，系统响应异常
+                expectation: 超过100毫秒未跳转；提示“查询失败，请稍后重试”

@@ -1,0 +1,26 @@
+id: REQ-05-04
+name: 手机核验页面
+functional_description: 验证并修改手机号。
+ui_description: |
+  显示原手机号。
+  输入新手机号、登录密码。
+  确认按钮。
+input_parameters:
+  - name: new_phone
+    type: string
+  - name: password
+    type: string
+output_parameters: null
+preconditions: null
+postconditions:
+  - 校验通过弹出验证码框
+business_rules:
+  - 必须验证旧密码
+  - 新手机号格式校验
+exceptions:
+  - 密码错误提示
+scenarios:
+  - name: 提交核验
+    steps:
+      - action: 输入新手机和密码，点击确认
+      - expectation: 弹出短信验证码输入框。

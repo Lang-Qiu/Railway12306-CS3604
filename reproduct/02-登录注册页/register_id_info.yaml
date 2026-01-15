@@ -1,0 +1,29 @@
+id: REQ-02-10
+name: 注册-身份资料录入
+functional_description: 采集姓名、证件类型及证件号码，并执行有效性校验。
+ui_description: |
+  证件类型选择框（默认预设为身份证）。
+  姓名录入框。
+  证件号码录入框。
+input_parameters:
+  - name: real_name
+    type: string
+  - name: id_type
+    type: string
+  - name: id_number
+    type: string
+output_parameters: null
+preconditions: null
+postconditions:
+  - 格式规范及唯一性校验
+business_rules:
+  - 姓名必须为真实有效信息
+  - 证件号码需满足编码规则
+  - 实施实名制核验
+exceptions:
+  - 格式违规警示
+scenarios:
+  - name: 证件类型切换
+    steps:
+      - action: 选取护照选项
+      - expectation: 下拉菜单展示“外国护照”。

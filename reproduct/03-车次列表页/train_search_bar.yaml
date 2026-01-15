@@ -1,0 +1,27 @@
+id: REQ-03-02
+name: 车次搜索栏
+functional_description: 顶部可修改查询条件的区域。
+ui_description: |
+  浅蓝背景。
+  包含：单程/往返切换、出发地、目的地、日期输入框、交换按钮、查询按钮。
+input_parameters:
+  - name: from_station
+    type: string
+  - name: to_station
+    type: string
+  - name: date
+    type: date
+output_parameters: null
+preconditions: null
+postconditions:
+  - 触发新查询
+business_rules:
+  - 默认填充首页传来的参数
+  - 校验规则同首页
+exceptions:
+  - 输入无效时提示错误
+scenarios:
+  - name: 修改日期查询
+    steps:
+      - action: 修改日期，点击查询
+      - expectation: 列表刷新。

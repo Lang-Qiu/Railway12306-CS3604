@@ -1,0 +1,27 @@
+id: REQ-01-08
+name: 票种与席别筛选
+functional_description: 勾选“学生”、“高铁/动车”等筛选条件。
+ui_description: |
+  复选框组件。
+  “学生”：勾选后查询学生票。
+  “高铁/动车”：勾选后仅查询G/D/C字头列车。
+input_parameters:
+  - name: is_student
+    type: boolean
+  - name: is_high_speed
+    type: boolean
+output_parameters:
+  - name: filters
+    type: object
+preconditions: null
+postconditions:
+  - 更新内部查询参数
+business_rules:
+  - 可多选
+  - 勾选“学生”可能影响后续下单时的验证流程
+exceptions: null
+scenarios:
+  - name: 勾选只看高铁
+    steps:
+      - action: 勾选“高铁/动车”
+      - expectation: 复选框变为选中状态。

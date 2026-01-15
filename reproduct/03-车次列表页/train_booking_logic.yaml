@@ -1,0 +1,24 @@
+id: REQ-03-05
+name: 车票预订交互
+functional_description: 响应用户点击预订按钮的操作，导向订单填写流程。
+ui_description: |
+  配置在列表项右端的“预订”操作按钮。
+input_parameters:
+  - name: train_id
+    type: string
+output_parameters: null
+preconditions:
+  - 用户处于已登录状态（或经引导后登录）
+  - 所选车次余票充足
+postconditions:
+  - 导航至订单填写页面
+business_rules:
+  - 若用户未登录，需跳转至登录页，登录成功后自动返回
+  - 校验是否存在未完成的订单（可选校验）
+exceptions:
+  - 系统繁忙时的警示信息
+scenarios:
+  - name: 执行预订操作
+    steps:
+      - action: 点击G101次列车的预订按钮
+      - expectation: 界面跳转至订单信息填写页。

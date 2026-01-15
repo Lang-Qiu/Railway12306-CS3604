@@ -1,0 +1,19 @@
+id: REQ-02-07
+name: 注册页框架
+functional_description: 注册页面的版式架构，涵盖面包屑导航、功能标题及表单承载区。
+ui_description: |
+  底色：浅灰。
+  顶部面包屑：客运首页 > 注册。
+  功能标题：账户信息（背景为渐变蓝）。
+  表单承载区：白底灰边。
+input_parameters: null
+output_parameters: null
+preconditions: null
+postconditions: null
+business_rules: null
+exceptions: null
+scenarios:
+  - name: 初始化加载
+    steps:
+      - action: 访问注册页
+      - expectation: 正确渲染面包屑及标题栏。

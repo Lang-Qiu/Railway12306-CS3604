@@ -1,0 +1,22 @@
+id: REQ-02-02
+name: 登录方式切换
+functional_description: 切换“账号登录”和“扫码登录”两种模式。
+ui_description: |
+  表单顶部两个Tab：“账号登录”、“扫码登录”。
+  选中状态字体加粗变蓝。
+input_parameters:
+  - name: selected_mode
+    type: string
+    description: account 或 scan
+output_parameters: null
+preconditions: null
+postconditions:
+  - 切换下方内容区域
+business_rules:
+  - 默认选中上次使用的方式或“扫码登录”
+exceptions: null
+scenarios:
+  - name: 切换到账号登录
+    steps:
+      - action: 点击“账号登录”Tab
+      - expectation: 显示用户名密码输入框。

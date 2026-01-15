@@ -1,0 +1,20 @@
+id: REQ-05-02
+name: 侧边功能菜单
+functional_description: 导航至个人中心不同模块。
+ui_description: |
+  包含：订单中心、个人信息、常用信息管理等大类。
+  子项：查看个人信息、手机核验、乘车人等。
+  选中项高亮显示。
+input_parameters: null
+output_parameters: null
+preconditions: null
+postconditions:
+  - 切换右侧内容面板
+business_rules:
+  - 点击即跳转
+exceptions: null
+scenarios:
+  - name: 切换菜单
+    steps:
+      - action: 点击“乘车人”
+      - expectation: 右侧跳转至乘车人管理面板。

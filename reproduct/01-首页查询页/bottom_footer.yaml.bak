@@ -1,0 +1,19 @@
+id: REQ-01-11
+name: 底部导航与页脚
+functional_description: 展示友情链接、官方二维码及版权信息。
+ui_description: |
+  友情链接：左侧列表。
+  二维码：右侧4个（微信、微博、公众号、App）。
+input_parameters: null
+output_parameters: null
+preconditions: null
+postconditions: null
+business_rules:
+  - 链接可点击跳转
+  - 二维码清晰可扫
+exceptions: null
+scenarios:
+  - name: 底部展示
+    steps:
+      - action: 滚动到底部
+      - expectation: 显示完整的页脚信息。

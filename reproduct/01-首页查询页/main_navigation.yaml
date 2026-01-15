@@ -1,0 +1,22 @@
+id: REQ-01-02
+name: 核心导航条
+functional_description: 页面的一级导航菜单，承载核心业务功能的访问入口。
+ui_description: |
+  底色为蓝，采用吸顶（Sticky）定位模式。
+  囊括“车票查询”、“订单查询”、“我的12306”等导航条目。
+  右端配置透明背景的“登录/注册”按键（作为高频操作入口）。
+input_parameters: null
+output_parameters: null
+preconditions:
+  - 页面初始化完毕
+postconditions: null
+business_rules:
+  - 各导航项均分容器宽度
+  - 页面滚动过程中保持顶部吸附
+  - 悬停反馈：背景颜色加深
+exceptions: null
+scenarios:
+  - name: 触发导航条目
+    steps:
+      - action: 点击“车票查询”链接
+      - expectation: 页面重定向至车票查询页面（或执行锚点跳转）。

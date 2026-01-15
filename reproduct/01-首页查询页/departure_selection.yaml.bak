@@ -1,0 +1,35 @@
+id: REQ-01-04
+name: 出发地选择
+functional_description: 用户输入或选择出发城市，支持模糊搜索和下拉推荐。
+ui_description: |
+  文本输入框，左侧标签“出发城市”。
+  聚焦时弹出城市选择浮层（热门城市/拼音索引）。
+input_parameters:
+  - name: input_text
+    type: string
+    description: 用户输入的文本
+output_parameters:
+  - name: selected_station
+    type: object
+    description: {id, name, code}
+preconditions:
+  - 处于车票查询表单中
+postconditions:
+  - 输入框显示选中的城市名
+  - 更新内部查询条件的出发地
+business_rules:
+  - 必须是系统支持的站点
+  - 支持中文名、拼音、拼音首字母搜索
+  - 聚焦输入框时，若未输入，显示热门城市/历史记录
+  - 选中后自动收起下拉框
+exceptions:
+  - 输入内容无法匹配时，提示“无法匹配该出发城市”
+scenarios:
+  - name: 正常选择出发地
+    steps:
+      - action: 点击输入框，选择“北京”
+      - expectation: 输入框显示“北京”，下拉框收起。
+  - name: 模糊搜索
+    steps:
+      - action: 输入“sh”
+      - expectation: 下拉框显示“上海”、“石家庄”等匹配项。

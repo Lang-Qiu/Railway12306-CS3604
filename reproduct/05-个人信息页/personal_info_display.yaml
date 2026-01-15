@@ -1,0 +1,23 @@
+id: REQ-05-03
+name: 个人信息展示面板
+functional_description: 展示用户基本信息、联系方式及附加信息。
+ui_description: |
+  分块展示。
+  基本信息：姓名、证件号等（只读）。
+  联系方式：手机、邮箱（可编辑）。
+  编辑按钮：点击进入编辑模式。
+input_parameters:
+  - name: user_info
+    type: object
+output_parameters: null
+preconditions: null
+postconditions: null
+business_rules:
+  - 手机号脱敏显示
+  - 核验状态颜色区分
+exceptions: null
+scenarios:
+  - name: 编辑邮箱
+    steps:
+      - action: 点击邮箱旁编辑
+      - expectation: 变为输入框。

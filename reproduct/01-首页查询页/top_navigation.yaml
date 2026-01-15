@@ -1,0 +1,40 @@
+id: REQ-01-01
+name: 顶层导航条
+functional_description: 呈现品牌Logo、全局检索栏、用户鉴权入口及个人中心链接。依据用户会话状态动态调整展示内容。
+ui_description: |
+  白色背景，底边辅以浅灰色边框。
+  左端：部署Logo图标及“中国铁路12306”文字标识。
+  中间区域：配置带检索按钮的搜索输入框。
+  右端：
+  - 访客模式：展示“登录”、“注册”及“个人中心”超链接。
+  - 用户模式：展示“欢迎，[用户名]”提示语及“退出”操作链接。
+input_parameters:
+  - name: is_logged_in
+    type: boolean
+    description: 用户当前的会话状态
+  - name: user_name
+    type: string
+    description: 已认证用户的账号名称
+  - name: search_keyword
+    type: string
+    description: 检索框内录入的关键字
+output_parameters: null
+preconditions:
+  - 页面加载完成
+postconditions:
+  - 基于登录状态渲染相应的操作链接
+business_rules:
+  - 单击Logo返回网站主页
+  - 点击登录或注册链接跳转至相应页面
+  - 点击个人中心：未认证状态跳转登录页，已认证状态进入个人中心
+  - 检索框提供全站内容搜索功能
+exceptions: null
+scenarios:
+  - name: 访客状态界面呈现
+    steps:
+      - action: 页面初始化加载
+      - expectation: 右侧区域呈现“登录”、“注册”及“个人中心”入口。
+  - name: 用户状态界面呈现
+    steps:
+      - action: 页面初始化加载（已认证状态）
+      - expectation: 右侧区域呈现“欢迎，[用户名]”及“退出”选项。

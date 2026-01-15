@@ -1,0 +1,24 @@
+id: REQ-02-12
+name: 注册-提交申请
+functional_description: 协议签署确认与表单数据提交。
+ui_description: |
+  勾选框：确认服务条款及隐私政策。
+  操作按钮：下一步（橙色）。
+input_parameters:
+  - name: agreement_checked
+    type: boolean
+output_parameters: null
+preconditions:
+  - 全部必填项已通过校验
+postconditions:
+  - 发送注册申请
+business_rules:
+  - 协议签署为强制项
+  - 提交成功后触发激活或登录指引
+exceptions:
+  - 未签署协议警示
+scenarios:
+  - name: 常规提交流程
+    steps:
+      - action: 填写无误，签署协议，点击下一步
+      - expectation: 导向注册成功或激活页面。

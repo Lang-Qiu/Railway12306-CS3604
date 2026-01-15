@@ -1,0 +1,24 @@
+id: REQ-03-03
+name: 车次筛选面板
+functional_description: 多维度筛选车次结果。
+ui_description: |
+  车次类型（高铁/动车等）、出发站、到达站、车次席别筛选。
+  包含“全部”按钮和“清除筛选”按钮。
+  发车时间下拉筛选。
+input_parameters:
+  - name: filters
+    type: object
+output_parameters: null
+preconditions:
+  - 列表已有数据
+postconditions:
+  - 列表根据筛选条件过滤显示
+business_rules:
+  - 前端过滤，不请求后端（通常）
+  - 勾选即时生效
+exceptions: null
+scenarios:
+  - name: 筛选高铁
+    steps:
+      - action: 勾选“GC-高铁/城际”
+      - expectation: 列表只显示G/C字头车次。

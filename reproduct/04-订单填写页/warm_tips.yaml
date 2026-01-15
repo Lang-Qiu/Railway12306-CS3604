@@ -1,0 +1,17 @@
+id: REQ-04-07
+name: 温馨提示区域
+functional_description: 展示购票相关的注意事项。
+ui_description: |
+  浅黄色背景面板。
+  列出身份证件、儿童票等规则。
+input_parameters: null
+output_parameters: null
+preconditions: null
+postconditions: null
+business_rules: null
+exceptions: null
+scenarios:
+  - name: 查看提示
+    steps:
+      - action: 浏览提示区域
+      - expectation: 清晰展示购票规则。

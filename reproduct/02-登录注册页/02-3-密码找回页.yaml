@@ -1,0 +1,286 @@
+id: REQ-4
+name: 密码重置页
+functional_description: 用户找回及重置登录密码的操作界面与流程。
+children:
+  - id: REQ-4-1
+    name: 页面整体架构
+    children:
+      - id: REQ-4-1-1
+        name: 全局版式
+        ui_description: |
+          背景纯白，布局分为头部导航、核心表单区及底部页脚三部分。
+      - id: REQ-4-1-2
+        name: 头部导航栏
+        ui_description: |
+          - **标识区**：左上角（引用图片"登录页-顶部导航区域-Logo区域.png"），左侧为中国铁路12306官方徽标，右侧标注黑色"中国铁路12306"及灰色"12306 CHINA RAILWAY"，点击可回首页。
+          - **欢迎语**：标识区右侧展示黑色"欢迎登录12306"。
+      - id: REQ-4-1-3
+        name: 核心表单区
+        ui_description: |
+          - **主容器**：居中白色框，尺寸980x552像素，左/下/右侧具蓝色细边（#3b99fc），顶部无边。
+          - **导航标签**：顶部导航栏980x70像素，包含"人脸找回"、"手机找回"、"邮箱找回"三个平分宽度的按钮。
+            - 未选中：蓝底（#3b99fc）白字，字号20px。
+            - 选中：浅蓝底（#87ceeb）白字，字号20px。
+            - 直角设计，点击切换子视图。
+          - **内容视图**：导航下方区域（高482像素），白底，内衬20px 40px。
+            - "人脸找回"：提示功能未开放。
+            - "邮箱找回"：提示功能未开放。
+            - "手机找回"：展示手机找回流程。
+      - id: REQ-4-1-4
+        name: 页脚导航区
+        ui_description: |
+          - **页脚**：左侧友情链接，右侧四个官方二维码（微信、微博、公众号、App）。
+
+  - id: REQ-4-2
+    name: 手机找回流程
+    children:
+      - id: REQ-4-2-1
+        name: 流程进度条
+        ui_description: |
+          - 顶部展示四个步骤节点：1."填写账户信息"、2."获取验证码"、3."设置新密码"、4."完成"。
+          - 节点为圆形图标，未完成灰（#e4e7ed），当前蓝（#3b99fc）带阴影，完成显"✓"。
+          - 连接线随进度变蓝，未完成为灰。
+          - 下方标签文字在当前及完成状态下加粗深色显示。
+      - id: REQ-4-2-2
+        name: 步骤1：账户信息录入
+        ui_description: |
+          - **手机号录入**：
+            - 左侧国家代码下拉（默认"+86"，含港澳台选项），选中仅显代码。
+            - 右侧输入框限11位数字，超长不显。
+            - 统一高30px，间距5px。
+            - 右侧橙字提示"已通过核验的手机号码"。
+          - **证件类型选择**：
+            - 默认"居民身份证"，涵盖港澳台及护照等选项。
+            - 尺寸30x260像素。
+            - 右侧橙字提示"请选择证件类型"。
+          - **证件号录入**：
+            - 限18位字母数字，自动转大写，超长不显。
+            - 尺寸30x260像素。
+            - 右侧橙字提示"请输入证件号码"。
+          - **提交操作**：
+            - 底部"提交"按钮，橙底（#ff8000）白字，高30px。
+            - 点击触发验证，失败显红字错误提示。
+          - **错误反馈**：
+            - 手机号空：提示"请输入手机号码"。
+            - 手机号格式误：提示"请输入正确的手机号码"。
+            - 证件号格式误：提示"请正确输入18位证件号码！"。
+            - 证件号含非法字符：提示"输入的证件编号中包含中文信息或特殊字符！"。
+            - 信息不匹配：提示"手机号码或证件号码不正确！"。
+          - **辅助引导**：
+            - 按钮下方提示"手机号未通过核验？试试邮箱找回"，"邮箱找回"为蓝色链接。
+      - id: REQ-4-2-3
+        name: 步骤2：验证码校验
+        ui_description: |
+          - **号码展示**：标签"手机号："，右侧显"(+86) XXX XXXX XXXX"，橙色（#ffa151）。
+          - **验证码录入**：
+            - 标签"请填写手机验证码："。
+            - 输入框：宽135px，高30px，限6位数字。
+            - "获取手机验证码"按钮：右侧，橙底（#ff6602）白字，高30px。
+          - **获取逻辑**：
+            - 进入步骤自动发送。
+            - 点击按钮重发，按钮变更为橙色倒计时文本（120秒）。
+            - 有效期120秒。
+          - **提交操作**：底部"提交"按钮，橙底（#ff6602）白字，高30px。
+          - **错误反馈**：
+            - 验证码空：提示"请输入手机验证码！"。
+            - 长度误：提示"请输入6位验证码"。
+            - 验证失败：提示"很抱歉，您输入的短信验证码有误。"。
+          - **辅助引导**：同步骤1。
+      - id: REQ-4-2-4
+        name: 步骤3：新密码设定
+        ui_description: |
+          - **新密码录入**：
+            - 标签"新密码："，输入框宽260px，高30px，密文显示。
+            - 右侧橙字提示"需包含字母、数字、下划线中不少于两种且长度不少于6"。
+          - **密码确认**：
+            - 标签"密码确认："，输入框同上，密文显示。
+            - 右侧橙字提示"请再次输入密码"。
+          - **提交操作**：底部"提交"按钮，橙底（#ff6602）白字，高30px。
+          - **错误反馈**：
+            - 长度不足：提示"密码长度不能少于6位"。
+            - 复杂度不足：提示"需包含字母、数字、下划线中不少于两种"。
+            - 不一致：提示"两次密码输入不一致"。
+            - 重置失败：显示后端错误信息。
+          - **辅助引导**：同步骤1。
+      - id: REQ-4-2-5
+        name: 步骤4：流程完成
+        ui_description: |
+          - **状态图标**：中央绿色圆形图标，含白色"✓"，尺寸60px。
+          - **结果反馈**：
+            - 图标下方橙字："新密码设置成功，您可以使用新密码登录系统！"。
+            - "登录系统"为蓝色链接（14px），点击跳登录页。
+
+  - id: REQ-4-3
+    name: 账户信息验证逻辑
+    children:
+      - id: REQ-4-3-1
+        name: 手机号非空校验
+        scenarios:
+          - name: 未输手机号
+            steps:
+              - action: 留空手机号
+                expectation: 系统待命
+              - action: 点击提交
+                expectation: 提示"请输入手机号码"。
+      - id: REQ-4-3-2
+        name: 手机号格式校验
+        scenarios:
+          - name: 格式错误
+            steps:
+              - action: 输入非11位数字
+                expectation: 系统待命
+              - action: 点击提交
+                expectation: 提示"请输入正确的手机号码"。
+      - id: REQ-4-3-3
+        name: 证件号格式校验
+        scenarios:
+          - name: 身份证格式误
+            steps:
+              - action: 选身份证且输入不符18位格式
+                expectation: 系统待命
+              - action: 点击提交
+                expectation: 提示"请正确输入18位证件号码！"。
+          - name: 含非法字符
+            steps:
+              - action: 含中文或特殊字符
+                expectation: 系统待命
+              - action: 点击提交
+                expectation: 提示"输入的证件编号中包含中文信息或特殊字符！"。
+      - id: REQ-4-3-4
+        name: 账户匹配校验
+        scenarios:
+          - name: 信息匹配
+            steps:
+              - action: 输入完全匹配的信息
+                expectation: 系统待命
+              - action: 点击提交
+                expectation: 跳转步骤2；进度条更新。
+          - name: 信息不匹配
+            steps:
+              - action: 输入不匹配的信息
+                expectation: 系统待命
+              - action: 点击提交
+                expectation: 提示"手机号码或证件号码不正确！"。
+
+  - id: REQ-4-4
+    name: 验证码获取逻辑
+    children:
+      - id: REQ-4-4-1
+        name: 自动发送
+        scenarios:
+          - name: 进入步骤2
+            steps:
+              - action: 完成步骤1
+                expectation: 系统待命
+              - action: 跳转步骤2
+                expectation: 自动发送验证码；按钮显倒计时。
+      - id: REQ-4-4-2
+        name: 手动重发
+        scenarios:
+          - name: 点击获取
+            steps:
+              - action: 倒计时结束
+                expectation: 系统待命
+              - action: 点击按钮
+                expectation: 重发验证码；重置倒计时。
+
+  - id: REQ-4-5
+    name: 验证码校验逻辑
+    children:
+      - id: REQ-4-5-1
+        name: 验证码非空校验
+        scenarios:
+          - name: 未输验证码
+            steps:
+              - action: 留空验证码
+                expectation: 系统待命
+              - action: 点击提交
+                expectation: 提示"请输入手机验证码！"。
+      - id: REQ-4-5-2
+        name: 验证码长度校验
+        scenarios:
+          - name: 长度错误
+            steps:
+              - action: 输入非6位
+                expectation: 系统待命
+              - action: 点击提交
+                expectation: 提示"请输入6位验证码"。
+      - id: REQ-4-5-3
+        name: 验证码正确性校验
+        scenarios:
+          - name: 验证通过
+            steps:
+              - action: 输入正确且有效验证码
+                expectation: 系统待命
+              - action: 点击提交
+                expectation: 跳转步骤3；进度条更新。
+          - name: 验证码错误
+            steps:
+              - action: 输入错误验证码
+                expectation: 系统待命
+              - action: 点击提交
+                expectation: 提示"很抱歉，您输入的短信验证码有误。"。
+          - name: 验证码过期
+            steps:
+              - action: 输入过期验证码
+                expectation: 系统待命
+              - action: 点击提交
+                expectation: 提示"很抱歉，您输入的短信验证码有误。"。
+
+  - id: REQ-4-6
+    name: 新密码设置逻辑
+    children:
+      - id: REQ-4-6-1
+        name: 密码非空校验
+        scenarios:
+          - name: 未输密码
+            steps:
+              - action: 留空新密码
+                expectation: 系统待命
+              - action: 点击提交
+                expectation: 提示"密码长度不能少于6位"。
+      - id: REQ-4-6-2
+        name: 密码长度校验
+        scenarios:
+          - name: 长度不足
+            steps:
+              - action: 输入短于6位
+                expectation: 系统待命
+              - action: 点击提交
+                expectation: 提示"密码长度不能少于6位"。
+      - id: REQ-4-6-3
+        name: 密码复杂度校验
+        scenarios:
+          - name: 复杂度不足
+            steps:
+              - action: 字符类型少于两种
+                expectation: 系统待命
+              - action: 点击提交
+                expectation: 提示"需包含字母、数字、下划线中不少于两种"。
+      - id: REQ-4-6-4
+        name: 密码一致性校验
+        scenarios:
+          - name: 密码不一致
+            steps:
+              - action: 确认密码与新密码不同
+                expectation: 系统待命
+              - action: 点击提交
+                expectation: 提示"两次密码输入不一致"。
+      - id: REQ-4-6-5
+        name: 密码设置成功
+        scenarios:
+          - name: 设置完成
+            steps:
+              - action: 输入合规且一致的密码
+                expectation: 系统待命
+              - action: 点击提交
+                expectation: 更新密码；跳转步骤4；显示成功信息。
+      - id: REQ-4-6-6
+        name: 跳转登录
+        scenarios:
+          - name: 点击登录链接
+            steps:
+              - action: 在步骤4页面
+                expectation: 系统待命
+              - action: 点击"登录系统"
+                expectation: 跳转登录页。

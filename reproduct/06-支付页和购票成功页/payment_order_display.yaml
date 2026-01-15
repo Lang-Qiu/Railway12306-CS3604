@@ -1,0 +1,22 @@
+id: REQ-06-03
+name: 支付页订单展示
+functional_description: 展示车次、乘车人、座位号及票价。
+ui_description: |
+  车次信息行（大号字体）。
+  乘车人表格（含座位号、车厢号）。
+  总票价行（橙色大号字体）。
+input_parameters:
+  - name: order_details
+    type: object
+output_parameters: null
+preconditions: null
+postconditions: null
+business_rules:
+  - 证件号脱敏
+  - 显示具体座位（如06车07D）
+exceptions: null
+scenarios:
+  - name: 查看座位
+    steps:
+      - action: 浏览表格
+      - expectation: 看到分配的座位号。

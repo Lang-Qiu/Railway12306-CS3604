@@ -1,0 +1,22 @@
+id: REQ-05-06
+name: 乘车人列表展示
+functional_description: 列表展示所有常用乘车人。
+ui_description: |
+  表格形式：姓名、证件、手机、核验状态。
+  操作：编辑、删除。
+  头部：搜索框、添加按钮。
+input_parameters:
+  - name: passenger_list
+    type: array
+output_parameters: null
+preconditions: null
+postconditions: null
+business_rules:
+  - 分页展示（若数据多）
+  - 支持姓名搜索
+exceptions: null
+scenarios:
+  - name: 搜索乘车人
+    steps:
+      - action: 输入“李四”搜索
+      - expectation: 列表过滤显示。

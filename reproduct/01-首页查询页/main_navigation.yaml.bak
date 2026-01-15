@@ -1,0 +1,22 @@
+id: REQ-01-02
+name: 主导航栏
+functional_description: 页面主要的导航菜单，提供核心业务入口。
+ui_description: |
+  背景蓝色，粘性定位。
+  包含“车票查询”、“订单查询”、“我的12306”等导航项。
+  右侧包含透明背景的“登录/注册”按钮（作为强调入口）。
+input_parameters: null
+output_parameters: null
+preconditions:
+  - 页面加载完成
+postconditions: null
+business_rules:
+  - 导航项平分宽度
+  - 滚动页面时保持吸顶
+  - Hover效果：背景色加深
+exceptions: null
+scenarios:
+  - name: 点击导航项
+    steps:
+      - action: 点击“车票查询”
+      - expectation: 页面跳转至车票查询页（或锚点定位）。

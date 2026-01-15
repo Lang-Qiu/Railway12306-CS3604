@@ -1,0 +1,38 @@
+id: REQ-01-09
+name: 检索请求提交
+functional_description: 执行表单验证并发送检索请求，随后跳转至车次列表页面。
+ui_description: |
+  橙色醒目按钮，标注“查询”字样。
+  点击操作伴随视觉反馈。
+input_parameters:
+  - name: departure_station
+    type: object
+  - name: arrival_station
+    type: object
+  - name: departure_date
+    type: date
+  - name: filters
+    type: object
+output_parameters: null
+preconditions:
+  - 用户已完成表单数据的录入
+postconditions:
+  - 导航至车次列表页，同时传递检索参数
+business_rules:
+  - 始发地为必填项
+  - 目的地为必填项
+  - 始发地与目的地不得一致
+  - 日期必须符合规范
+  - 验证通过执行跳转；验证失败展示错误信息
+exceptions:
+  - 验证未通过：于按钮上方展示红色警示条
+  - 网络故障：提示“查询失败，请稍后重试”
+scenarios:
+  - name: 查询操作成功
+    steps:
+      - action: 录入完整数据，点击查询按钮
+      - expectation: 成功跳转至车次列表页面。
+  - name: 信息缺失查询
+    steps:
+      - action: 未填写始发地即点击查询
+      - expectation: 弹出提示“请选择出发城市”。

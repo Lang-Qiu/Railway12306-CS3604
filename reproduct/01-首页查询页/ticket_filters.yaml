@@ -1,0 +1,27 @@
+id: REQ-01-08
+name: 车票类型与席位过滤
+functional_description: 启用“学生票”、“高铁/动车”等检索过滤选项。
+ui_description: |
+  多选框控件。
+  “学生”：选中该项以检索学生优惠票。
+  “高铁/动车”：选中该项将检索范围限定为G/D/C字头列车。
+input_parameters:
+  - name: is_student
+    type: boolean
+  - name: is_high_speed
+    type: boolean
+output_parameters:
+  - name: filters
+    type: object
+preconditions: null
+postconditions:
+  - 同步刷新内部检索参数
+business_rules:
+  - 支持复选操作
+  - 启用“学生”选项或将触发后续购票环节的身份验证逻辑
+exceptions: null
+scenarios:
+  - name: 仅检索高铁车次
+    steps:
+      - action: 选中“高铁/动车”复选框
+      - expectation: 该复选框呈现被选中状态。

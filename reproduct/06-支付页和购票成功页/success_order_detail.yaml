@@ -1,0 +1,21 @@
+id: REQ-06-09
+name: 成功页订单详情
+functional_description: 支付成功后的订单快照。
+ui_description: |
+  类似支付页的订单展示。
+  状态显示为“已支付”（橙色）。
+  站点名称特大红色字体。
+input_parameters:
+  - name: paid_order_info
+    type: object
+output_parameters: null
+preconditions: null
+postconditions: null
+business_rules:
+  - 显示支付状态
+exceptions: null
+scenarios:
+  - name: 确认状态
+    steps:
+      - action: 查看表格
+      - expectation: 状态列显示已支付。

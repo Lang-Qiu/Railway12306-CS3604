@@ -1,0 +1,453 @@
+id: REQ-3
+name: 注册界面
+functional_description: 用户开户注册的操作流程及界面展现。
+children:
+  - id: REQ-3-1
+    name: 注册页版式
+    children:
+      - id: REQ-3-1-1
+        name: 页面总体架构
+        ui_description: |
+          底色#f5f5f5（浅灰），垂直分布顶、中、底三栏，分别对应头部导航、注册表单区及页脚导航。
+      - id: REQ-3-1-2
+        name: 头部导航栏
+        ui_description: |
+          - **标识区**：左上角部署Logo（引用"登录页-顶部导航区域-Logo区域.png"），左侧展示中国铁路12306官方徽标，右侧标注黑色"中国铁路12306"及灰色"12306 CHINA RAILWAY"，点击可回首页。
+          - **欢迎语**：Logo右侧展示"欢迎登录12306"。
+      - id: REQ-3-1-3
+        name: 注册表单区
+        ui_description: |
+          - **路径导航**：顶部显示"您现在的位置：客运首页 > 注册"，字号12px，色值#666（灰），"客运首页"为蓝色（#0066cc）链接，">"为浅灰（#999）。
+          - **模块标题**：下方展示"账户信息"标题，字号17px，加粗，背景渐变（#3ba3e2至#2a8bc7），文本white（纯白），底边框#2180b0（深蓝），顶边框#3ba3e2（蓝）。
+          - **表单容器**：承载输入项与按钮，背景white（纯白），边框#d0d0d0（浅灰），顶部边框#3ba3e2（蓝）。
+          - **输入字段**：依次排列：
+            - 用户名：左侧"*用户名："（字号14px，深灰#333，必填星号红#ff4d4f），输入框350px×36px，字号14px，内衬12px，边框#b8b8b8（灰），占位"用户名设置成功后不可修改"（浅灰#999），下方提示"6-30位字母、数字或"_"，字母开头"（橙#ff8800，字号12px）。
+            - 登录密码：左侧"*登录密码："，密文显示，350px×36px，占位"6-20位字母、数字或符号"，右侧附三级强度条（弱红/中橙/强绿），下方显红字错误提示。
+            - 确认密码：左侧"*确认密码："，密文显示，350px×36px，占位"请再次输入您的登录密码"。
+            - 证件类型：左侧"*证件类型："，默认"居民身份证"，下拉框350px×36px，背景#e9e9ed（浅灰），悬停边框蓝。
+            - 姓名：左侧"*姓名："，350px×36px，占位"请输入姓名"，下方提示"姓名填写规则..."（橙#ff8800）。
+            - 证件号码：左侧"*证件号码："，350px×36px，占位"请输入您的证件号码"，下方提示"（用于身份核验，请正确填写）"（橙#ff8800）。
+            - 优惠类型：左侧"优惠（待）类型："（无星号），默认"成人"，下拉框350px×36px，背景#e9e9ed。
+            - 邮箱：左侧"邮箱："（无星号），350px×36px，占位"请正确填写邮箱地址"。
+            - 手机号码：左侧"*手机号码："，包含国家代码（固定"+86 中国"，宽110px，背景#e9e9ed）与号码框（宽230px），占位"手机号码"，下方提示"请正确填写手机号码..."（橙#ff8800）。
+          - **协议确认**：底部复选框"我已阅读并同意遵守《中国铁路客户服务中心网站服务条款》《隐私权政策》"，字号13px，灰色#666，协议链接蓝#0066cc。
+          - **提交操作**：底部"下一步"按钮，170px×38px，字号16px加粗，背景橙#ff8001，悬停浅橙#ffaa55，点击渐变深橙，禁用灰#cccccc。
+      - id: REQ-3-1-4
+        name: 证件类型选项
+        ui_description: |
+          - 涵盖"居民身份证"、"港澳居民居住证"等八类证件。
+          - 默认选定"居民身份证"。
+      - id: REQ-3-1-5
+        name: 优惠类型选项
+        ui_description: |
+          - 涵盖"成人"、"儿童"、"学生"、"残疾军人"四类。
+          - 默认选定"成人"。
+      - id: REQ-3-1-6
+        name: 必填项标识
+        ui_description: |
+          - 除邮箱外均为必填项，标签前加"*"号。
+          - 优惠类型虽无星号但有默认值，实质必填。
+      - id: REQ-3-1-7
+        name: 实时校验反馈
+        ui_description: |
+          - 失焦（onBlur）触发校验。
+          - 通过：右侧显绿勾（#52c41a，16px加粗），边框变绿。
+          - 失败：下方显红字错误提示（#ff4d4f，12px），边框变红。
+      - id: REQ-3-1-8
+        name: 密码强度指示
+        ui_description: |
+          - 密码框右侧展示三段式强度条。
+          - 依据字符组合复杂度动态点亮。
+      - id: REQ-3-1-9
+        name: 页脚导航区
+        ui_description: |
+          - **页脚**：左侧友情链接，右侧四个官方二维码（微信、微博、公众号、App）。
+
+  - id: REQ-3-2
+    name: 注册信息录入
+    children:
+      - id: REQ-3-2-1
+        name: 用户名录入校验
+        scenarios:
+          - name: 失焦触发校验
+            steps:
+              - action: 位于注册页
+                expectation: 系统待命
+              - action: 输入用户名
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 触发校验；通过显绿勾，失败显红字。
+          - name: 长度不足
+            steps:
+              - action: 输入短于6字符
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 提示"用户名长度不能少于6个字符！"。
+          - name: 长度超限
+            steps:
+              - action: 输入长于30字符
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 提示"用户名长度不能超过30个字符！"。
+          - name: 首字符违规
+            steps:
+              - action: 非字母开头
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 提示"用户名只能由字母、数字和_组成，须以字母开头！"。
+          - name: 包含非法字符
+            steps:
+              - action: 含特殊字符
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 提示"用户名只能由字母、数字和_组成，须以字母开头！"。
+          - name: 用户名已占用
+            steps:
+              - action: 输入合规用户名
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 系统待命
+              - action: 库中已存在
+                expectation: 提示"该用户名已经占用，请重新选择用户名！"；无绿勾。
+          - name: 用户名可用
+            steps:
+              - action: 输入合规用户名
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 系统待命
+              - action: 库中不存在
+                expectation: 显绿勾，无错误提示。
+
+      - id: REQ-3-2-2
+        name: 登录密码录入校验
+        scenarios:
+          - name: 失焦触发校验
+            steps:
+              - action: 输入密码
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 触发校验及强度更新；通过显绿勾，失败显红字。
+          - name: 长度不足
+            steps:
+              - action: 输入短于6字符
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 提示"密码长度不能少于6个字符！"；强度显示弱。
+          - name: 字符组合违规
+            steps:
+              - action: 含特殊字符
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 提示"格式错误，必须且只能包含字母、数字和下划线中的两种或两种以上！"。
+          - name: 密码合规
+            steps:
+              - action: 输入合规密码
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 显绿勾；强度条更新；无错误提示。
+
+      - id: REQ-3-2-3
+        name: 确认密码录入校验
+        scenarios:
+          - name: 失焦触发校验
+            steps:
+              - action: 输入确认密码
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 触发比对；通过显绿勾，失败显红字。
+          - name: 密码不一致
+            steps:
+              - action: 输入不一致的密码
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 提示"确认密码与密码不一致！"；无绿勾。
+          - name: 密码一致
+            steps:
+              - action: 已有登录密码
+                expectation: 系统待命
+              - action: 输入一致的密码
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 显绿勾；无错误提示。
+
+      - id: REQ-3-2-4
+        name: 证件类型选择
+        scenarios:
+          - name: 默认状态
+            steps:
+              - action: 未操作选择框
+                expectation: 默认显示"居民身份证"。
+          - name: 切换类型
+            steps:
+              - action: 展开并选择类型
+                expectation: 框内显示选中类型；选项卡收起。
+
+      - id: REQ-3-2-5
+        name: 姓名录入校验
+        scenarios:
+          - name: 失焦触发校验
+            steps:
+              - action: 输入姓名
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 触发校验；通过显绿勾，失败显红字。
+          - name: 长度异常
+            steps:
+              - action: 短于3字符或长于30字符
+                expectation: 提示：允许输入的字符串在3-30个字符之间！
+          - name: 含非法字符
+            steps:
+              - action: 含特殊字符
+                expectation: 提示：“请输入姓名！”
+          - name: 姓名合规
+            steps:
+              - action: 输入合规姓名
+                expectation: 显绿勾。
+
+      - id: REQ-3-2-6
+        name: 证件号码录入校验
+        scenarios:
+          - name: 失焦触发校验
+            steps:
+              - action: 输入证件号
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 触发格式与唯一性校验；通过显绿勾，失败显红字。
+          - name: 长度不足
+            steps:
+              - action: 短于18字符
+                expectation: 提示"请正确输入18位证件号码！"。
+          - name: 长度超限
+            steps:
+              - action: 输超18字符
+                expectation: 自动截取前18位。
+              - action: 失焦
+                expectation: 若截取后仍不合规，提示"请正确输入18位证件号码！"。
+          - name: 含非法字符
+            steps:
+              - action: 含非数字字母
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 提示"输入的证件编号中包含中文信息或特殊字符！"。
+          - name: 号码合规且可用
+            steps:
+              - action: 输入合规号码
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 系统待命
+              - action: 库中未注册
+                expectation: 显绿勾；无错误提示。
+
+      - id: REQ-3-2-7
+        name: 优惠类型选择
+        scenarios:
+          - name: 默认状态
+            steps:
+              - action: 未操作选择框
+                expectation: 默认显示"成人"。
+          - name: 切换类型
+            steps:
+              - action: 展开并选择类型
+                expectation: 框内显示选中类型；选项卡收起。
+
+      - id: REQ-3-2-8
+        name: 邮箱录入校验
+        scenarios:
+          - name: 失焦触发校验
+            steps:
+              - action: 输入邮箱
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 触发格式校验；失败显红字；选填项不显绿勾。
+          - name: 格式无效
+            steps:
+              - action: 缺"@"或域名
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 提示"请输入有效的电子邮件地址！"。
+          - name: 格式有效
+            steps:
+              - action: 输入合规邮箱
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 无错误提示。
+
+      - id: REQ-3-2-9
+        name: 手机号码录入校验
+        scenarios:
+          - name: 失焦触发校验
+            steps:
+              - action: 输入号码
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 触发格式校验；失败显红字。
+          - name: 长度不足
+            steps:
+              - action: 短于11字符
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 提示"您输入的手机号码不是有效的格式！"。
+          - name: 长度超限
+            steps:
+              - action: 已输11位
+                expectation: 系统待命
+              - action: 尝试输入第12位
+                expectation: 自动截断，仅保留前11位。
+          - name: 号码合规
+            steps:
+              - action: 输入11位数字
+                expectation: 系统待命
+              - action: 失焦
+                expectation: 无错误提示。
+
+      - id: REQ-3-2-10
+        name: 协议确认与提交
+        scenarios:
+          - name: 未勾选协议
+            steps:
+              - action: 未勾选复选框
+                expectation: 系统待命
+              - action: 点击"下一步"
+                expectation: 顶部提示"请确认服务条款！"（红字浅红底）。
+          - name: 必填项缺失
+            steps:
+              - action: 必填项有空缺
+                expectation: 系统待命
+              - action: 点击"下一步"
+                expectation: 顶部提示"请填写完整信息！"（红字浅红底）。
+          - name: 信息不合规
+            steps:
+              - action: 存在校验未通过项
+                expectation: 系统待命
+              - action: 点击"下一步"
+                expectation: 保留原有错误提示或显示通用错误提示。
+          - name: 证件号已注册
+            steps:
+              - action: 信息完整合规且已勾选协议
+                expectation: 系统待命
+              - action: 证件号库中已存在
+                expectation: 系统待命
+              - action: 点击"下一步"
+                expectation: 弹窗提示：该证件号码已经被注册过...
+          - name: 手机号已占用
+            steps:
+              - action: 信息完整合规且已勾选协议
+                expectation: 系统待命
+              - action: 手机号库中已存在
+                expectation: 系统待命
+              - action: 点击"下一步"
+                expectation: 弹窗提示：您输入的手机号码已被其他注册用户使用...
+          - name: 邮箱已占用
+            steps:
+              - action: 信息完整合规且已勾选协议
+                expectation: 系统待命
+              - action: 填写了邮箱
+                expectation: 系统待命
+              - action: 邮箱库中已存在
+                expectation: 系统待命
+              - action: 点击"下一步"
+                expectation: 弹窗提示：您输入的邮箱已被其他注册用户使用...
+          - name: 提交成功
+            steps:
+              - action: 所有信息完整合规且已勾选协议
+                expectation: 系统待命
+              - action: 点击"下一步"
+                expectation: 提交后端；创建会话；自动发送验证码；弹窗提示验证码已发送；弹出验证弹窗（RegistrationVerificationModal）；记录验证码。
+
+  - id: REQ-3-3
+    name: 服务条款页面
+    functional_description: |
+      - 纯文本展示中国铁路客户中心网站服务条款。
+      - 标题设为“服务条款”。
+      - 继承首页的顶部导航与快捷入口样式。
+
+  - id: REQ-3-4
+    name: 隐私政策页面
+    functional_description: |
+      - 居中展示中文“隐私权政策”及英文“NOTICE”标题。
+      - 整体风格及导航布局与首页保持一致。
+
+  - id: REQ-3-5
+    name: 验证弹窗功能
+    children:
+      - id: REQ-3-5-1
+        name: 弹窗结构
+        ui_description: |
+          - **定位**：居中全屏遮罩（半透黑），最大宽500px。
+          - **标题栏**：蓝色背景（#3a93e6），左侧白字"手机验证"（18px），右侧关闭图标（30px）。
+          - **内容区**：白色背景，内衬30px 40px，包含提示、输入框、错误信息及按钮组。
+      - id: REQ-3-5-2
+        name: 发送提示
+        ui_description: |
+          - 顶部展示"验证码已发送至【手机号】"（加粗深灰）。
+      - id: REQ-3-5-3
+        name: 验证码录入
+        ui_description: |
+          - 左侧标签"验证码："（深灰，14px）。
+          - 输入框：最大宽200px，高32px，内衬10px，限6位数字，过滤非法字符，边框灰（#ccc），聚焦变蓝（#5ca3e6），占位"请输入6位验证码"。
+      - id: REQ-3-5-4
+        name: 错误反馈
+        ui_description: |
+          - 输入框下方红字（12px）。
+          - 空值提示"请输入验证码"。
+          - 长度错误提示"验证码应为6位数字"。
+          - 校验错误提示"验证码错误"或具体信息。
+      - id: REQ-3-5-5
+        name: 按钮组
+        ui_description: |
+          - 下方双按钮，间距30px，宽140px。
+          - 左侧"完成注册"：橙色背景（#ff8533），白字。
+          - 右侧"返回修改"：白色背景，蓝字（#2681d5），悬停浅蓝背景。
+      - id: REQ-3-5-6
+        name: 完成注册操作
+        scenarios:
+          - name: 未填验证码
+            steps:
+              - action: 留空验证码
+                expectation: 提示"请输入验证码"。
+          - name: 长度错误
+            steps:
+              - action: 输入非6位
+                expectation: 提示"验证码应为6位数字"。
+          - name: 验证码正确
+            steps:
+              - action: 输入正确6位数字
+                expectation: 系统待命
+              - action: 未过期
+                expectation: 弹窗显成功态；显示"恭喜您注册成功！正在跳转登录页..."；2秒后跳转登录页；入库用户信息。
+          - name: 验证码错误
+            steps:
+              - action: 输入错误6位数字
+                expectation: 提示"验证码错误"。
+          - name: 验证码过期
+            steps:
+              - action: 输入正确数字
+                expectation: 系统待命
+              - action: 已过期
+                expectation: 提示"验证码错误"或"验证码已过期"。
+      - id: REQ-3-5-7
+        name: 返回修改操作
+        scenarios:
+          - name: 点击返回
+            steps:
+              - action: 点击"返回修改"
+                expectation: 关闭弹窗；返回注册表单；允许修改重提。
+      - id: REQ-3-5-8
+        name: 关闭弹窗操作
+        scenarios:
+          - name: 未成功时关闭
+            steps:
+              - action: 未完成验证
+                expectation: 系统待命
+              - action: 点击关闭图标
+                expectation: 弹出确认框"确定要关闭验证弹窗吗？..."。
+              - action: 确认关闭
+                expectation: 关闭弹窗返回表单。
+              - action: 取消关闭
+                expectation: 保持弹窗开启。
+          - name: 成功后关闭
+            steps:
+              - action: 已完成验证
+                expectation: 系统待命
+              - action: 点击关闭图标
+                expectation: 直接关闭，返回表单。

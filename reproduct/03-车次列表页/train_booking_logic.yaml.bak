@@ -1,0 +1,24 @@
+id: REQ-03-05
+name: 预订操作
+functional_description: 点击预订按钮进入订单填写页。
+ui_description: |
+  列表右侧的“预订”按钮。
+input_parameters:
+  - name: train_id
+    type: string
+output_parameters: null
+preconditions:
+  - 用户已登录（或点击后跳登录）
+  - 车次有票
+postconditions:
+  - 跳转至订单填写页
+business_rules:
+  - 未登录点击跳转登录页，登录后回跳
+  - 检查用户是否有未完成订单（可选规则）
+exceptions:
+  - 系统繁忙提示
+scenarios:
+  - name: 点击预订
+    steps:
+      - action: 点击G101次预订
+      - expectation: 跳转至订单填写页。

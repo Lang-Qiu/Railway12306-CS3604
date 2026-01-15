@@ -1,0 +1,21 @@
+id: REQ-04-02
+name: 列车信息展示
+functional_description: 展示当前预订的车次详细信息。
+ui_description: |
+  浅蓝背景面板。
+  显示：日期、车次、出发/到达站及时间。
+  票价信息：各席别票价及余票状态。
+input_parameters:
+  - name: train_info
+    type: object
+output_parameters: null
+preconditions: null
+postconditions: null
+business_rules:
+  - 票价仅供参考提示
+exceptions: null
+scenarios:
+  - name: 查看车次
+    steps:
+      - action: 页面加载
+      - expectation: 显示正确的车次和时间。

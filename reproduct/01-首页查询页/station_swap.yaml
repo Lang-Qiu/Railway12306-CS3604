@@ -1,0 +1,31 @@
+id: REQ-01-06
+name: 站点对调
+functional_description: 互换始发地与目的地的数据。
+ui_description: |
+  置于始发与终点输入框之间的圆形控件，配有双向切换图标。
+  悬停时展现缩放动画。
+input_parameters:
+  - name: departure_value
+    type: string
+    description: 当前始发站点
+  - name: arrival_value
+    type: string
+    description: 当前终点站点
+output_parameters:
+  - name: new_departure_value
+    type: string
+  - name: new_arrival_value
+    type: string
+preconditions:
+  - 至少一项输入框非空（或两者皆空亦可执行交换）
+postconditions:
+  - 始发地与目的地内容互换
+business_rules:
+  - 仅对调显示的文本信息及关联的站点ID
+  - 若一方缺省，交换后对应方亦变为空值
+exceptions: null
+scenarios:
+  - name: 触发交换操作
+    steps:
+      - action: 设定始发地“北京”，目的地“上海”，点击交换控件
+      - expectation: 始发地变更为“上海”，目的地变更为“北京”。

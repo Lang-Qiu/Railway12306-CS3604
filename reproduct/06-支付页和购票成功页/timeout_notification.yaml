@@ -1,0 +1,20 @@
+id: REQ-06-06
+name: 超时提示弹窗
+functional_description: 支付超时后的提示。
+ui_description: |
+  模态框。
+  提示“支付超时，请重新购票”。
+input_parameters: null
+output_parameters: null
+preconditions:
+  - 倒计时结束且用户尝试操作
+postconditions:
+  - 确认后跳转车次列表
+business_rules:
+  - 订单自动作废
+exceptions: null
+scenarios:
+  - name: 超时操作
+    steps:
+      - action: 超时后点击支付
+      - expectation: 弹出超时提示。

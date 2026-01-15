@@ -1,0 +1,24 @@
+id: REQ-04-04
+name: 票据信息填写
+functional_description: 为已选乘客设置席别、票种。
+ui_description: |
+  表格形式。
+  列：席别（下拉）、票种（下拉）、姓名、证件号。
+  操作：删除按钮。
+input_parameters:
+  - name: passenger_tickets
+    type: array
+output_parameters: null
+preconditions:
+  - 已选择乘客
+postconditions:
+  - 更新订单总价
+business_rules:
+  - 席别默认选中二等座（或查询页选中的）
+  - 姓名证件号不可编辑（从联系人带出）
+exceptions: null
+scenarios:
+  - name: 修改席别
+    steps:
+      - action: 将二等座改为一等座
+      - expectation: 票价更新。

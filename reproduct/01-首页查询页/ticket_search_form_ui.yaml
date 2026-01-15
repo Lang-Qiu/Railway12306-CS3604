@@ -1,0 +1,25 @@
+id: REQ-01-03
+name: 车票检索表单主容器
+functional_description: 涵盖左侧业务导航标签页及右侧检索表单详情的组合区域。
+ui_description: |
+  底图采用App营销海报。
+  左侧导航栏：采用蓝色底色，纵向罗列“车票”、“常用查询”、“订餐”等标签页。
+  右侧详情区：采用白色底色，呈现当前激活的业务表单（默认展示车票-单程界面）。
+input_parameters:
+  - name: active_tab
+    type: string
+    description: 当前激活的业务标签，默认初始值为“车票”
+output_parameters: null
+preconditions:
+  - 页面加载完成
+postconditions:
+  - 渲染对应的业务操作界面
+business_rules:
+  - 初始默认激活“车票”标签页
+  - 标签页切换时同步刷新右侧内容区域
+exceptions: null
+scenarios:
+  - name: 变更业务标签
+    steps:
+      - action: 激活“常用查询”标签页
+      - expectation: 右侧区域变更为常用查询表单界面。

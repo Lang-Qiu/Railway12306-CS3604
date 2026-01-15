@@ -1,0 +1,267 @@
+id: REQ-2
+name: 身份验证界面
+functional_description: 用户身份验证的操作流程及界面展示。
+children:
+  - id: REQ-2-1
+    name: 认证主页面结构
+    children:
+      - id: REQ-2-1-1
+        name: 页面总体版式
+        ui_description: |
+          底色采用#f5f5f5（浅灰），版面垂直划分为顶、中、底三个板块，依次为头部导航区、身份验证表单区以及页脚导航区。
+      - id: REQ-2-1-2
+        name: 头部导航栏
+        ui_description: |
+          - **标识区域**：位于左上角（引用图片资源"登录页-顶部导航区域-Logo区域.png"），左端展示中国铁路12306官方徽标，右端上方标注黑色"中国铁路12306"字样，下方标注灰色"12306 CHINA RAILWAY"，点击徽标可重定向至网站首页。
+          - **欢迎语**：标识区域右侧展示黑色欢迎语"欢迎登录12306"。
+      - id: REQ-2-1-3
+        name: 身份验证表单区
+        ui_description: |
+          - **营销底图**：中部采用宽幅12306官方APP营销海报作为底图（引用图片"登录页-登录表单区域-推广背景.png"），该底图覆盖整个核心内容区。
+          - **表单容器**：表单悬浮于底图右侧，整体居中偏右，宽度设定为400px，背景色为white（纯白），直角设计，无阴影效果。
+          - **切换标签**：表单顶部设置两个切换按钮，分别为"账号登录"与"扫码登录"，均分容器宽度，内衬15px 20px，字号18px，默认文本色#333333（深灰），选中状态文本色#1890ff（蓝），字体加粗（font-weight: 600），悬停时非激活按钮文字变蓝。
+          - **表单内容**：内衬30px，依据激活的标签展示相应视图：
+            - **账号验证模式**（激活"账号登录"标签）：
+              - 错误警示条（异常时显示）：背景#fff1f0（浅红），边框#ffa39e（浅红），文本色#cf1322（红），字号14px，内衬10px 15px，居中对齐。
+              - "用户名/邮箱/手机号"输入域：高度50px，字号14px，左右内衬10px，边框#d9d9d9（灰），文本色#333333（深灰），占位符色#bfbfbf（浅灰），背景white（纯白），聚焦时边框变#1890ff（蓝）并附加阴影rgba(24, 144, 255, 0.2)，占位符提示"用户名/邮箱/手机号"。
+              - "密码"输入域：高度50px，字号14px，左右内衬10px，边框#d9d9d9（灰），文本显示为黑色圆点，占位符色#bfbfbf（浅灰），背景white（纯白），聚焦时边框变#1890ff（蓝）并附加阴影rgba(24, 144, 255, 0.2)，占位符提示"密码"。
+              - "立即登录"按键：全宽显示，高度自适应，内衬12px，背景#FF8001（橙），文本white（纯白），字号16px，中等粗细（font-weight: 500），圆角5px，悬停背景#ff8533（浅橙），禁用背景#d9d9d9（灰）。
+              - 辅助链接：底部包含"注册12306账户"（左）与"忘记密码？"（右），水平居中排布，间距20px。
+                - "注册12306账户"：字号14px，色值#1890ff（蓝），悬停变色#40a9ff（浅蓝），点击跳转注册页。
+                - "忘记密码？"：字号14px，色值#999999（灰），悬停变色#40a9ff（浅蓝），点击跳转密码找回页。
+            - **扫码验证模式**（激活"扫码登录"标签）：
+              - 二维码展示区：上下内衬20px，水平居中。
+              - 二维码图像：规格150px×150px，边框#e0e0e0（浅灰），直角。
+              - 扫码指引：字号14px，文本色#666666（灰），行高1.5，分两行展示"打开铁路12306手机APP"及"扫描二维码登录"。
+      - id: REQ-2-1-4
+        name: 页脚导航区
+        ui_description: |
+          - **页脚**：左侧展示友情链接列表，右侧排列四个官方媒体二维码，依次为“中国铁路官方微信”（引用资源“中国铁路官方微信二维码.png”）、“中国铁路官方微博”（引用资源“中国铁路官方微博二维码.png”）、“12306 公众号”（引用资源“12306公众号二维码.png”）、“铁路 12306”（引用资源“铁路12306二维码.png”）。
+
+  - id: REQ-2-2
+    name: 认证信息提交
+    children:
+      - id: REQ-2-2-1
+        name: 账号非空校验
+        scenarios:
+          - name: 未输入账号信息
+            steps:
+              - action: 用户停留在登录页
+                expectation: 系统待命
+              - action: 用户留空用户名/手机号/邮箱字段
+                expectation: 系统待命
+              - action: 点击"立即登录"
+                expectation: 表单顶部弹出警示"请输入用户名！"，样式同错误警示条规范。
+      - id: REQ-2-2-2
+        name: 密码非空校验
+        scenarios:
+          - name: 未输入密码信息
+            steps:
+              - action: 用户停留在登录页
+                expectation: 系统待命
+              - action: 已输入账号信息
+                expectation: 系统待命
+              - action: 留空密码字段
+                expectation: 系统待命
+              - action: 点击"立即登录"
+                expectation: 表单顶部弹出警示"请输入密码！"，样式同错误警示条规范。
+      - id: REQ-2-2-3
+        name: 密码长度校验
+        scenarios:
+          - name: 密码长度不足
+            steps:
+              - action: 已输入账号信息
+                expectation: 系统待命
+              - action: 输入长度短于6位的密码
+                expectation: 系统待命
+              - action: 点击"立即登录"
+                expectation: 表单顶部弹出警示"密码长度不能少于6位！"，样式同错误警示条规范。
+      - id: REQ-2-2-4
+        name: 账号格式与有效性校验
+        scenarios:
+          - name: 账号格式无效
+            steps:
+              - action: 用户停留在登录页
+                expectation: 系统待命
+              - action: 输入不符合格式规范的账号信息
+                expectation: 系统待命
+              - action: 输入合规长度的密码
+                expectation: 系统待命
+              - action: 点击"立即登录"
+                expectation: 表单顶部弹出警示"用户名或密码错误！"，样式同错误警示条规范；同时清空密码框。
+          - name: 用户名认证通过
+            steps:
+              - action: 输入符合规范的用户名
+                expectation: 系统待命
+              - action: 该用户名已在库中注册
+                expectation: 系统待命
+              - action: 输入匹配该用户的正确密码
+                expectation: 系统待命
+              - action: 点击"立即登录"
+                expectation: 界面中央浮现"短信验证"弹窗。
+          - name: 用户名未注册
+            steps:
+              - action: 输入符合规范的用户名
+                expectation: 系统待命
+              - action: 该用户名未在库中注册
+                expectation: 系统待命
+              - action: 点击"立即登录"
+                expectation: 表单顶部弹出警示"用户名或密码错误！"，样式同错误警示条规范；同时清空密码框。
+          - name: 用户名密码不匹配
+            steps:
+              - action: 输入符合规范的用户名
+                expectation: 系统待命
+              - action: 该用户名已注册
+                expectation: 系统待命
+              - action: 输入错误的密码
+                expectation: 系统待命
+              - action: 点击"立即登录"
+                expectation: 表单顶部弹出警示"用户名或密码错误！"，样式同错误警示条规范；同时清空密码框。
+      - id: REQ-2-2-5
+        name: 邮箱格式与有效性校验
+        scenarios:
+          - name: 邮箱认证通过
+            steps:
+              - action: 输入符合规范的邮箱
+                expectation: 系统待命
+              - action: 该邮箱已注册
+                expectation: 系统待命
+              - action: 输入匹配该邮箱用户的正确密码
+                expectation: 系统待命
+              - action: 点击“立即登录”
+                expectation: 界面中央浮现“短信验证”弹窗。
+          - name: 邮箱未注册
+            steps:
+              - action: 输入符合规范的邮箱
+                expectation: 系统待命
+              - action: 该邮箱未在库中注册
+                expectation: 系统待命
+              - action: 点击"立即登录"
+                expectation: 表单顶部弹出警示"用户名或密码错误！"，样式同错误警示条规范；同时清空密码框。
+          - name: 邮箱密码不匹配
+            steps:
+              - action: 输入符合规范的邮箱
+                expectation: 系统待命
+              - action: 该邮箱已注册
+                expectation: 系统待命
+              - action: 输入错误的密码
+                expectation: 系统待命
+              - action: 点击"立即登录"
+                expectation: 表单顶部弹出警示"用户名或密码错误！"，样式同错误警示条规范；同时清空密码框。
+      - id: REQ-2-2-6
+        name: 手机号格式与有效性校验
+        scenarios:
+          - name: 手机号认证通过
+            steps:
+              - action: 输入符合规范的手机号
+                expectation: 系统待命
+              - action: 该手机号已注册
+                expectation: 系统待命
+              - action: 输入匹配该手机号用户的正确密码
+                expectation: 系统待命
+              - action: 点击“立即登录”
+                expectation: 界面中央浮现“短信验证”弹窗。
+          - name: 手机号未注册
+            steps:
+              - action: 输入符合规范的手机号
+                expectation: 系统待命
+              - action: 该手机号未在库中注册
+                expectation: 系统待命
+              - action: 点击"立即登录"
+                expectation: 表单顶部弹出警示"用户名或密码错误！"，样式同错误警示条规范；同时清空密码框。
+          - name: 手机号密码不匹配
+            steps:
+              - action: 输入符合规范的手机号
+                expectation: 系统待命
+              - action: 该手机号已注册
+                expectation: 系统待命
+              - action: 输入错误的密码
+                expectation: 系统待命
+              - action: 点击"立即登录"
+                expectation: 表单顶部弹出警示"用户名或密码错误！"，样式同错误警示条规范；同时清空密码框。
+          - name: 手机号格式错误
+            steps:
+              - action: 输入不符合规范的手机号
+                expectation: 系统待命
+              - action: 输入合规长度的密码
+                expectation: 系统待命
+              - action: 点击"立即登录"
+                expectation: 表单顶部弹出警示"用户名或密码错误！"，样式同错误警示条规范；同时清空密码框。
+
+  - id: REQ-2-3
+    name: 二次验证弹窗
+    children:
+      - id: REQ-2-3-1
+        name: 弹窗界面布局
+        ui_description: |
+          - **定位与遮罩**：弹窗居中显示，全屏遮罩层rgba(0, 0, 0, 0.5)（半透黑），宽440px，最大宽幅90%。
+          - **标题栏**：
+             - 背景white（纯白），内衬16px 24px，底边框#f0f0f0（浅灰）。
+             - 左侧标题"选择验证方式"，字号16px，中等粗细（font-weight: 500），色值#303133（深灰）。
+             - 右侧关闭图标"×"，字号24px，色值#888888（灰），支持关闭操作。
+          - **主体内容**：
+             - 主题词"短信验证"：字号18px，中等粗细，色值#1890ff（蓝），居中，垂直内衬24px 0。
+             - "证件后4位"输入框：高48px，字号14px，左右内衬15px，边框#dcdfe6（灰），占位符色#c0c4cc（浅灰），背景white（纯白），仅允许输入4位数字或字母（自动转大写），超长截断，过滤非法字符。
+             - 验证码交互区：包含"输入验证码"框（左）与"获取验证码"按钮（右），间距12px。
+               - 验证码输入框：高48px，字号14px，左右内衬15px，边框#dcdfe6（灰），占位符色#c0c4cc（浅灰），背景white（纯白），限6位数字，超长截断，过滤非数字，提示"输入验证码"。
+             - "确定"按钮：全宽，高48px，无内衬，上间距12px，背景#ff8a29（橙），文本white（纯白），字号16px，中等粗细，圆角4px，悬停背景#ffa151（浅橙）。
+          - **获取验证码控件**：
+             - 规格：宽120px，高48px，字号14px。
+             - **禁用态**：背景#f5f7fa（浅灰），文本#c0c4cc（浅灰），边框#e4e7ed（浅灰），不可交互，透明度0.6。
+             - **激活态**：背景white（纯白），文本#606266（深灰），边框#dcdfe6（灰），可交互，悬停边框#1890ff（蓝）且文本变蓝。
+             - **倒计时态**：背景#f5f7fa（浅灰），文本#c0c4cc（浅灰），边框#e4e7ed（浅灰），不可交互，展示"重新发送(N)s"，60秒倒数，结束后恢复。
+             - 状态流转：由证件号输入框内容长度驱动，满4位激活，不足4位禁用。
+      - id: REQ-2-3-2
+        name: 验证码请求流程
+        scenarios:
+          - name: 证件后4位校验失败
+            steps:
+              - action: 弹窗加载完成
+                expectation: 系统待命
+              - action: 输入错误的证件后4位
+                expectation: 系统待命
+              - action: 点击"获取验证码"
+                expectation: "确定"按钮上方浮现警示"请输入正确的用户信息！"，文本色#ff4d4f（红），字号15px；按钮进入倒计时态。
+          - name: 证件后4位校验通过
+            steps:
+              - action: 弹窗加载完成
+                expectation: 系统待命
+              - action: 输入正确的证件后4位
+                expectation: 系统待命
+              - action: 1分钟内未发送过
+                expectation: 系统待命
+              - action: 点击"获取验证码"
+                expectation: 系统向绑定手机发送验证码；记录发送日志（有效期5分钟）；控制台输出验证码；按钮进入倒计时态；"确定"按钮上方浮现提示"获取短信验证码成功！"，文本色#52c41a（绿），字号15px。
+          - name: 请求频率过高
+            steps:
+              - action: 弹窗加载完成
+                expectation: 系统待命
+              - action: 输入正确的证件后4位
+                expectation: 系统待命
+              - action: 1分钟内已发送过
+                expectation: 系统待命
+              - action: 点击"获取验证码"
+                expectation: "确定"按钮上方浮现警示"请求验证码过于频繁，请稍后再试！"，文本色#ff4d4f（红），字号15px。
+      - id: REQ-2-3-3
+        name: 登录确认流程
+        scenarios:
+          - name: 证件后4位缺失
+            steps:
+              - action: 未输入证件后4位，点击确认
+                expectation: "确定"按钮上方浮现警示"请输入登录账号绑定的证件号后4位"，文本色#ff4d4f（红），字号15px。
+          - name: 验证码格式无效
+            steps:
+              - action: 验证码框留空，点击确认
+                expectation: "确定"按钮上方浮现警示"请输入验证码"，文本色#ff4d4f（红），字号15px。
+              - action: 验证码不足6位，点击确认
+                expectation: "确定"按钮上方浮现警示"请输入正确的验证码"，文本色#ff4d4f（红），字号15px。
+              - action: 未获取过验证码，点击确认
+                expectation: "确定"按钮上方浮现警示"验证码校验失败！"，文本色#ff4d4f（红），字号15px。
+          - name: 验证码校验
+            steps:
+              - action: 输入正确验证码
+                expectation: 校验通过，登录成功，跳转个人中心。
+              - action: 输入错误验证码
+                expectation: "确定"按钮上方浮现警示"很抱歉，您输入的短信验证码有误。"，文本色#ff4d4f（红），字号15px。
+              - action: 验证码已过期
+                expectation: "确定"按钮上方浮现警示"很抱歉，您输入的短信验证码有误。"或"验证码已过期"，文本色#ff4d4f（红），字号15px。

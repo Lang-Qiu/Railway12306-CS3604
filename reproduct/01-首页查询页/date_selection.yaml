@@ -1,0 +1,28 @@
+id: REQ-01-07
+name: 启程日期选定
+functional_description: 指定行程起始日期，提供交互式日历组件。
+ui_description: |
+  文本显示区，右侧附带日历标识。
+  点击触发日历选择器弹窗。
+input_parameters:
+  - name: selected_date
+    type: date
+    description: 用户指定的具体日期
+output_parameters:
+  - name: final_date
+    type: date
+preconditions:
+  - 位于车票检索表单上下文内
+postconditions:
+  - 输入区呈现标准化日期格式（yyyy-MM-dd）
+business_rules:
+  - 初始状态展示系统当前日期（若无用户输入）
+  - 仅限选取预售周期范围内的日期（例如未来15日内）
+  - 禁止选取历史日期
+exceptions:
+  - 若输入格式违规，系统将自动修正或给予警示
+scenarios:
+  - name: 日期选定操作
+    steps:
+      - action: 激活日期控件，选中次日日期
+      - expectation: 输入框正确回显次日日期。

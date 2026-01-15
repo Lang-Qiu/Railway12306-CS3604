@@ -1,0 +1,30 @@
+id: REQ-02-06
+name: 短信二重验证弹窗
+functional_description: 登录验证通过后触发的二次身份核验界面。
+ui_description: |
+  居中悬浮弹窗，配半透遮罩。
+  输入项1：证件号码末4位。
+  输入项2：短信验证码。
+  操作项：获取验证码（含倒计时）、确定按钮。
+input_parameters:
+  - name: id_last_4
+    type: string
+  - name: verification_code
+    type: string
+output_parameters: null
+preconditions:
+  - 账号密码校验成功
+postconditions:
+  - 核验通过则进入首页
+business_rules:
+  - 仅当证件末4位匹配时触发短信发送
+  - 验证码有效期设为5分钟
+  - 倒计时时长60秒
+exceptions:
+  - 证件号不匹配提示
+  - 验证码无效提示
+scenarios:
+  - name: 验证码请求
+    steps:
+      - action: 填入正确的末4位，点击获取
+      - expectation: 提示发送成功，按钮进入倒计时状态。

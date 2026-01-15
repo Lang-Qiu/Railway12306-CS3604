@@ -1,0 +1,21 @@
+id: REQ-01-10
+name: 营销与推广板块
+functional_description: 呈现首页中部的快捷功能图示、宣传卡片矩阵以及底部的公告信息。
+ui_description: |
+  中部快捷功能区：单幅大幅图片展示。
+  宣传栏板块：采用双列网格布局，包含4张主题卡片（如会员服务、餐饮特产等）。
+  底部公告区：单幅横幅图片。
+input_parameters: null
+output_parameters: null
+preconditions:
+  - 页面加载完成
+postconditions: null
+business_rules:
+  - 图片资源需具备宽度自适应能力
+  - 卡片悬停时触发上浮动画及阴影加深视觉效果
+exceptions: null
+scenarios:
+  - name: 呈现推广内容
+    steps:
+      - action: 滚动页面至中部区域
+      - expectation: 清晰展示各类宣传图片及卡片元素。

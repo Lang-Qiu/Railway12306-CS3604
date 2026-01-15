@@ -1,0 +1,25 @@
+id: REQ-02-04
+name: 扫码验证视图
+functional_description: 呈现登录用的二维码及其辅助提示文本。
+ui_description: |
+  居中渲染二维码图像。
+  底部附带指引文本：“请启动铁路12306手机APP扫描上方二维码以完成登录”。
+input_parameters: null
+output_parameters:
+  - name: qr_code_status
+    type: string
+    description: waiting/scanned/expired/confirmed
+preconditions:
+  - 激活“扫码登录”标签页
+postconditions:
+  - 定时查询二维码状态
+business_rules:
+  - 二维码失效时需提供刷新机制
+  - 扫码验证通过后自动执行跳转
+exceptions:
+  - 若二维码加载异常，提示用户点击重试
+scenarios:
+  - name: 二维码展示
+    steps:
+      - action: 切换至扫码登录模式
+      - expectation: 界面呈现有效的二维码图像。

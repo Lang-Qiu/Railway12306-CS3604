@@ -1,0 +1,18 @@
+id: REQ-03-01
+name: 车次列表页布局
+functional_description: 页面整体结构，包含顶部导航、搜索栏、筛选面板、列表区域及底部。
+ui_description: |
+  背景白色。
+  从上到下：TopNav -> SearchBar -> FilterPanel -> ListArea -> BottomNav。
+  内容最大宽度1200px。
+input_parameters: null
+output_parameters: null
+preconditions: null
+postconditions: null
+business_rules: null
+exceptions: null
+scenarios:
+  - name: 页面加载
+    steps:
+      - action: 进入页面
+      - expectation: 各区域正常显示。

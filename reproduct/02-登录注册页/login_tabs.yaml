@@ -1,0 +1,22 @@
+id: REQ-02-02
+name: 登录模式切换
+functional_description: 在“账号密码登录”与“扫码登录”两种验证方式间进行切换。
+ui_description: |
+  表单顶部设置两个选项卡：“账号登录”、“扫码登录”。
+  激活项呈现加粗及蓝色高亮样式。
+input_parameters:
+  - name: selected_mode
+    type: string
+    description: account 或 scan
+output_parameters: null
+preconditions: null
+postconditions:
+  - 动态置换下方的功能区域内容
+business_rules:
+  - 初始默认选中上次使用的模式或优先展示“扫码登录”
+exceptions: null
+scenarios:
+  - name: 切换至账号模式
+    steps:
+      - action: 点击“账号登录”选项卡
+      - expectation: 界面展示用户名及密码输入控件。

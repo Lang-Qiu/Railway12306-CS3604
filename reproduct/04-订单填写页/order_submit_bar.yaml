@@ -1,0 +1,23 @@
+id: REQ-04-05
+name: 订单提交栏
+functional_description: 提交订单按钮及协议提示。
+ui_description: |
+  上一步按钮、提交订单按钮（橙色）。
+  温馨提示区域。
+input_parameters: null
+output_parameters: null
+preconditions:
+  - 至少选择一位乘客
+postconditions:
+  - 弹出核对信息弹窗
+business_rules:
+  - 未选乘客不能提交
+  - 提交时检查余票
+exceptions:
+  - 余票不足提示
+  - 未选乘客提示
+scenarios:
+  - name: 提交订单
+    steps:
+      - action: 点击提交
+      - expectation: 弹出核对框。

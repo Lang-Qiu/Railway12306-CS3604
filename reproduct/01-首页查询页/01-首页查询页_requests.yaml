@@ -1,0 +1,172 @@
+id: REQ-Breakdown
+name: 首页/查询页 需求细化拆解
+functional_description: 基于《01-首页查询页.md》深入梳理功能模块、业务逻辑、边界条件及数据依赖关系，为后续的设计实现与测试验证提供权威依据。
+children:
+  - id: REQ-Breakdown-1
+    name: 功能模块清单
+    children:
+      - id: REQ-Breakdown-1-1
+        name: 顶部导航控制
+        functional_description: |
+          - 未登录态：展示“登录”、“注册”及“个人中心”三个入口；已登录态：仅保留“个人中心”入口。
+      - id: REQ-Breakdown-1-2
+        name: 车票查询核心表单
+        functional_description: |
+          - 站点输入：包含出发地与到达地输入框（支持选择、模糊匹配及下拉推荐）；
+          - 日期选择：出发日期控件（限制选择已开放售票的日期，禁用过期或未开售日期）；
+          - 查询操作：提供查询触发按钮；
+          - 站点互换：提供出发地与到达地一键互换功能；
+          - 默认填充：用户未操作时，出发日期自动预填当前日期。
+      - id: REQ-Breakdown-1-3
+        name: 快捷功能入口
+        functional_description: |
+          - 提供直达“个人中心”与“车票查询”页面的快捷通道。
+      - id: REQ-Breakdown-1-4
+        name: 页面流转逻辑
+        functional_description: |
+          - 查询成功：100毫秒内完成向车次列表页的跳转，并携带查询参数（站点、日期、车次类型筛选）展示结果。
+          - 查询失败：保持在当前页面，保留用户输入信息，并弹出提示“查询失败，请稍后重试”。
+      - id: REQ-Breakdown-1-5
+        name: 身份验证与中心跳转
+        functional_description: |
+          - 登录/注册：未登录时可用，成功后跳转对应页面，失败则提示错误。
+          - 个人中心：已登录直接跳转，未登录则重定向至登录页。
+
+  - id: REQ-Breakdown-2
+    name: 业务规则与逻辑校验
+    children:
+      - id: REQ-Breakdown-2-1
+        name: 必填项检查
+        functional_description: |
+          - 出发地缺失：触发查询时提示“请选择出发地”。
+          - 到达地缺失：触发查询时提示“请选择到达地”。
+      - id: REQ-Breakdown-2-2
+        name: 数据合法性验证
+        functional_description: |
+          - 出发地无效：提示“无法匹配该出发地”，并提供下拉相似推荐，支持点击修正。
+          - 到达地无效：提示“无法匹配该到达地”，并提供下拉相似推荐，支持点击修正。
+      - id: REQ-Breakdown-2-3
+        name: 推荐机制
+        functional_description: |
+          - 激活出发地/到达地输入框时，展示所有可用站点，支持关键词搜索过滤。
+      - id: REQ-Breakdown-2-4
+        name: 日期选择规则
+        functional_description: |
+          - 激活日期控件显示日历，仅开放已售票日期选择，屏蔽过期与未开票日期。
+          - 缺省状态下，默认填入当前本地日期。
+      - id: REQ-Breakdown-2-5
+        name: 站点互换逻辑
+        functional_description: |
+          - 点击“交换”后，两输入框值互换；若含空值，交换后空值位置相应变更。
+      - id: REQ-Breakdown-2-6
+        name: 性能指标
+        functional_description: |
+          - 成功查询跳转需控制在100毫秒内；超时或后端异常则执行失败流程。
+
+  - id: REQ-Breakdown-3
+    name: 数据依赖关系
+    children:
+      - id: REQ-Breakdown-3-1
+        name: 车站数据源
+        functional_description: |
+          - 建议字段结构：station_id, station_name_cn, station_name_py, alias_list, station_code。
+          - 前端实现中文/拼音/别名混合检索；模糊推荐基于相似度算法（如编辑距离、前缀匹配）。
+      - id: REQ-Breakdown-3-2
+        name: 售票日历服务
+        functional_description: |
+          - 依据12306售票规则，提供当前开放销售的日期范围数据。
+      - id: REQ-Breakdown-3-3
+        name: 车次查询服务
+        functional_description: |
+          - 输入：from_station, to_station, date, filters (student/high-speed/EMU等)；
+          - 输出：车次基础信息及余票状态。
+      - id: REQ-Breakdown-3-4
+        name: 用户会话管理
+        functional_description: |
+          - 负责登录状态判定及用户信息获取，支撑导航栏展示与个人中心跳转逻辑。
+
+  - id: REQ-Breakdown-4
+    name: 边界条件与异常处理
+    children:
+      - id: REQ-Breakdown-4-1
+        name: 输入处理
+        functional_description: |
+          - 兼容中英文、拼音、大小写及空格；过滤非法字符；设置最小触发推荐长度及防抖机制（如≥2字符）。
+      - id: REQ-Breakdown-4-2
+        name: 推荐异常
+        functional_description: |
+          - 无推荐结果时的提示文案与引导；处理重复选择及快速切换时的状态同步。
+      - id: REQ-Breakdown-4-3
+        name: 日期边界
+        functional_description: |
+          - 跨时区时间同步；午夜日期变更时的默认值更新；非法日期的拦截与提示。
+      - id: REQ-Breakdown-4-4
+        name: 交换边界
+        functional_description: |
+          - 同站交换（出发=到达）的提示与拦截（建议允许交换，但在查询时校验并提示路线无效）。
+      - id: REQ-Breakdown-4-5
+        name: 跳转异常
+        functional_description: |
+          - 请求超时或未响应：保留输入内容，提示失败，允许重试，避免数据清空。
+      - id: REQ-Breakdown-4-6
+        name: 登录态异常
+        functional_description: |
+          - 未登录访问个人中心：重定向至登录页并提示“请先登录12306账号！”（或在登录页展示提示）。
+
+  - id: REQ-Breakdown-5
+    name: 交互规范与文案标准
+    children:
+      - id: REQ-Breakdown-5-1
+        name: 错误提示语统一
+        functional_description: |
+          - “请选择出发地”、“请选择到达地”、“无法匹配该出发地”、“无法匹配该到达地”、“查询失败，请稍后重试”、“登录失败，请稍后重试”、“注册失败，请稍后重试”、“前往个人中心失败，请稍后重试”、“请先登录12306账号！”
+      - id: REQ-Breakdown-5-2
+        name: 组件交互状态
+        functional_description: |
+          - 查询按钮在未满足必填项时可禁用或点击提示；
+          - 日期组件禁用不可选日期；
+          - 输入框获焦展开下拉，失焦保留选项；
+          - 交换按钮在空值状态下仍可点击，但不改变视觉结果。
+
+  - id: REQ-Breakdown-6
+    name: 性能优化与体验保障
+    children:
+      - id: REQ-Breakdown-6-1
+        name: 路由跳转优化
+        functional_description: |
+          - 确保路由跳转在100毫秒内响应；若受限于后端延迟，建议引入过渡动画、预加载或骨架屏，并提供友好的容错提示。
+      - id: REQ-Breakdown-6-2
+        name: 搜索性能优化
+        functional_description: |
+          - 建议实施防抖策略（200ms）并利用本地缓存，降低请求频率。
+
+  - id: REQ-Breakdown-7
+    name: 监控与埋点（建议）
+    children:
+      - id: REQ-Breakdown-7-1
+        name: 行为埋点
+        functional_description: |
+          - 涵盖输入框聚焦、推荐项点击、查询触发、成功/失败状态、交换操作、日期选择等关键行为。
+      - id: REQ-Breakdown-7-2
+        name: 异常监控
+        functional_description: |
+          - 监控后端无响应、接口错误代码及前端运行时异常。
+
+  - id: REQ-Breakdown-8
+    name: 安全合规（建议）
+    children:
+      - id: REQ-Breakdown-8-1
+        name: 安全策略
+        functional_description: |
+          - 实施输入清洗防范XSS攻击；
+          - 对登录态相关操作实施接口鉴权与频率限制。
+
+  - id: REQ-Breakdown-9
+    name: 非功能性指标（建议）
+    children:
+      - id: REQ-Breakdown-9-1
+        name: 质量标准
+        functional_description: |
+          - 可用性：核心业务路径可用率需达99%以上；
+          - 兼容性：适配主流现代浏览器及移动端（按需）；
+          - 可维护性：采用组件化架构，核心逻辑需覆盖单元测试。

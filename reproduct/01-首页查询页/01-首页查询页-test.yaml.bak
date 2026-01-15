@@ -1,0 +1,211 @@
+id: REQ-Test-1
+name: 首页/查询页 测试用例
+functional_description: 依据《01-首页查询页.md》场景整理的测试用例。
+children:
+  - id: REQ-Test-1-1
+    name: 必填校验测试
+    children:
+      - id: REQ-Test-1-1-1
+        name: 出发地为空
+        scenarios:
+          - name: H-1.2.1 出发地为空
+            steps:
+              - action: 用户在首页/查询页且未在车票查询表单中输入出发地
+                expectation: 系统就绪
+              - action: 点击“查询”
+                expectation: 提示“请选择出发地”
+      - id: REQ-Test-1-1-2
+        name: 到达地为空
+        scenarios:
+          - name: H-1.2.2 到达地为空
+            steps:
+              - action: 用户在首页/查询页且未在车票查询表单中输入到达地
+                expectation: 系统就绪
+              - action: 点击“查询”
+                expectation: 提示“请选择到达地”
+
+  - id: REQ-Test-1-2
+    name: 合法性校验测试
+    children:
+      - id: REQ-Test-1-2-1
+        name: 出发地不合法
+        scenarios:
+          - name: H-1.2.3 出发地不合法
+            steps:
+              - action: 在出发地输入不在支持列表中的城市
+                expectation: 系统就绪
+              - action: 点击“查询”
+                expectation: 提示“无法匹配该出发地”；下拉推荐相似站点；用户可点击推荐并填充输入框
+      - id: REQ-Test-1-2-2
+        name: 到达地不合法
+        scenarios:
+          - name: H-1.2.4 到达地不合法
+            steps:
+              - action: 在到达地输入不在支持列表中的城市
+                expectation: 系统就绪
+              - action: 点击“查询”
+                expectation: 提示“无法匹配该到达地”；下拉推荐相似站点；用户可点击推荐并填充输入框
+
+  - id: REQ-Test-1-3
+    name: 推荐与选择测试
+    children:
+      - id: REQ-Test-1-3-1
+        name: 出发地推荐
+        scenarios:
+          - name: H-1.2.5 出发地推荐（下拉显示全部站点）
+            steps:
+              - action: 用户在首页/查询页
+                expectation: 系统就绪
+              - action: 点击出发地输入框
+                expectation: 下拉显示全部支持站点（可搜索过滤）
+      - id: REQ-Test-1-3-2
+        name: 到达地推荐
+        scenarios:
+          - name: H-1.2.6 到达地推荐（下拉显示全部站点）
+            steps:
+              - action: 用户在首页/查询页
+                expectation: 系统就绪
+              - action: 点击到达地输入框
+                expectation: 下拉显示全部支持站点（可搜索过滤）
+      - id: REQ-Test-1-3-3
+        name: 出发日期推荐
+        scenarios:
+          - name: H-1.2.7 出发日期推荐（仅可选已放票）
+            steps:
+              - action: 用户在首页/查询页
+                expectation: 系统就绪
+              - action: 点击出发日期选择框
+                expectation: 显示日历；仅可选择已放票日期；不可选择已过期或未开票日期
+
+  - id: REQ-Test-1-4
+    name: 交互功能测试
+    children:
+      - id: REQ-Test-1-4-1
+        name: 出发地/到达地交换
+        scenarios:
+          - name: H-1.2.8 出发地/到达地交换
+            steps:
+              - action: 已在查询表单中选择了出发地或到达地
+                expectation: 系统就绪
+              - action: 点击“交换”按钮
+                expectation: 交换两输入框内容；字段与校验保持一致
+      - id: REQ-Test-1-4-2
+        name: 出发日期自动填入
+        scenarios:
+          - name: H-1.2.9 出发日期自动填入当前日期
+            steps:
+              - action: 用户在车票查询页面，未输入出发日期或尚未进行日期输入操作
+                expectation: 系统就绪
+              - action: 页面呈现或聚焦表单
+                expectation: 自动填入当前日期（本地时间）；不可选日期仍禁用
+
+  - id: REQ-Test-1-5
+    name: 查询功能测试
+    children:
+      - id: REQ-Test-1-5-1
+        name: 用户成功查询
+        scenarios:
+          - name: H-1.2.10-1 用户成功查询
+            steps:
+              - action: 输入合法的出发地、到达地、出发日期
+                expectation: 系统就绪
+              - action: 点击“查询”，后端成功响应
+                expectation: 在100毫秒内跳转至车次列表页；列表展示与选择一致的车次信息（含高铁/动车）
+      - id: REQ-Test-1-5-2
+        name: 用户查询失败
+        scenarios:
+          - name: H-1.2.10-2 用户查询失败
+            steps:
+              - action: 输入合法的出发地、到达地、出发日期
+                expectation: 系统就绪
+              - action: 点击“查询”，后端未成功响应
+                expectation: 未在100毫秒内跳转；提示“查询失败，请稍后重试”；停留在当前页面并保留输入
+
+  - id: REQ-Test-1-6
+    name: 登录/注册测试
+    children:
+      - id: REQ-Test-1-6-1
+        name: 登录功能
+        scenarios:
+          - name: H-1.3.1-1 用户点击登录，成功
+            steps:
+              - action: 用户未登录
+                expectation: 系统就绪
+              - action: 点击“登录”按钮，系统成功响应
+                expectation: 在100毫秒内跳转至登录页
+          - name: H-1.3.1-2 用户点击登录，失败
+            steps:
+              - action: 用户未登录
+                expectation: 系统就绪
+              - action: 点击“登录”按钮，系统未成功响应
+                expectation: 未在100毫秒内跳转；提示“登录失败，请稍后重试”
+      - id: REQ-Test-1-6-2
+        name: 注册功能
+        scenarios:
+          - name: H-1.3.2-1 用户点击注册，成功
+            steps:
+              - action: 用户未注册/未登录
+                expectation: 系统就绪
+              - action: 点击“注册”按钮，系统成功响应
+                expectation: 在100毫秒内跳转至注册页
+          - name: H-1.3.2-2 用户点击注册，失败
+            steps:
+              - action: 用户未注册/未登录
+                expectation: 系统就绪
+              - action: 点击“注册”按钮，系统未成功响应
+                expectation: 未在100毫秒内跳转；提示“注册失败，请稍后重试”
+      - id: REQ-Test-1-6-3
+        name: 已登录状态显示
+        scenarios:
+          - name: H-1.3.3 已登录入口显示
+            steps:
+              - action: 用户已登录
+                expectation: 系统就绪
+              - action: 页面加载
+                expectation: 顶部导航仅显示“个人中心”，不显示“登录”“注册”
+
+  - id: REQ-Test-1-7
+    name: 个人中心与快捷入口测试
+    children:
+      - id: REQ-Test-1-7-1
+        name: 个人中心跳转
+        scenarios:
+          - name: H-1.4.1-1 个人中心跳转，成功
+            steps:
+              - action: 用户已登录
+                expectation: 系统就绪
+              - action: 点击“个人中心”入口，系统成功响应
+                expectation: 在100毫秒内跳转至该用户的个人中心页
+          - name: H-1.4.1-2 个人中心跳转，失败
+            steps:
+              - action: 用户已登录
+                expectation: 系统就绪
+              - action: 点击“个人中心”入口，系统未成功响应
+                expectation: 未在100毫秒内跳转；提示“前往个人中心失败，请稍后重试”
+          - name: H-1.4.2-1 未登录点击个人中心，成功
+            steps:
+              - action: 用户未登录
+                expectation: 系统就绪
+              - action: 点击“个人中心”入口，系统成功响应
+                expectation: 在100毫秒内跳转至登录页
+          - name: H-1.4.2-2 未登录点击个人中心，失败
+            steps:
+              - action: 用户未登录
+                expectation: 系统就绪
+              - action: 点击“个人中心”入口，系统未成功响应
+                expectation: 未在100毫秒内跳转；提示“请先登录12306账号！”
+      - id: REQ-Test-1-7-2
+        name: 车票查询快捷入口
+        scenarios:
+          - name: H-1.5-1 车票查询快捷入口，成功
+            steps:
+              - action: 用户在首页/查询页
+                expectation: 系统就绪
+              - action: 点击“车票查询”入口，系统成功响应
+                expectation: 在100毫秒内跳转至车票查询页
+          - name: H-1.5-2 车票查询快捷入口，失败
+            steps:
+              - action: 用户在首页/查询页
+                expectation: 系统就绪
+              - action: 点击“车票查询”入口，系统未成功响应
+                expectation: 未在100毫秒内跳转；提示“查询失败，请稍后重试”

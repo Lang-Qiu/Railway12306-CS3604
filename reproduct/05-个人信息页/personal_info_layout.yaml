@@ -1,0 +1,18 @@
+id: REQ-05-01
+name: 个人中心整体布局
+functional_description: 包含顶部、侧边栏菜单、右侧内容区及底部。
+ui_description: |
+  左侧固定菜单。
+  右侧根据路由显示不同面板。
+  面包屑导航显示当前位置。
+input_parameters: null
+output_parameters: null
+preconditions: null
+postconditions: null
+business_rules: null
+exceptions: null
+scenarios:
+  - name: 页面结构
+    steps:
+      - action: 进入个人中心
+      - expectation: 左侧显示菜单，右侧显示默认的个人信息。

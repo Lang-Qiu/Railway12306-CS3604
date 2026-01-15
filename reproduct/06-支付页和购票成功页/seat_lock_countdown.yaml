@@ -1,0 +1,22 @@
+id: REQ-06-02
+name: 席位锁定倒计时
+functional_description: 显示订单剩余有效时间。
+ui_description: |
+  锁图标 + 文字提示。
+  倒计时高亮显示。
+  <5分钟变红闪烁。
+input_parameters:
+  - name: create_time
+    type: datetime
+output_parameters: null
+preconditions: null
+postconditions:
+  - 倒计时结束触发超时逻辑
+business_rules:
+  - 20分钟有效期
+exceptions: null
+scenarios:
+  - name: 倒计时结束
+    steps:
+      - action: 等待时间归零
+      - expectation: 倒计时变红，禁止支付。

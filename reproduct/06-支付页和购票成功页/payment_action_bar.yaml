@@ -1,0 +1,22 @@
+id: REQ-06-04
+name: 支付操作栏
+functional_description: 取消订单或发起支付。
+ui_description: |
+  取消订单按钮（白底灰边）。
+  网上支付按钮（橙底白字）。
+input_parameters: null
+output_parameters: null
+preconditions:
+  - 倒计时未结束
+postconditions:
+  - 点击支付跳转成功页
+  - 点击取消弹出确认框
+business_rules:
+  - 支付前检查订单状态
+exceptions:
+  - 支付失败提示
+scenarios:
+  - name: 点击支付
+    steps:
+      - action: 点击网上支付
+      - expectation: 按钮变“处理中”，跳转成功页。

@@ -1,0 +1,19 @@
+id: REQ-01-11
+name: 底部导航栏与页脚区域
+functional_description: 呈现友情链接、官方媒体二维码以及版权声明信息。
+ui_description: |
+  友情链接：置于左侧的列表区域。
+  二维码矩阵：右侧排列4个（微信、微博、公众号、App）。
+input_parameters: null
+output_parameters: null
+preconditions: null
+postconditions: null
+business_rules:
+  - 链接需支持点击跳转
+  - 二维码需清晰可识别
+exceptions: null
+scenarios:
+  - name: 底部内容展示
+    steps:
+      - action: 页面滚动至底部
+      - expectation: 完整展示页脚所有信息要素。

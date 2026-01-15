@@ -1,0 +1,20 @@
+id: REQ-06-01
+name: 支付页整体布局
+functional_description: 包含倒计时、订单信息、支付操作区及广告提示。
+ui_description: |
+  背景白色。
+  顶部：倒计时条（蓝色边框）。
+  中部：订单信息卡片（渐变蓝标题）。
+  底部：广告与温馨提示。
+input_parameters: null
+output_parameters: null
+preconditions:
+  - 订单已创建但未支付
+postconditions: null
+business_rules: null
+exceptions: null
+scenarios:
+  - name: 页面加载
+    steps:
+      - action: 进入支付页
+      - expectation: 显示倒计时和订单详情。

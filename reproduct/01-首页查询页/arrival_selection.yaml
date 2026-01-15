@@ -1,0 +1,30 @@
+id: REQ-01-05
+name: 到达站点选定
+functional_description: 用户输入或拣选目的城市，兼容模糊检索及下拉列表推荐功能。
+ui_description: |
+  文本录入框，左侧标注“到达城市”。
+  获得焦点时展开城市选择悬浮层。
+input_parameters:
+  - name: input_text
+    type: string
+    description: 用户键入的字符
+output_parameters:
+  - name: selected_station
+    type: object
+    description: {id, name, code}
+preconditions:
+  - 位于车票查询表单上下文
+postconditions:
+  - 输入框展示已选定城市名称
+  - 更新系统内部查询条件的到达地参数
+business_rules:
+  - 必须隶属于系统支持的站点列表
+  - 支持中文名称、全拼、拼音首字母检索
+  - 不得与出发地重复（查询动作触发校验，选择阶段不强制拦截但建议给予提示）
+exceptions:
+  - 若输入内容无匹配项，提示“无法匹配该到达城市”
+scenarios:
+  - name: 常规选择到达地
+    steps:
+      - action: 点击输入框，选中“上海”
+      - expectation: 输入框呈现“上海”，下拉菜单收起。

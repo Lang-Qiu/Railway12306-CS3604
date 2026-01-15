@@ -1,0 +1,28 @@
+id: REQ-02-05
+name: 登录验证与提交
+functional_description: 审核输入数据的合规性并执行登录请求，反馈操作结果。
+ui_description: |
+  错误警示条：置于表单顶端，采用浅红底色搭配红色文本。
+input_parameters:
+  - name: username
+    type: string
+  - name: password
+    type: string
+output_parameters: null
+preconditions:
+  - 触发“立即登录”操作
+postconditions:
+  - 验证成功则触发短信二次验证或直接跳转
+  - 验证失败则展示错误警示信息
+business_rules:
+  - 账号/密码为必填项
+  - 密码长度不得少于6位
+  - 验证未通过时自动清空密码栏
+exceptions:
+  - 账号或密码不匹配提示
+  - 格式违规提示
+scenarios:
+  - name: 空密码提交测试
+    steps:
+      - action: 填写账号，留空密码，点击登录
+      - expectation: 顶部弹出警示“请输入密码！”。

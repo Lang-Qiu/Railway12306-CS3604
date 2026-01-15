@@ -1,0 +1,26 @@
+id: REQ-04-03
+name: 乘客选择器
+functional_description: 从常用联系人中勾选乘客。
+ui_description: |
+  复选框列表。
+  支持姓名搜索。
+input_parameters:
+  - name: passengers
+    type: array
+output_parameters:
+  - name: selected_passengers
+    type: array
+preconditions:
+  - 用户已登录且有联系人
+postconditions:
+  - 勾选后自动填充下方表单
+business_rules:
+  - 勾选即添加，取消即移除
+  - 支持多选
+exceptions:
+  - 无联系人显示空状态
+scenarios:
+  - name: 勾选乘客
+    steps:
+      - action: 勾选“张三”
+      - expectation: 下方出现张三的票据填写行。

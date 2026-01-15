@@ -1,0 +1,20 @@
+id: REQ-06-08
+name: 成功提示Banner
+functional_description: 醒目的成功状态提示及通知说明。
+ui_description: |
+  淡绿背景。
+  大号对勾图标。
+  显示订单号。
+input_parameters:
+  - name: order_number
+    type: string
+output_parameters: null
+preconditions: null
+postconditions: null
+business_rules: null
+exceptions: null
+scenarios:
+  - name: 查看订单号
+    steps:
+      - action: 页面加载
+      - expectation: 看到EA开头的订单号。

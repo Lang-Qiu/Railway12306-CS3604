@@ -1,0 +1,18 @@
+id: REQ-03-06
+name: 车票数据逻辑规则
+functional_description: 执行余票数量统计与票价核算的后端逻辑。
+ui_description: null
+input_parameters: null
+output_parameters: null
+preconditions: null
+postconditions: null
+business_rules:
+  - 余票定义：全程所有区间的空闲座位数量
+  - 票价计算：各行驶区间的票价总和
+  - 状态同步：预订成功即锁定对应座位状态
+exceptions: null
+scenarios:
+  - name: 余票逻辑验证
+    steps:
+      - action: 查询A站至C站（经停B站）
+      - expectation: 若A-B区间有座但B-C区间无座，则反馈无票状态。

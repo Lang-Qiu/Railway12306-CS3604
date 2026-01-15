@@ -1,0 +1,23 @@
+id: REQ-05-05
+name: 手机验证弹窗
+functional_description: 输入验证码完成手机号修改。
+ui_description: |
+  输入验证码。
+  显示倒计时。
+input_parameters:
+  - name: verify_code
+    type: string
+output_parameters: null
+preconditions:
+  - 已提交手机号和密码校验通过
+postconditions:
+  - 修改成功，更新数据库
+business_rules:
+  - 验证码有效期
+exceptions:
+  - 验证码错误
+scenarios:
+  - name: 输入验证码
+    steps:
+      - action: 输入正确验证码
+      - expectation: 提示修改成功。

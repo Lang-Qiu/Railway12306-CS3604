@@ -1,0 +1,35 @@
+id: REQ-01-04
+name: 启程站点选择
+functional_description: 用户录入或拣选始发城市，兼容模糊匹配与下拉智能推荐。
+ui_description: |
+  文本录入域，左侧标注“出发城市”。
+  获得焦点时展开城市拣选面板（包含热门城市及拼音索引功能）。
+input_parameters:
+  - name: input_text
+    type: string
+    description: 用户键入的字符
+output_parameters:
+  - name: selected_station
+    type: object
+    description: {id, name, code}
+preconditions:
+  - 处于车票查询表单中
+postconditions:
+  - 输入域展示已选定的城市名称
+  - 同步更新内部查询参数中的始发地信息
+business_rules:
+  - 必须属于系统预设的支持站点库
+  - 支持基于中文名称、全拼及首字母的检索方式
+  - 输入框获焦且无内容时，展示热门城市或历史搜索记录
+  - 完成选择后自动折叠下拉列表
+exceptions:
+  - 当输入无匹配项时，弹出提示“无法匹配该出发城市”
+scenarios:
+  - name: 常规始发地选择
+    steps:
+      - action: 激活输入框，选中“北京”
+      - expectation: 输入框回显“北京”，同时收起下拉菜单。
+  - name: 模糊匹配检索
+    steps:
+      - action: 键入“sh”
+      - expectation: 下拉列表呈现“上海”、“石家庄”等相关候选项。

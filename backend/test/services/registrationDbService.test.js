@@ -29,8 +29,8 @@ describe('Registration Database Service Tests', () => {
     test('应该能够根据用户名精确匹配查找用户记录', async () => {
       // Given: 数据库中存在用户
       await dbService.run(
-        'INSERT INTO users (username, password, phone, id_card_number) VALUES (?, ?, ?, ?)',
-        ['testUser123', 'hashedPassword', '13800138000', '110101199001011234']
+        'INSERT INTO users (username, password, phone, id_card_number, email) VALUES (?, ?, ?, ?, ?)',
+        ['testUser123', 'hashedPassword', '13800138000', '110101199001011234', 'testUser123@example.com']
       );
 
       // When: 根据用户名查找用户
@@ -56,8 +56,8 @@ describe('Registration Database Service Tests', () => {
     test('应该能够根据证件类型和证件号码精确匹配查找用户记录', async () => {
       // Given: 数据库中存在用户
       await dbService.run(
-        'INSERT INTO users (username, password, phone, id_card_type, id_card_number) VALUES (?, ?, ?, ?, ?)',
-        ['user001', 'hashedPassword', '13800138001', '居民身份证', '110101199001011234']
+        'INSERT INTO users (username, password, phone, id_card_type, id_card_number, email) VALUES (?, ?, ?, ?, ?, ?)',
+        ['user001', 'hashedPassword', '13800138001', '居民身份证', '110101199001011234', 'user001@example.com']
       );
 
       // When: 根据证件号查找
@@ -80,8 +80,8 @@ describe('Registration Database Service Tests', () => {
     test('用于检测证件号码是否已被注册', async () => {
       // Given: 数据库中存在用户
       await dbService.run(
-        'INSERT INTO users (username, password, phone, id_card_type, id_card_number) VALUES (?, ?, ?, ?, ?)',
-        ['user002', 'hashedPassword', '13800138002', '居民身份证', '110101199001011235']
+        'INSERT INTO users (username, password, phone, id_card_type, id_card_number, email) VALUES (?, ?, ?, ?, ?, ?)',
+        ['user002', 'hashedPassword', '13800138002', '居民身份证', '110101199001011235', 'user2@example.com']
       );
 
       // When: 检查证件号是否已注册
@@ -131,7 +131,8 @@ describe('Registration Database Service Tests', () => {
         phone: '13800138001',
         id_card_type: '居民身份证',
         id_card_number: '110101199001011235',
-        discount_type: '成人'
+        discount_type: '成人',
+        email: 'duplicateUser1@example.com'
       });
 
       // When & Then: 尝试创建同名用户应该抛出错误
@@ -143,7 +144,8 @@ describe('Registration Database Service Tests', () => {
           phone: '13800138002',
           id_card_type: '居民身份证',
           id_card_number: '110101199001011236',
-          discount_type: '成人'
+          discount_type: '成人',
+          email: 'duplicateUser2@example.com'
         })
       ).rejects.toThrow();
     });
@@ -157,7 +159,8 @@ describe('Registration Database Service Tests', () => {
         phone: '13800138003',
         id_card_type: '居民身份证',
         id_card_number: '110101199001011237',
-        discount_type: '成人'
+        discount_type: '成人',
+        email: 'phoneUser1@example.com'
       });
 
       // When & Then: 尝试使用同一手机号应该抛出错误
@@ -169,7 +172,8 @@ describe('Registration Database Service Tests', () => {
           phone: '13800138003',
           id_card_type: '居民身份证',
           id_card_number: '110101199001011238',
-          discount_type: '成人'
+          discount_type: '成人',
+          email: 'phoneUser2@example.com'
         })
       ).rejects.toThrow();
     });
@@ -183,7 +187,8 @@ describe('Registration Database Service Tests', () => {
         phone: '13800138004',
         id_card_type: '居民身份证',
         id_card_number: '110101199001011239',
-        discount_type: '成人'
+        discount_type: '成人',
+        email: 'idUser1@example.com'
       });
 
       // When & Then: 尝试使用同一证件号应该抛出错误
@@ -195,7 +200,8 @@ describe('Registration Database Service Tests', () => {
           phone: '13800138005',
           id_card_type: '居民身份证',
           id_card_number: '110101199001011239',
-          discount_type: '成人'
+          discount_type: '成人',
+          email: 'idUser2@example.com'
         })
       ).rejects.toThrow();
     });
@@ -210,7 +216,8 @@ describe('Registration Database Service Tests', () => {
         phone: '13800138006',
         id_card_type: '居民身份证',
         id_card_number: '110101199001011240',
-        discount_type: '成人'
+        discount_type: '成人',
+        email: 'secure@example.com'
       };
 
       // When: 创建用户（服务应该加密密码）
@@ -231,7 +238,8 @@ describe('Registration Database Service Tests', () => {
         phone: '13800138007',
         id_card_type: '居民身份证',
         id_card_number: '110101199001011241',
-        discount_type: '成人'
+        discount_type: '成人',
+        email: 'time@example.com'
       };
 
       // When: 创建用户

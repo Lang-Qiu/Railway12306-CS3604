@@ -1,12 +1,13 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const logger = require('../utils/logger');
 
 /**
- * Pending订单超时清理服务
- * 定期检查并删除超过10分钟的pending订单
+ * Pending Order Cleanup Service
+ * Periodically checks and deletes pending orders older than 10 minutes
  */
 
-// 创建数据库连接
+// Create database connection
 function getDatabase() {
   const dbPath = process.env.NODE_ENV === 'test' 
     ? process.env.TEST_DB_PATH || path.join(__dirname, '../../database/test.db')
@@ -16,8 +17,8 @@ function getDatabase() {
 }
 
 /**
- * 清理超过10分钟的pending订单
- * 先释放座位，再删除订单
+ * Cleanup pending orders older than 10 minutes
+ * Releases seats first, then deletes orders
  * @returns {Promise<{ordersDeleted: number, detailsDeleted: number}>}
  */
 async function cleanupExpiredPendingOrders() {
@@ -26,7 +27,7 @@ async function cleanupExpiredPendingOrders() {
     const orderService = require('./orderService');
     
     try {
-      // 查询过期的pending订单
+      // Query expired pending orders
       const expiredOrders = await new Promise((resolve, reject) => {
         db.all(
           `SELECT id FROM orders 
@@ -39,28 +40,28 @@ async function cleanupExpiredPendingOrders() {
         );
       });
       
-            db.close();
+      db.close();
       
       if (expiredOrders.length === 0) {
         return resolve({ ordersDeleted: 0, detailsDeleted: 0 });
-          }
-          
-      console.log(`[订单清理] 发现 ${expiredOrders.length} 个超时pending订单，开始清理...`);
-          
+      }
+      
+      logger.info(`Found ${expiredOrders.length} expired pending orders, cleaning up...`);
+      
       let detailsDeleted = 0;
       let ordersDeleted = 0;
       
-      // 逐个处理过期订单（不使用事务，避免数据库锁定冲突）
+      // Process expired orders one by one (no transaction to avoid database lock conflicts)
       for (const order of expiredOrders) {
         try {
-          // 尝试释放座位锁定（releaseSeatLocks内部会打开自己的数据库连接）
-          // 对于pending订单，如果有座位信息（虽然正常情况下不应该有），也会被释放
+          // Attempt to release seat locks (releaseSeatLocks opens its own database connection)
+          // For pending orders, if seat info exists (though normally shouldn't), it will be released
           await orderService.releaseSeatLocks(order.id);
           
-          // 为每个删除操作创建新的数据库连接
+          // Create new database connection for each delete operation
           const deleteDb = getDatabase();
           
-          // 删除订单明细
+          // Delete order details
           const detailsResult = await new Promise((resolve, reject) => {
             deleteDb.run(
               'DELETE FROM order_details WHERE order_id = ?',
@@ -73,7 +74,7 @@ async function cleanupExpiredPendingOrders() {
           });
           detailsDeleted += detailsResult;
           
-          // 删除订单
+          // Delete order
           const ordersResult = await new Promise((resolve, reject) => {
             deleteDb.run(
               'DELETE FROM orders WHERE id = ?',
@@ -88,26 +89,26 @@ async function cleanupExpiredPendingOrders() {
           
           deleteDb.close();
         } catch (error) {
-          console.error(`[订单清理] 清理订单 ${order.id} 失败:`, error.message);
-          // 继续处理其他订单
-                    }
-      }
-                    
-                    if (ordersDeleted > 0) {
-                      console.log(`[订单清理] ✅ 清理完成，删除了 ${ordersDeleted} 个订单，${detailsDeleted} 条订单明细`);
-                    }
-                    
-                    resolve({ ordersDeleted, detailsDeleted });
-    } catch (error) {
-      console.error('[订单清理] 清理过程出错:', error);
-      reject(error);
+          logger.error(`Failed to cleanup order ${order.id}:`, error.message);
+          // Continue processing other orders
         }
+      }
+      
+      if (ordersDeleted > 0) {
+        logger.info(`Cleanup completed. Deleted ${ordersDeleted} orders, ${detailsDeleted} details`);
+      }
+      
+      resolve({ ordersDeleted, detailsDeleted });
+    } catch (error) {
+      logger.error('Error during order cleanup:', error);
+      reject(error);
+    }
   });
 }
 
 /**
- * 清理过期的已确认未支付订单
- * 释放座位并删除订单
+ * Cleanup expired confirmed unpaid orders
+ * Releases seats and deletes orders
  * @returns {Promise<{ordersDeleted: number, detailsDeleted: number}>}
  */
 async function cleanupExpiredUnpaidOrders() {
@@ -116,7 +117,7 @@ async function cleanupExpiredUnpaidOrders() {
     const orderService = require('./orderService');
     
     try {
-      // 查询过期的已确认未支付订单
+      // Query expired confirmed unpaid orders
       const expiredOrders = await new Promise((resolve, reject) => {
         db.all(
           `SELECT id FROM orders 
@@ -136,21 +137,21 @@ async function cleanupExpiredUnpaidOrders() {
         return resolve({ ordersDeleted: 0, detailsDeleted: 0 });
       }
       
-      console.log(`[支付清理] 发现 ${expiredOrders.length} 个过期未支付订单，开始清理...`);
+      logger.info(`Found ${expiredOrders.length} expired pending orders, cleaning up...`);
       
       let detailsDeleted = 0;
       let ordersDeleted = 0;
       
-      // 逐个处理过期订单（不使用事务，避免数据库锁定冲突）
+      // Process expired orders one by one (no transaction to avoid database lock conflicts)
       for (const order of expiredOrders) {
         try {
-          // 释放座位锁定（releaseSeatLocks内部会打开自己的数据库连接）
+          // Release seat locks (releaseSeatLocks opens its own database connection)
           await orderService.releaseSeatLocks(order.id);
           
-          // 为每个删除操作创建新的数据库连接
+          // Create new database connection for each delete operation
           const deleteDb = getDatabase();
           
-          // 删除订单明细
+          // Delete order details
           const detailsResult = await new Promise((resolve, reject) => {
             deleteDb.run(
               'DELETE FROM order_details WHERE order_id = ?',
@@ -163,7 +164,7 @@ async function cleanupExpiredUnpaidOrders() {
           });
           detailsDeleted += detailsResult;
           
-          // 删除订单
+          // Delete order
           const ordersResult = await new Promise((resolve, reject) => {
             deleteDb.run(
               'DELETE FROM orders WHERE id = ?',
@@ -178,34 +179,32 @@ async function cleanupExpiredUnpaidOrders() {
           
           deleteDb.close();
         } catch (error) {
-          console.error(`[支付清理] 处理订单 ${order.id} 失败:`, error.message);
+          logger.error(`Failed to cleanup unpaid order ${order.id}:`, error.message);
         }
       }
       
       if (ordersDeleted > 0) {
-        console.log(`[支付清理] ✅ 清理完成，删除了 ${ordersDeleted} 个订单，${detailsDeleted} 条订单明细`);
+        logger.info(`Unpaid orders cleanup completed. Deleted ${ordersDeleted} orders, ${detailsDeleted} details`);
       }
       
       resolve({ ordersDeleted, detailsDeleted });
     } catch (error) {
       db.close();
-      console.error('[支付清理] 清理过程出错:', error.message);
+      logger.error('Error during unpaid order cleanup:', error.message);
       reject(error);
     }
   });
 }
 
 /**
- * 启动订单超时清理调度器
- * 每60秒执行一次清理
- * @returns {Function} 停止清理服务的函数
+ * Start order cleanup scheduler
+ * Runs cleanup every 60 seconds
+ * @returns {Function} Function to stop cleanup service
  */
 function startCleanupScheduler() {
-  console.log('[订单清理] 启动订单超时清理服务...');
-  console.log('[订单清理] 清理规则: 超过10分钟的pending订单和过期的已确认未支付订单将被自动删除');
-  console.log('[订单清理] 检查频率: 每60秒检查一次');
+  logger.info('Cleanup service initializing...');
   
-  // 立即执行一次清理
+  // Run cleanup immediately once
   Promise.all([
     cleanupExpiredPendingOrders(),
     cleanupExpiredUnpaidOrders()
@@ -213,16 +212,16 @@ function startCleanupScheduler() {
     .then(([pendingResult, unpaidResult]) => {
       const totalDeleted = pendingResult.ordersDeleted + unpaidResult.ordersDeleted;
       if (totalDeleted > 0) {
-        console.log(`[订单清理] 初始清理完成，删除了 ${totalDeleted} 个超时订单`);
+        logger.info(`Initial cleanup: Deleted ${totalDeleted} expired orders`);
       } else {
-        console.log('[订单清理] 初始清理完成，无超时订单');
+        logger.debug('Initial cleanup: No expired orders');
       }
     })
     .catch(err => {
-      console.error('[订单清理] 初始清理失败:', err.message);
+      logger.error('Initial cleanup failed', err.message);
     });
   
-  // 设置定时任务，每分钟执行一次
+  // Set interval task, run every minute
   const intervalId = setInterval(() => {
     Promise.all([
       cleanupExpiredPendingOrders(),
@@ -231,20 +230,20 @@ function startCleanupScheduler() {
       .then(([pendingResult, unpaidResult]) => {
         const totalDeleted = pendingResult.ordersDeleted + unpaidResult.ordersDeleted;
         if (totalDeleted > 0) {
-          console.log(`[订单清理] 定时清理完成，删除了 ${totalDeleted} 个超时订单`);
+          logger.info(`Scheduled cleanup: Deleted ${totalDeleted} expired orders`);
         }
       })
       .catch(err => {
-        console.error('[订单清理] 定时清理失败:', err.message);
+        logger.error('Scheduled cleanup failed', err.message);
       });
-  }, 60000); // 每60秒执行一次
+  }, 60000); // Run every 60 seconds
   
-  console.log('[订单清理] ✅ 清理服务已启动');
+  logger.info('Cleanup service started');
   
-  // 返回清理函数，用于优雅关闭
+  // Return cleanup function for graceful shutdown
   return () => {
     clearInterval(intervalId);
-    console.log('[订单清理] 清理服务已停止');
+    logger.info('Cleanup service stopped');
   };
 }
 

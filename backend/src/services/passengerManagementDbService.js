@@ -1,14 +1,15 @@
-// 乘客管理数据库服务
-// 用于乘客管理页功能
+// Passenger Management Database Service
+// Used for passenger management page functionality
 
 const db = require('../database');
+const logger = require('../utils/logger');
 
 /**
- * DB-CheckPassengerExists: 检查乘客信息是否已存在
- * @param {string} userId - 用户ID
- * @param {string} name - 乘客姓名
- * @param {string} idCardNumber - 证件号码
- * @returns {Promise<boolean>} 存在返回true
+ * DB-CheckPassengerExists: Check if passenger information already exists
+ * @param {string} userId - User ID
+ * @param {string} name - Passenger name
+ * @param {string} idCardNumber - ID card number
+ * @returns {Promise<boolean>} Returns true if exists
  */
 async function checkPassengerExists(userId, name, idCardNumber) {
   try {
@@ -23,16 +24,16 @@ async function checkPassengerExists(userId, name, idCardNumber) {
     const passenger = await db.queryOne(sql, [userId, name, idCardNumber]);
     return passenger !== null && passenger !== undefined;
   } catch (error) {
-    console.error('检查乘客是否存在失败:', error);
+    logger.error('Failed to check if passenger exists', { error });
     throw error;
   }
 }
 
 /**
- * DB-GetPassengerByIdCard: 根据证件号码获取乘客信息
- * @param {string} userId - 用户ID
- * @param {string} idCardNumber - 证件号码
- * @returns {Promise<Object|null>} 乘客信息对象或null
+ * DB-GetPassengerByIdCard: Get passenger information by ID card number
+ * @param {string} userId - User ID
+ * @param {string} idCardNumber - ID card number
+ * @returns {Promise<Object|null>} Passenger info object or null
  */
 async function getPassengerByIdCard(userId, idCardNumber) {
   try {
@@ -53,7 +54,7 @@ async function getPassengerByIdCard(userId, idCardNumber) {
     const passenger = await db.queryOne(sql, [userId, idCardNumber]);
     return passenger || null;
   } catch (error) {
-    console.error('根据证件号码获取乘客信息失败:', error);
+    logger.error('Failed to get passenger by ID card number', { error });
     throw error;
   }
 }

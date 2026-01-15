@@ -1,27 +1,28 @@
 const dbService = require('./dbService');
 const path = require('path');
 const cityStationMapping = require('../config/cityStationMapping');
+const logger = require('../utils/logger');
 
 /**
- * 站点服务
+ * Station Service
  */
 
 /**
- * 获取所有站点
+ * Get all stations
  */
 async function getAllStations() {
   try {
     const rows = await dbService.all('SELECT * FROM stations ORDER BY name');
     return rows || [];
   } catch (err) {
-    console.error('获取站点列表失败:', err);
+    logger.error('Failed to get station list', { error: err });
     throw err;
   }
 }
 
 /**
- * 根据关键词搜索站点
- * 支持简拼、全拼、汉字搜索
+ * Search stations by keyword
+ * Supports pinyin, short pinyin, and Chinese characters
  */
 async function searchStations(keyword) {
   if (!keyword) {
@@ -31,7 +32,7 @@ async function searchStations(keyword) {
   try {
     const searchPattern = `%${keyword}%`;
     
-    // 搜索站点名称、拼音、简拼
+    // Search by station name, pinyin, or short pinyin
     const rows = await dbService.all(
       `SELECT * FROM stations 
        WHERE name LIKE ? OR pinyin LIKE ? OR short_pinyin LIKE ? 
@@ -40,30 +41,30 @@ async function searchStations(keyword) {
     );
     return rows || [];
   } catch (err) {
-    console.error('搜索站点失败:', err);
+    logger.error('Failed to search stations', { error: err });
     throw err;
   }
 }
 
 /**
- * 验证站点是否有效
- * 如果站点无效，返回相似度匹配的推荐站点
+ * Validate if a station is valid
+ * If invalid, returns recommended stations based on similarity
  */
 async function validateStation(stationName) {
   if (!stationName) {
-    return { valid: false, error: '站点名称不能为空', suggestions: [] };
+    return { valid: false, error: 'Station name cannot be empty', suggestions: [] };
   }
   
   try {
-    // 先精确匹配
+    // Exact match first
     const row = await dbService.get('SELECT * FROM stations WHERE name = ?', [stationName]);
     
     if (row) {
-      // 站点有效
+      // Station is valid
       return { valid: true, station: row };
     }
     
-    // 站点无效，查找相似站点
+    // Station invalid, find similar stations
     const searchPattern = `%${stationName}%`;
     const rows = await dbService.all(
       `SELECT * FROM stations 
@@ -74,39 +75,39 @@ async function validateStation(stationName) {
     
     return {
       valid: false,
-      error: '无法匹配该出发地/到达地',
+      error: 'Cannot match the departure/arrival location',
       suggestions: rows || []
     };
   } catch (err) {
-    console.error('验证站点失败:', err);
+    logger.error('Failed to validate station', { error: err });
     throw err;
   }
 }
 
 /**
- * 获取所有支持的城市列表
+ * Get all supported cities list
  */
 async function getAllCities() {
   return cityStationMapping.getAllCities();
 }
 
 /**
- * 根据城市名获取该城市的所有车站
- * @param {string} cityName - 城市名
- * @returns {string[]} 车站列表
+ * Get all stations for a city
+ * @param {string} cityName - City name
+ * @returns {string[]} List of stations
  */
 async function getStationsByCity(cityName) {
   return cityStationMapping.getStationsByCity(cityName);
 }
 
 /**
- * 验证城市名是否有效
- * @param {string} cityName - 城市名
- * @returns {Object} 验证结果
+ * Validate city name
+ * @param {string} cityName - City name
+ * @returns {Object} Validation result
  */
 async function validateCity(cityName) {
   if (!cityName) {
-    return { valid: false, error: '城市名称不能为空', suggestions: [] };
+    return { valid: false, error: 'City name cannot be empty', suggestions: [] };
   }
   
   const isValid = cityStationMapping.isCityValid(cityName);
@@ -116,19 +117,19 @@ async function validateCity(cityName) {
     return { valid: true, city: cityName, stations };
   }
   
-  // 城市无效，提供所有城市作为建议
+  // City invalid, provide all cities as suggestions
   const allCities = cityStationMapping.getAllCities();
   return {
     valid: false,
-    error: '无法匹配该城市',
+    error: 'Cannot match the city',
     suggestions: allCities
   };
 }
 
 /**
- * 根据车站名反查所属城市
- * @param {string} stationName - 车站名
- * @returns {string|null} 城市名
+ * Reverse lookup city by station name
+ * @param {string} stationName - Station name
+ * @returns {string|null} City name
  */
 async function getCityByStation(stationName) {
   return cityStationMapping.getCityByStation(stationName);

@@ -4,19 +4,20 @@ const dbService = require('./dbService');
 const sessionService = require('./sessionService');
 const registrationDbService = require('./registrationDbService');
 const validators = require('../utils/validators');
+const logger = require('../utils/logger');
 
 class AuthService {
-  // 验证用户凭据
+  // Validate user credentials
   async validateCredentials(identifier, password) {
     try {
-      // 识别标识符类型
+      // Identify identifier type
       const type = validators.identifyIdentifierType(identifier);
       
       if (type === 'invalid') {
-        return { success: false, error: '用户名或密码错误' };
+        return { success: false, error: 'Invalid username or password' };
       }
 
-      // 根据类型查找用户
+      // Find user by type
       let user = null;
       if (type === 'username') {
         user = await registrationDbService.findUserByUsername(identifier);
@@ -29,37 +30,37 @@ class AuthService {
       }
 
       if (!user) {
-        return { success: false, error: '用户名或密码错误' };
+        return { success: false, error: 'Invalid username or password' };
       }
 
-      // 验证密码
+      // Validate password
       const passwordMatch = await bcrypt.compare(password, user.password);
       if (!passwordMatch) {
-        return { success: false, error: '用户名或密码错误' };
+        return { success: false, error: 'Invalid username or password' };
       }
 
       return { success: true, user };
     } catch (error) {
-      console.error('Validate credentials error:', error);
+      logger.error('Validate credentials error', { error });
       throw error;
     }
   }
 
-  // 生成会话ID
+  // Generate Session ID
   generateSessionId(userId) {
     try {
       return uuidv4();
     } catch (error) {
-      console.error('Generate session ID error:', error);
+      logger.error('Generate session ID error', { error });
       throw error;
     }
   }
 
-  // 创建登录会话
+  // Create login session
   async createLoginSession(user) {
     try {
       const sessionId = this.generateSessionId(user.id);
-      const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30分钟后过期
+      const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
       
       const sessionData = {
         userId: user.id,
@@ -67,69 +68,69 @@ class AuthService {
         phone: user.phone,
         id_card_type: user.id_card_type,
         id_card_number: user.id_card_number,
-        step: 'pending_verification' // 等待短信验证
+        step: 'pending_verification' // Waiting for SMS verification
       };
 
       await sessionService.createSession(sessionId, sessionData, expiresAt);
       
       return sessionId;
     } catch (error) {
-      console.error('Create login session error:', error);
+      logger.error('Create login session error', { error });
       throw error;
     }
   }
 
-  // 验证证件号后4位
+  // Validate last 4 digits of ID card
   async validateIdCardLast4(sessionId, idCardLast4) {
     try {
-      // 获取会话数据
+      // Get session data
       const session = await sessionService.getSession(sessionId);
       
       if (!session) {
-        console.log('❌ 会话无效或已过期, sessionId:', sessionId);
-        return { success: false, error: '会话无效或已过期' };
+        logger.warn('Session invalid or expired', { sessionId });
+        return { success: false, error: 'Session invalid or expired' };
       }
 
-      // session.user_data 已经在 sessionService.getSession 中被解析了
+      // session.user_data is already parsed in sessionService.getSession
       const sessionData = session.user_data;
       
-      console.log('🔍 会话数据:', { 
+      logger.debug('Session data', { 
         userId: sessionData.userId, 
         username: sessionData.username,
         phone: sessionData.phone,
         id_card_number: sessionData.id_card_number ? '***' + sessionData.id_card_number.slice(-4) : 'undefined'
       });
       
-      // 验证证件号后4位
+      // Validate ID card last 4 digits
       if (!sessionData.id_card_number) {
-        console.log('❌ 会话中没有证件号信息');
-        return { success: false, error: '请输入正确的用户信息！' };
+        logger.warn('No ID card information in session');
+        return { success: false, error: 'Please enter valid user information!' };
       }
 
       const last4 = sessionData.id_card_number.slice(-4);
-      console.log('🔍 验证证件号后4位:', { 
+      logger.debug('Validating ID card last 4 digits', { 
         expected: last4, 
         provided: idCardLast4, 
         match: last4 === idCardLast4 
       });
       
       if (last4 !== idCardLast4) {
-        console.log('❌ 证件号后4位不匹配');
-        return { success: false, error: '请输入正确的用户信息！' };
+        logger.warn('ID card last 4 digits mismatch');
+        return { success: false, error: 'Please enter valid user information!' };
       }
 
-      console.log('✅ 证件号验证通过');
+      logger.info('ID card validation passed');
       return { success: true, sessionData };
     } catch (error) {
-      console.error('Validate ID card last 4 error:', error);
+      logger.error('Validate ID card last 4 error', { error });
       throw error;
     }
   }
 
-  // 生成并发送短信验证码
+  // Generate and send SMS verification code
   async generateAndSendSmsCode(sessionId, idCardLast4) {
     try {
-      // 验证证件号
+      // Validate ID card
       const validation = await this.validateIdCardLast4(sessionId, idCardLast4);
       if (!validation.success) {
         return validation;
@@ -137,63 +138,63 @@ class AuthService {
 
       const { sessionData } = validation;
 
-      // 检查发送频率
+      // Check send frequency
       const canSend = await sessionService.checkSmsSendFrequency(sessionData.phone, 'login');
       if (!canSend) {
-        return { success: false, error: '请求验证码过于频繁，请稍后再试！', code: 429 };
+        return { success: false, error: 'Verification code request too frequent, please try again later!', code: 429 };
       }
 
-      // 生成并保存验证码
+      // Generate and save verification code
       const code = await registrationDbService.createSmsVerificationCode(sessionData.phone, 'login');
 
-      // TODO: 实际发送短信（这里模拟）
-      console.log(`[SMS] 发送验证码 ${code} 到 ${sessionData.phone}`);
+      // TODO: Actual SMS sending (simulated here)
+      logger.info(`[SMS] Sending verification code ${code} to ${sessionData.phone}`);
 
       return { 
         success: true, 
-        message: '验证码已发送', 
+        message: 'Verification code sent', 
         verificationCode: code,
-        phone: sessionData.phone  // 返回手机号，便于前端显示
+        phone: sessionData.phone  // Return phone for frontend display
       };
     } catch (error) {
-      console.error('Generate and send SMS code error:', error);
+      logger.error('Generate and send SMS code error', { error });
       throw error;
     }
   }
 
-  // 验证短信验证码
+  // Verify SMS code
   async verifySmsCode(sessionId, verificationCode) {
     try {
-      // 获取会话数据
+      // Get session data
       const session = await sessionService.getSession(sessionId);
       
       if (!session) {
-        return { success: false, error: '会话无效或已过期' };
+        return { success: false, error: 'Session invalid or expired' };
       }
 
-      // session.user_data 已经在 sessionService.getSession 中被解析了
+      // session.user_data is already parsed in sessionService.getSession
       const sessionData = session.user_data;
 
-      // 验证短信验证码
+      // Verify SMS code
       const verifyResult = await registrationDbService.verifySmsCode(sessionData.phone, verificationCode);
       
       if (!verifyResult.success) {
         return { success: false, error: verifyResult.error };
       }
 
-      // 更新会话状态为已验证
+      // Update session status to verified
       sessionData.step = 'verified';
-      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24小时
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
       await sessionService.createSession(sessionId, sessionData, expiresAt);
 
-      // 更新用户最后登录时间
+      // Update user last login time
       const updateQuery = 'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?';
       await dbService.run(updateQuery, [sessionData.userId]);
 
-      // 查询完整用户信息
+      // Query full user info
       const user = await dbService.get('SELECT * FROM users WHERE id = ?', [sessionData.userId]);
 
-      // 生成token
+      // Generate token
       const token = this.generateToken(sessionData);
 
       return { 
@@ -209,20 +210,20 @@ class AuthService {
         }
       };
     } catch (error) {
-      console.error('Verify SMS code error:', error);
+      logger.error('Verify SMS code error', { error });
       throw error;
     }
   }
 
-  // 验证手机号
+  // Validate phone number
   validatePhone(phone) {
     return validators.validatePhone(phone);
   }
 
-  // 生成JWT token（简化版，使用sessionId）
+  // Generate JWT token (Simplified, uses sessionId)
   generateToken(user) {
     try {
-      // 简化实现：使用base64编码的用户信息
+      // Simplified implementation: base64 encoded user info
       const tokenData = {
         userId: user.userId,
         username: user.username,
@@ -230,7 +231,7 @@ class AuthService {
       };
       return Buffer.from(JSON.stringify(tokenData)).toString('base64');
     } catch (error) {
-      console.error('Generate token error:', error);
+      logger.error('Generate token error', { error });
       throw error;
     }
   }

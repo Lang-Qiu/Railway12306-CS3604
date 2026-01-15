@@ -1,50 +1,51 @@
 /**
- * 密码重置服务
- * 源文件：backend/src/services/passwordResetService.js
+ * Password Reset Service
+ * Source file: backend/src/services/passwordResetService.js
  */
 
 const dbService = require('./dbService');
 const registrationDbService = require('./registrationDbService');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const logger = require('../utils/logger');
 
 class PasswordResetService {
   constructor() {
-    // 存储密码重置会话
+    // Store password reset sessions
     this.resetSessions = new Map();
-    // 存储重置令牌
+    // Store reset tokens
     this.resetTokens = new Map();
   }
 
   /**
-   * 验证账户信息（手机号+证件类型+证件号码）
-   * @param {string} phone - 手机号
-   * @param {string} idCardType - 证件类型
-   * @param {string} idCardNumber - 证件号码
+   * Verify account info (phone + ID card type + ID card number)
+   * @param {string} phone - Phone number
+   * @param {string} idCardType - ID card type
+   * @param {string} idCardNumber - ID card number
    * @returns {Object} { success: boolean, sessionId: string, error: string }
    */
   async verifyAccountInfo(phone, idCardType, idCardNumber) {
     try {
-      console.log('\n🔍 验证账户信息:', { phone, idCardType, idCardNumber });
+      logger.info('Verifying account info', { phone, idCardType, idCardNumber });
 
-      // 查找用户
+      // Find user
       const user = await dbService.get(
         'SELECT * FROM users WHERE phone = ? AND id_card_type = ? AND id_card_number = ?',
         [phone, idCardType, idCardNumber]
       );
 
       if (!user) {
-        console.log('❌ 账户信息不匹配');
+        logger.warn('Account info mismatch');
         return {
           success: false,
-          error: '您输入的手机号码或证件号码不正确，请重新输入。'
+          error: 'The phone number or ID number you entered is incorrect, please try again.'
         };
       }
 
-      // 生成会话ID
+      // Generate Session ID
       const sessionId = crypto.randomBytes(32).toString('hex');
       
-      // 存储会话信息
+      // Store session info
       this.resetSessions.set(sessionId, {
         userId: user.id,
         phone: user.phone,
@@ -53,7 +54,7 @@ class PasswordResetService {
         verified: false
       });
 
-      console.log('✅ 账户验证成功，生成sessionId:', sessionId);
+      logger.info('Account verification successful, generated sessionId', { sessionId });
 
       return {
         success: true,
@@ -61,47 +62,47 @@ class PasswordResetService {
         phone: user.phone
       };
     } catch (error) {
-      console.error('验证账户信息失败:', error);
+      logger.error('Failed to verify account info', { error });
       throw error;
     }
   }
 
   /**
-   * 发送密码重置验证码
-   * @param {string} sessionId - 会话ID
+   * Send password reset verification code
+   * @param {string} sessionId - Session ID
    * @returns {Object} { success: boolean, verificationCode: string, phone: string, error: string }
    */
   async sendResetCode(sessionId) {
     try {
-      console.log('\n📱 发送密码重置验证码, sessionId:', sessionId);
+      logger.info('Sending password reset verification code', { sessionId });
 
-      // 验证会话
+      // Verify session
       const session = this.resetSessions.get(sessionId);
       if (!session) {
-        console.log('❌ 无效的会话ID');
+        logger.warn('Invalid session ID');
         return {
           success: false,
-          error: '会话已过期，请重新开始'
+          error: 'Session expired, please start over'
         };
       }
 
-      // 检查会话是否过期（30分钟）
+      // Check if session expired (30 minutes)
       if (Date.now() - session.createdAt > 30 * 60 * 1000) {
         this.resetSessions.delete(sessionId);
-        console.log('❌ 会话已过期');
+        logger.warn('Session expired');
         return {
           success: false,
-          error: '会话已过期，请重新开始'
+          error: 'Session expired, please start over'
         };
       }
 
-      // 生成验证码（120秒有效期）
+      // Generate verification code (valid for 120 seconds)
       const code = await registrationDbService.createSmsVerificationCode(
         session.phone,
         'password-reset'
       );
 
-      console.log('✅ 验证码生成成功:', code);
+      logger.info('Verification code generated successfully', { code });
 
       return {
         success: true,
@@ -109,115 +110,115 @@ class PasswordResetService {
         phone: session.phone
       };
     } catch (error) {
-      console.error('发送验证码失败:', error);
+      logger.error('Failed to send verification code', { error });
       throw error;
     }
   }
 
   /**
-   * 验证重置验证码
-   * @param {string} sessionId - 会话ID
-   * @param {string} code - 验证码
+   * Verify reset code
+   * @param {string} sessionId - Session ID
+   * @param {string} code - Verification code
    * @returns {Object} { success: boolean, resetToken: string, error: string }
    */
   async verifyResetCode(sessionId, code) {
     try {
-      console.log('\n🔐 验证重置验证码, sessionId:', sessionId);
+      logger.info('Verifying reset code', { sessionId });
 
-      // 验证会话
+      // Verify session
       const session = this.resetSessions.get(sessionId);
       if (!session) {
-        console.log('❌ 无效的会话ID');
+        logger.warn('Invalid session ID');
         return {
           success: false,
-          error: '会话已过期，请重新开始'
+          error: 'Session expired, please start over'
         };
       }
 
-      // 验证验证码
+      // Verify code
       const verifyResult = await registrationDbService.verifySmsCode(session.phone, code);
       
       if (!verifyResult.success) {
-        console.log('❌ 验证码验证失败');
+        logger.warn('Verification code validation failed');
         return {
           success: false,
           error: verifyResult.error
         };
       }
 
-      // 生成重置令牌
+      // Generate reset token
       const resetToken = crypto.randomBytes(32).toString('hex');
       
-      // 存储重置令牌（10分钟有效）
+      // Store reset token (valid for 10 minutes)
       this.resetTokens.set(resetToken, {
         userId: session.userId,
         createdAt: Date.now()
       });
 
-      // 标记会话为已验证
+      // Mark session as verified
       session.verified = true;
 
-      console.log('✅ 验证码验证成功，生成resetToken');
+      logger.info('Verification code validation successful, generated resetToken');
 
       return {
         success: true,
         resetToken
       };
     } catch (error) {
-      console.error('验证码验证失败:', error);
+      logger.error('Failed to verify code', { error });
       throw error;
     }
   }
 
   /**
-   * 重置密码
-   * @param {string} resetToken - 重置令牌
-   * @param {string} newPassword - 新密码
-   * @param {string} confirmPassword - 确认密码
+   * Reset password
+   * @param {string} resetToken - Reset token
+   * @param {string} newPassword - New password
+   * @param {string} confirmPassword - Confirm password
    * @returns {Object} { success: boolean, error: string }
    */
   async resetPassword(resetToken, newPassword, confirmPassword) {
     try {
-      console.log('\n🔄 重置密码');
+      logger.info('Resetting password');
 
-      // 验证令牌
+      // Verify token
       const tokenData = this.resetTokens.get(resetToken);
       if (!tokenData) {
-        console.log('❌ 无效的重置令牌');
+        logger.warn('Invalid reset token');
         return {
           success: false,
-          error: '重置链接已过期，请重新开始'
+          error: 'Reset link expired, please start over'
         };
       }
 
-      // 检查令牌是否过期（10分钟）
+      // Check if token expired (10 minutes)
       if (Date.now() - tokenData.createdAt > 10 * 60 * 1000) {
         this.resetTokens.delete(resetToken);
-        console.log('❌ 重置令牌已过期');
+        logger.warn('Reset token expired');
         return {
           success: false,
-          error: '重置链接已过期，请重新开始'
+          error: 'Reset link expired, please start over'
         };
       }
 
-      // 验证密码一致性
+      // Verify password consistency
       if (newPassword !== confirmPassword) {
-        console.log('❌ 两次密码输入不一致');
+        logger.warn('Passwords do not match');
         return {
           success: false,
-          error: '两次密码输入不一致'
+          error: 'Passwords do not match'
         };
       }
 
-      // 验证密码格式
+      // Verify password format
       if (newPassword.length < 6) {
         return {
           success: false,
-          error: '密码长度不能少于6位'
+          error: 'Password must be at least 6 characters long'
         };
       }
 
-      // 验证密码复杂度（至少包含字母、数字、下划线中的两种）
+      // Verify password complexity (at least two types from letters, numbers, underscores)
       const hasLetter = /[a-zA-Z]/.test(newPassword);
       const hasNumber = /[0-9]/.test(newPassword);
       const hasUnderscore = /_/.test(newPassword);
@@ -226,54 +227,54 @@ class PasswordResetService {
       if (typesCount < 2) {
         return {
           success: false,
-          error: '密码需包含字母、数字、下划线中不少于两种'
+          error: 'Password must contain at least two of the following: letters, numbers, underscores'
         };
       }
 
-      // 加密新密码
+      // Encrypt new password
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
-      // 更新数据库中的密码
+      // Update password in database
       await dbService.run(
         'UPDATE users SET password = ? WHERE id = ?',
         [hashedPassword, tokenData.userId]
       );
 
-      // 清理令牌和相关会话
+      // Clean up token and related sessions
       this.resetTokens.delete(resetToken);
-      // 清理该用户的所有会话
+      // Clean up all sessions for this user
       for (const [sessId, sess] of this.resetSessions.entries()) {
         if (sess.userId === tokenData.userId) {
           this.resetSessions.delete(sessId);
         }
       }
 
-      console.log('✅ 密码重置成功');
+      logger.info('Password reset successful');
 
       return {
         success: true
       };
     } catch (error) {
-      console.error('重置密码失败:', error);
+      logger.error('Failed to reset password', { error });
       throw error;
     }
   }
 
   /**
-   * 清理过期的会话和令牌
+   * Cleanup expired sessions and tokens
    */
   cleanupExpiredData() {
     const now = Date.now();
     
-    // 清理过期会话（30分钟）
+    // Cleanup expired sessions (30 minutes)
     for (const [sessionId, session] of this.resetSessions.entries()) {
       if (now - session.createdAt > 30 * 60 * 1000) {
         this.resetSessions.delete(sessionId);
       }
     }
 
-    // 清理过期令牌（10分钟）
+    // Cleanup expired tokens (10 minutes)
     for (const [token, tokenData] of this.resetTokens.entries()) {
       if (now - tokenData.createdAt > 10 * 60 * 1000) {
         this.resetTokens.delete(token);
@@ -282,10 +283,10 @@ class PasswordResetService {
   }
 }
 
-// 创建单例
+// Create singleton
 const passwordResetService = new PasswordResetService();
 
-// 定期清理过期数据（每5分钟）
+// Periodically cleanup expired data (every 5 minutes)
 setInterval(() => {
   passwordResetService.cleanupExpiredData();
 }, 5 * 60 * 1000);

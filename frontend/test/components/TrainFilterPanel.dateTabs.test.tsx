@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, test, expect } from 'vitest'
-import TrainFilterPanel from '../../src/components/our12306/TrainFilterPanel'
+import TrainFilterPanel from '../../src/components/TrainFilterPanel'
 
 describe('TrainFilterPanel 日期标签生成', () => {
   test('生成固定范围的日期标签并保持选中态', () => {

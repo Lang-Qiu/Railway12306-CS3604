@@ -1,33 +1,34 @@
 /**
- * 会话服务
- * 处理用户注册会话的管理
+ * Session Service
+ * Manages user registration sessions
  */
 
 const dbService = require('./dbService');
 const { v4: uuidv4 } = require('uuid');
+const logger = require('../utils/logger');
 
 class SessionService {
   /**
-   * 创建会话
-   * 支持两种调用方式：
-   * 1. createSession(userData) - 自动生成sessionId和过期时间（用于注册）
-   * 2. createSession(sessionId, userData, expiresAt) - 使用指定的sessionId和过期时间（用于登录）
+   * Create session
+   * Supports two calling methods:
+   * 1. createSession(userData) - Auto-generate sessionId and expiration (for registration)
+   * 2. createSession(sessionId, userData, expiresAt) - Use specified sessionId and expiration (for login)
    */
   async createSession(sessionIdOrUserData, userData, expiresAt) {
     try {
       let sessionId, sessionData, expireTime;
       
-      // 判断调用方式
+      // Determine calling method
       if (typeof sessionIdOrUserData === 'string') {
-        // 方式2: createSession(sessionId, userData, expiresAt)
+        // Method 2: createSession(sessionId, userData, expiresAt)
         sessionId = sessionIdOrUserData;
         sessionData = userData;
         expireTime = expiresAt || new Date(Date.now() + 30 * 60 * 1000);
       } else {
-        // 方式1: createSession(userData)
+        // Method 1: createSession(userData)
         sessionId = uuidv4();
         sessionData = sessionIdOrUserData;
-        expireTime = new Date(Date.now() + 30 * 60 * 1000); // 30分钟后过期
+        expireTime = new Date(Date.now() + 30 * 60 * 1000); // Expires in 30 minutes
       }
       
       await dbService.run(
@@ -37,13 +38,13 @@ class SessionService {
       
       return sessionId;
     } catch (error) {
-      console.error('Error creating session:', error);
+      logger.error('Error creating session', { error });
       throw error;
     }
   }
 
   /**
-   * 获取会话数据
+   * Get session data
    */
   async getSession(sessionId) {
     try {
@@ -65,13 +66,13 @@ class SessionService {
         user_data: JSON.parse(session.user_data)
       };
     } catch (error) {
-      console.error('Error getting session:', error);
+      logger.error('Error getting session', { error });
       return null;
     }
   }
 
   /**
-   * 删除会话
+   * Delete session
    */
   async deleteSession(sessionId) {
     try {
@@ -80,17 +81,17 @@ class SessionService {
         [sessionId]
       );
     } catch (error) {
-      console.error('Error deleting session:', error);
+      logger.error('Error deleting session', { error });
       throw error;
     }
   }
 
   /**
-   * 检查邮箱验证码发送频率
+   * Check email verification code send frequency
    */
   async checkEmailSendFrequency(email) {
     try {
-      // 检查最近1分钟内是否已发送
+      // Check if sent within the last 1 minute
       const recentCode = await dbService.get(
         `SELECT * FROM email_verification_codes 
          WHERE email = ? 
@@ -99,21 +100,21 @@ class SessionService {
         [email]
       );
 
-      return !recentCode; // 没有最近发送记录则返回true（可以发送）
+      return !recentCode; // Return true if no recent record (can send)
     } catch (error) {
-      console.error('Error checking email send frequency:', error);
+      logger.error('Error checking email send frequency', { error });
       return false;
     }
   }
 
   /**
-   * 检查短信验证码发送频率
-   * @param {string} phone - 手机号
-   * @param {string} purpose - 验证码用途 ('login' 或 'registration')，默认 'login'
+   * Check SMS verification code send frequency
+   * @param {string} phone - Phone number
+   * @param {string} purpose - Verification code purpose ('login' or 'registration'), default 'login'
    */
   async checkSmsSendFrequency(phone, purpose = 'login') {
     try {
-      // 检查最近1分钟内是否已发送（同一用途）
+      // Check if sent within the last 1 minute (same purpose)
       const recentCode = await dbService.get(
         `SELECT * FROM verification_codes 
          WHERE phone = ? 
@@ -123,9 +124,9 @@ class SessionService {
         [phone, purpose]
       );
 
-      return !recentCode; // 没有最近发送记录则返回true（可以发送）
+      return !recentCode; // Return true if no recent record (can send)
     } catch (error) {
-      console.error('Error checking sms send frequency:', error);
+      logger.error('Error checking sms send frequency', { error });
       return false;
     }
   }

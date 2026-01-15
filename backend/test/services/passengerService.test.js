@@ -12,7 +12,7 @@ describe('PassengerService', () => {
         // Create test user
         const hashedPassword = await bcrypt.hash('password123', 10);
         const result = await dbService.run(
-            'INSERT INTO users (username, password_hash, email, phone, real_name, id_card) VALUES (?, ?, ?, ?, ?, ?)',
+            'INSERT INTO users (username, password, email, phone, name, id_card) VALUES (?, ?, ?, ?, ?, ?)',
             ['test_passenger_user', hashedPassword, 'p_test@example.com', '15000150000', '测试君', '110101199001019999']
         );
         

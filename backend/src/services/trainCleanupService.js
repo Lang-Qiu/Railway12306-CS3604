@@ -1,17 +1,18 @@
 /**
- * 车次清理服务
+ * Train Cleanup Service
  * 
- * 功能：
- * 1. 清理已过期的车次记录（departure_date < 今天）
- * 2. 清理对应的座位状态记录
- * 3. 每天凌晨自动执行
+ * Functionality:
+ * 1. Clean up expired train records (departure_date < today)
+ * 2. Clean up corresponding seat status records
+ * 3. Automatically execute every day at midnight
  */
 
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const logger = require('../utils/logger');
 
 /**
- * 获取数据库连接
+ * Get database connection
  */
 function getDatabase() {
   const dbPath = process.env.NODE_ENV === 'test' 
@@ -22,51 +23,51 @@ function getDatabase() {
 }
 
 /**
- * 清理过期的车次记录
- * 删除 departure_date < 今天 的记录
+ * Clean up expired train records
+ * Delete records where departure_date < today
  */
 async function cleanupExpiredTrains() {
   return new Promise((resolve, reject) => {
     const db = getDatabase();
     const today = new Date().toISOString().split('T')[0];
     
-    console.log(`开始清理过期车次记录 (日期 < ${today})...`);
+    logger.info(`Starting cleanup of expired train records (date < ${today})...`);
     
     db.serialize(() => {
-      // 1. 先获取要删除的车次信息（用于日志）
+      // 1. Get train info to be deleted (for logging)
       db.all(
         'SELECT train_no, departure_date FROM trains WHERE departure_date < ?',
         [today],
         (err, expiredTrains) => {
           if (err) {
-            console.error('查询过期车次失败:', err);
+            logger.error('Failed to query expired trains', { error: err });
             db.close();
             return reject(err);
           }
           
           if (!expiredTrains || expiredTrains.length === 0) {
-            console.log('没有需要清理的过期车次');
+            logger.info('No expired trains to cleanup');
             db.close();
             return resolve({ deletedTrains: 0, deletedSeats: 0 });
           }
           
-          console.log(`找到 ${expiredTrains.length} 条过期车次记录`);
+          logger.info(`Found ${expiredTrains.length} expired train records`);
           
-          // 2. 删除过期的座位状态记录
+          // 2. Delete expired seat status records
           db.run(
             'DELETE FROM seat_status WHERE departure_date < ?',
             [today],
             function(err) {
               if (err) {
-                console.error('删除过期座位状态失败:', err);
+                logger.error('Failed to delete expired seat status', { error: err });
                 db.close();
                 return reject(err);
               }
               
               const deletedSeats = this.changes;
-              console.log(`删除了 ${deletedSeats} 条座位状态记录`);
+              logger.info(`Deleted ${deletedSeats} seat status records`);
               
-              // 3. 删除过期的车次记录
+              // 3. Delete expired train records
               db.run(
                 'DELETE FROM trains WHERE departure_date < ?',
                 [today],
@@ -74,13 +75,13 @@ async function cleanupExpiredTrains() {
                   db.close();
                   
                   if (err) {
-                    console.error('删除过期车次失败:', err);
+                    logger.error('Failed to delete expired trains', { error: err });
                     return reject(err);
                   }
                   
                   const deletedTrains = this.changes;
-                  console.log(`删除了 ${deletedTrains} 条车次记录`);
-                  console.log('清理完成！');
+                  logger.info(`Deleted ${deletedTrains} train records`);
+                  logger.info('Cleanup completed!');
                   
                   resolve({
                     deletedTrains: deletedTrains,
@@ -98,30 +99,30 @@ async function cleanupExpiredTrains() {
 }
 
 /**
- * 清理特定日期之前的车次记录
- * @param {string} beforeDate - YYYY-MM-DD 格式的日期
+ * Clean up train records before a specific date
+ * @param {string} beforeDate - Date in YYYY-MM-DD format
  */
 async function cleanupTrainsBefore(beforeDate) {
   return new Promise((resolve, reject) => {
     const db = getDatabase();
     
-    console.log(`开始清理 ${beforeDate} 之前的车次记录...`);
+    logger.info(`Starting cleanup of train records before ${beforeDate}...`);
     
     db.serialize(() => {
-      // 1. 删除座位状态记录
+      // 1. Delete seat status records
       db.run(
         'DELETE FROM seat_status WHERE departure_date < ?',
         [beforeDate],
         function(err) {
           if (err) {
-            console.error('删除座位状态失败:', err);
+            logger.error('Failed to delete seat status', { error: err });
             db.close();
             return reject(err);
           }
           
           const deletedSeats = this.changes;
           
-          // 2. 删除车次记录
+          // 2. Delete train records
           db.run(
             'DELETE FROM trains WHERE departure_date < ?',
             [beforeDate],
@@ -129,12 +130,12 @@ async function cleanupTrainsBefore(beforeDate) {
               db.close();
               
               if (err) {
-                console.error('删除车次失败:', err);
+                logger.error('Failed to delete trains', { error: err });
                 return reject(err);
               }
               
               const deletedTrains = this.changes;
-              console.log(`清理完成：删除了 ${deletedTrains} 条车次，${deletedSeats} 条座位状态`);
+              logger.info(`Cleanup completed: Deleted ${deletedTrains} trains, ${deletedSeats} seat status records`);
               
               resolve({
                 deletedTrains: deletedTrains,
@@ -149,7 +150,7 @@ async function cleanupTrainsBefore(beforeDate) {
 }
 
 /**
- * 获取过期车次的统计信息
+ * Get statistics of expired trains
  */
 async function getExpiredTrainsStats() {
   return new Promise((resolve, reject) => {
@@ -167,7 +168,7 @@ async function getExpiredTrainsStats() {
         db.close();
         
         if (err) {
-          console.error('查询过期车次统计失败:', err);
+          logger.error('Failed to query expired trains statistics', { error: err });
           return reject(err);
         }
         

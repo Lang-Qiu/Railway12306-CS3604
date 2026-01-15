@@ -1,38 +1,39 @@
 const dbService = require('./dbService');
+const logger = require('../utils/logger');
 
 class RouteService {
   /**
-   * 获取车次在出发站和到达站之间的所有区间
-   * @param {string} trainNo 车次号
-   * @param {string} departureStation 出发站
-   * @param {string} arrivalStation 到达站
-   * @returns {Promise<Array<{from: string, to: string}>>} 区间列表
+   * Get all intervals between departure and arrival stations for a train
+   * @param {string} trainNo Train number
+   * @param {string} departureStation Departure station
+   * @param {string} arrivalStation Arrival station
+   * @returns {Promise<Array<{from: string, to: string}>>} List of intervals
    */
   async getStationIntervals(trainNo, departureStation, arrivalStation) {
-    // 1. 查询该车次的所有停靠站（按顺序）
+    // 1. Query all stops for this train (ordered by sequence)
     const stops = await dbService.all(
       'SELECT station, seq FROM train_stops WHERE train_no = ? ORDER BY seq',
       [trainNo]
     );
 
     if (!stops || stops.length === 0) {
-      throw { status: 404, message: '未找到该车次的停靠站信息' };
+      throw { status: 404, message: 'Stop information not found for this train' };
     }
 
-    // 2. 找到出发站和到达站的序号
+    // 2. Find indices of departure and arrival stations
     const depIndex = stops.findIndex(s => s.station === departureStation);
     const arrIndex = stops.findIndex(s => s.station === arrivalStation);
 
     if (depIndex === -1 || arrIndex === -1) {
-      const errorMsg = depIndex === -1 ? `出发站"${departureStation}"不在该车次的停靠站中` : `到达站"${arrivalStation}"不在该车次的停靠站中`;
+      const errorMsg = depIndex === -1 ? `Departure station "${departureStation}" is not in the train's stops` : `Arrival station "${arrivalStation}" is not in the train's stops`;
       throw { status: 400, message: errorMsg };
     }
 
     if (depIndex >= arrIndex) {
-      throw { status: 400, message: '出发站必须在到达站之前' };
+      throw { status: 400, message: 'Departure station must be before arrival station' };
     }
 
-    // 3. 提取途经的所有相邻区间
+    // 3. Extract all adjacent intervals
     const intervals = [];
     for (let i = depIndex; i < arrIndex; i++) {
       intervals.push({
@@ -45,10 +46,10 @@ class RouteService {
   }
 
   /**
-   * 计算跨区间票价
-   * @param {string} trainNo 车次号
-   * @param {Array} intervals 区间列表
-   * @returns {Promise<Object>} 票价信息
+   * Calculate cross-interval fare
+   * @param {string} trainNo Train number
+   * @param {Array} intervals List of intervals
+   * @returns {Promise<Object>} Fare information
    */
   async calculateFare(trainNo, intervals) {
     let totalDistance = 0;
@@ -70,12 +71,11 @@ class RouteService {
       );
 
       if (!fareRow) {
-        // 如果某个区间没有票价信息，可能意味着数据缺失，或者该区间不可售
-        // 这里我们可以选择抛错，或者忽略（视业务需求而定）
-        // 为了健壮性，这里暂时抛错
+        // If fare info is missing for a segment, it might mean data is missing or segment is not sellable
+        // We choose to throw error here for robustness
         throw { 
           status: 404, 
-          message: `未找到区间 ${interval.from}->${interval.to} 的票价信息` 
+          message: `Fare information not found for interval ${interval.from}->${interval.to}` 
         };
       }
 
@@ -94,17 +94,17 @@ class RouteService {
   }
 
   /**
-   * 计算各席别余票数量
-   * @param {string} trainNo 车次号
-   * @param {string} departureDate 出发日期
-   * @param {Array} intervals 区间列表
-   * @returns {Promise<Object>} 各席别余票数量 { '二等座': 10, ... }
+   * Calculate available seats for each seat type
+   * @param {string} trainNo Train number
+   * @param {string} departureDate Departure date
+   * @param {Array} intervals List of intervals
+   * @returns {Promise<Object>} Available seats count per type { '二等座': 10, ... }
    */
   async calculateAvailableSeats(trainNo, departureDate, intervals) {
     const seatTypes = ['商务座', '一等座', '二等座', '硬卧', '软卧', '硬座', '无座'];
     const result = {};
 
-    // 构建查询条件：检查所有区间
+    // Build query conditions: check all intervals
     const segmentConditions = intervals.map(() => 
       '(from_station = ? AND to_station = ?)'
     ).join(' OR ');
@@ -112,15 +112,15 @@ class RouteService {
     const segmentParams = intervals.flatMap(s => [s.from, s.to]);
     const intervalCount = intervals.length;
 
-    // 并行查询所有席别的余票
+    // Parallel query for all seat types
     await Promise.all(seatTypes.map(async (seatType) => {
       try {
-        // 核心逻辑：找出在所有指定区间状态都为 'available' 的座位数量
-        // 1. 筛选出指定车次、日期、席别的所有座位记录
-        // 2. 筛选出属于目标区间的记录
-        // 3. 筛选出状态为 available 的记录
-        // 4. 按座位号分组
-        // 5. 统计每个座位号拥有的 available 记录数，如果等于区间数，说明该座位全程可用
+        // Core logic: Find count of seats that are 'available' in all specified intervals
+        // 1. Filter all seat records for specified train, date, and seat type
+        // 2. Filter records belonging to target intervals
+        // 3. Filter records with status 'available'
+        // 4. Group by seat number
+        // 5. Count available records per seat number; if equal to interval count, the seat is available for the full journey
         const row = await dbService.get(
           `SELECT COUNT(*) as count
            FROM (
@@ -142,7 +142,7 @@ class RouteService {
         
         result[seatType] = row ? row.count : 0;
       } catch (err) {
-        console.error(`Query error for ${seatType}:`, err);
+        logger.error(`Query error for ${seatType}`, { error: err });
         result[seatType] = 0;
       }
     }));

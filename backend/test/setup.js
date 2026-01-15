@@ -28,16 +28,17 @@ dbService.createTables = function() {
           username VARCHAR(50) UNIQUE NOT NULL,
           email VARCHAR(100) UNIQUE NOT NULL,
           phone VARCHAR(20) UNIQUE NOT NULL,
-          password_hash VARCHAR(255) NOT NULL,
+          password VARCHAR(255) NOT NULL,
           id_card VARCHAR(18), -- Added for legacy support
           id_card_type VARCHAR(20),
           id_card_number VARCHAR(18),
-          real_name VARCHAR(50),
+          name VARCHAR(50),
           discount_type VARCHAR(20),
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           last_login DATETIME,
-          is_active BOOLEAN DEFAULT 1
+          is_active BOOLEAN DEFAULT 1,
+          UNIQUE(id_card_type, id_card_number)
         )
       `);
 
@@ -60,11 +61,23 @@ dbService.createTables = function() {
         CREATE TABLE IF NOT EXISTS sessions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           session_id VARCHAR(36) UNIQUE NOT NULL,
-          user_id INTEGER NOT NULL,
+          user_data TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          expires_at DATETIME NOT NULL
+        )
+      `);
+
+      // 3.5 Email Verification Codes Table
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS email_verification_codes (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          email TEXT NOT NULL,
+          code TEXT NOT NULL,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           expires_at DATETIME NOT NULL,
-          is_active BOOLEAN DEFAULT 1,
-          FOREIGN KEY (user_id) REFERENCES users (id)
+          used BOOLEAN DEFAULT 0,
+          sent_status TEXT DEFAULT 'sent',
+          sent_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
       `);
       
@@ -86,7 +99,7 @@ dbService.createTables = function() {
       // 5. Passengers Table
       this.db.run(`
         CREATE TABLE IF NOT EXISTS passengers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id TEXT PRIMARY KEY,
             user_id INTEGER NOT NULL,
             name VARCHAR(50) NOT NULL,
             id_card_type VARCHAR(20) DEFAULT '二代身份证',
@@ -126,6 +139,69 @@ dbService.createTables = function() {
             hard_sleeper_seat_count INTEGER DEFAULT 0,
             hard_seat_count INTEGER DEFAULT 0,
             no_seat_count INTEGER DEFAULT 0,
+            is_direct BOOLEAN DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      // 7. Train Stops Table
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS train_stops (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            train_no VARCHAR(20) NOT NULL,
+            station VARCHAR(50) NOT NULL,
+            seq INTEGER NOT NULL,
+            depart_time TIME,
+            arrive_time TIME,
+            distance INTEGER,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      // 8. Train Cars Table
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS train_cars (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            train_no VARCHAR(20) NOT NULL,
+            car_no INTEGER NOT NULL,
+            seat_type VARCHAR(20) NOT NULL,
+            seat_count INTEGER NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      // 9. Train Fares Table
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS train_fares (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            train_no VARCHAR(20) NOT NULL,
+            from_station VARCHAR(50) NOT NULL,
+            to_station VARCHAR(50) NOT NULL,
+            distance_km DECIMAL(10, 2),
+            second_class_price DECIMAL(10, 2),
+            first_class_price DECIMAL(10, 2),
+            business_price DECIMAL(10, 2),
+            hard_sleeper_price DECIMAL(10, 2),
+            soft_sleeper_price DECIMAL(10, 2),
+            hard_seat_price DECIMAL(10, 2),
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      // 10. Seat Status Table
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS seat_status (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            train_no VARCHAR(20) NOT NULL,
+            departure_date DATE NOT NULL,
+            seat_type VARCHAR(20) NOT NULL,
+            seat_no VARCHAR(20) NOT NULL,
+            from_station VARCHAR(50) NOT NULL,
+            to_station VARCHAR(50) NOT NULL,
+            status VARCHAR(20) DEFAULT 'available',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
@@ -159,16 +235,17 @@ beforeAll(async () => {
                 username VARCHAR(50) UNIQUE NOT NULL,
                 email VARCHAR(100) UNIQUE NOT NULL,
                 phone VARCHAR(20) UNIQUE NOT NULL,
-                password_hash VARCHAR(255) NOT NULL,
+                password VARCHAR(255) NOT NULL,
                 id_card VARCHAR(18), -- Added
                 id_card_type VARCHAR(20),
                 id_card_number VARCHAR(18),
-                real_name VARCHAR(50),
+                name VARCHAR(50),
                 discount_type VARCHAR(20),
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 last_login DATETIME,
-                is_active BOOLEAN DEFAULT 1
+                is_active BOOLEAN DEFAULT 1,
+                UNIQUE(id_card_type, id_card_number)
               )
             `)
         
@@ -189,17 +266,15 @@ beforeAll(async () => {
               CREATE TABLE IF NOT EXISTS sessions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 session_id VARCHAR(36) UNIQUE NOT NULL,
-                user_id INTEGER NOT NULL,
+                user_data TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                expires_at DATETIME NOT NULL,
-                is_active BOOLEAN DEFAULT 1,
-                FOREIGN KEY (user_id) REFERENCES users (id)
+                expires_at DATETIME NOT NULL
               )
             `)
             
             await db.exec(`
                 CREATE TABLE IF NOT EXISTS passengers (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id TEXT PRIMARY KEY,
                     user_id INTEGER NOT NULL,
                     name VARCHAR(50) NOT NULL,
                     id_card_type VARCHAR(20) DEFAULT '二代身份证',
@@ -238,12 +313,96 @@ beforeAll(async () => {
                     hard_sleeper_seat_count INTEGER DEFAULT 0,
                     hard_seat_count INTEGER DEFAULT 0,
                     no_seat_count INTEGER DEFAULT 0,
+                    is_direct BOOLEAN DEFAULT 1,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             `);
            
-           if (isTest) {
+            await db.exec(`
+                CREATE TABLE IF NOT EXISTS train_stops (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    train_no VARCHAR(20) NOT NULL,
+                    station VARCHAR(50) NOT NULL,
+                    seq INTEGER NOT NULL,
+                    depart_time TIME,
+                    arrive_time TIME,
+                    distance INTEGER,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            `);
+            
+            await db.exec(`
+                CREATE TABLE IF NOT EXISTS train_fares (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    train_no VARCHAR(20),
+                    from_station VARCHAR(50),
+                    to_station VARCHAR(50),
+                    distance_km INTEGER,
+                    second_class_price DECIMAL(10, 2),
+                    first_class_price DECIMAL(10, 2),
+                    business_price DECIMAL(10, 2),
+                    hard_sleeper_price DECIMAL(10, 2),
+                    soft_sleeper_price DECIMAL(10, 2),
+                    hard_seat_price DECIMAL(10, 2),
+                    no_seat_price DECIMAL(10, 2),
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            `);
+
+            await db.exec(`
+                CREATE TABLE IF NOT EXISTS seat_status (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    train_no VARCHAR(20),
+                    departure_date DATE,
+                    seat_type VARCHAR(20),
+                    seat_no VARCHAR(20),
+                    from_station VARCHAR(50),
+                    to_station VARCHAR(50),
+                    status VARCHAR(20) DEFAULT 'available',
+                    order_id VARCHAR(36),
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                 )
+             `);
+
+             await db.exec(`
+                 CREATE TABLE IF NOT EXISTS orders (
+                     id VARCHAR(36) PRIMARY KEY,
+                     user_id INTEGER NOT NULL,
+                     train_number VARCHAR(20) NOT NULL,
+                     departure_station VARCHAR(50) NOT NULL,
+                     arrival_station VARCHAR(50) NOT NULL,
+                     departure_date DATE NOT NULL,
+                     departure_time TIME NOT NULL,
+                     arrival_time TIME NOT NULL,
+                     total_price DECIMAL(10, 2) NOT NULL,
+                     status VARCHAR(20) DEFAULT 'PENDING',
+                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                 )
+             `);
+
+             await db.exec(`
+                 CREATE TABLE IF NOT EXISTS order_details (
+                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     order_id VARCHAR(36) NOT NULL,
+                     passenger_id VARCHAR(36) NOT NULL,
+                     passenger_name VARCHAR(50) NOT NULL,
+                     id_card_type VARCHAR(20) NOT NULL,
+                     id_card_number VARCHAR(18) NOT NULL,
+                     seat_type VARCHAR(20) NOT NULL,
+                     ticket_type VARCHAR(20) DEFAULT '成人票',
+                     price DECIMAL(10, 2) NOT NULL,
+                     sequence_number INTEGER,
+                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                 )
+             `);
+            
+            if (isTest) {
               this.testDb = db
            } else {
               this.db = db

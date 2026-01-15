@@ -1,5 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const logger = require('../utils/logger');
 
 class DatabaseService {
   constructor() {
@@ -7,28 +8,28 @@ class DatabaseService {
     this.init();
   }
 
-  // 初始化数据库连接
+  // Initialize database connection
   init() {
     const dbPath = process.env.NODE_ENV === 'test' 
       ? process.env.TEST_DB_PATH || path.join(__dirname, '../../database/test.db')
       : process.env.DB_PATH || path.join(__dirname, '../../database/railway.db');
     
-    console.log('[dbService] 数据库路径:', dbPath);
+    logger.info(`Database path: ${dbPath}`);
     
     this.db = new sqlite3.Database(dbPath, (err) => {
       if (err) {
-        console.error('Database connection error:', err);
+        logger.error('Database connection error', err);
       } else {
-        console.log('Connected to SQLite database:', dbPath);
+        logger.info('Connected to SQLite database');
         this.createTables();
       }
     });
   }
 
-  // 创建数据表
+  // Create tables
   createTables() {
     this.db.serialize(() => {
-      // 创建用户表
+      // Create users table
       const createUsersTable = `
         CREATE TABLE IF NOT EXISTS users (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,7 +48,7 @@ class DatabaseService {
         )
       `;
 
-      // 创建短信验证码表
+      // Create verification codes table
       const createVerificationCodesTable = `
         CREATE TABLE IF NOT EXISTS verification_codes (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -92,34 +93,34 @@ class DatabaseService {
       this.db.run(createEmailVerificationCodesTable);
       this.db.run(createSessionsTable, (err) => {
         if (!err) {
-           // 数据库迁移：为现有 verification_codes 表添加 purpose 字段
-           // 在所有表创建完成后执行迁移
+           // Database migration: Add purpose column to existing verification_codes table
+           // Execute migration after all tables are created
            this.migrateVerificationCodesTable();
         }
       });
     });
   }
   
-  // 数据库迁移：添加 purpose 字段
+  // Database migration: Add purpose column
   migrateVerificationCodesTable() {
-    // 检查 purpose 列是否存在
+    // Check if purpose column exists
     this.db.all("PRAGMA table_info(verification_codes)", (err, columns) => {
       if (err) {
-        console.error('Error checking table info:', err);
+        logger.error('Error checking table info', { error: err });
         return;
       }
       
       const hasPurposeColumn = columns.some(col => col.name === 'purpose');
       
       if (!hasPurposeColumn) {
-        // 添加 purpose 列
+        // Add purpose column
         this.db.run(
           "ALTER TABLE verification_codes ADD COLUMN purpose TEXT DEFAULT 'login'",
           (err) => {
             if (err) {
-              console.error('Error adding purpose column:', err);
+              logger.error('Error adding purpose column', { error: err });
             } else {
-              console.log('Successfully added purpose column to verification_codes table');
+              logger.info('Successfully added purpose column to verification_codes table');
             }
           }
         );
@@ -127,7 +128,7 @@ class DatabaseService {
     });
   }
 
-  // 通用查询方法 - 返回单行
+  // General query method - Returns single row
   async get(sql, params = []) {
     return new Promise((resolve, reject) => {
       this.db.get(sql, params, (err, row) => {
@@ -140,7 +141,7 @@ class DatabaseService {
     });
   }
 
-  // 通用查询方法 - 返回所有行
+  // General query method - Returns all rows
   async all(sql, params = []) {
     return new Promise((resolve, reject) => {
       this.db.all(sql, params, (err, rows) => {
@@ -153,7 +154,7 @@ class DatabaseService {
     });
   }
 
-  // 通用执行方法 - INSERT, UPDATE, DELETE
+  // General execution method - INSERT, UPDATE, DELETE
   async run(sql, params = []) {
     return new Promise((resolve, reject) => {
       this.db.run(sql, params, function(err) {
@@ -166,7 +167,7 @@ class DatabaseService {
     });
   }
 
-  // 执行事务
+  // Execute transaction
   async transaction(callback) {
     return new Promise((resolve, reject) => {
       this.db.serialize(async () => {
@@ -187,17 +188,17 @@ class DatabaseService {
     });
   }
 
-  // 关闭数据库连接
-  close() {
+  // Close database connection
+  async close() {
     return new Promise((resolve, reject) => {
       if (this.db) {
         this.db.close((err) => {
           if (err) {
-            console.error('Error closing database:', err);
+            logger.error('Error closing database', { error: err });
             reject(err);
           } else {
-            console.log('Database connection closed');
-            this.db = null; // 清空引用
+            logger.info('Database connection closed');
+            this.db = null; // Clear reference
             resolve();
           }
         });

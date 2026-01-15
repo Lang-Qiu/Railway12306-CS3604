@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 require('dotenv').config();
+const logger = require('./utils/logger');
 
 const authRoutes = require('./routes/auth');
 const registerRoutes = require('./routes/register');
@@ -69,34 +70,32 @@ function startScheduledTasks() {
   // 每天凌晨2点清理过期车次
   const cron = require('node-cron');
   cron.schedule('0 2 * * *', async () => {
-    console.log('\n执行定时任务：清理过期车次...');
+    logger.info('Executing scheduled task: Cleanup expired trains');
     try {
       const result = await trainCleanupService.cleanupExpiredTrains();
-      console.log('清理结果:', result);
+      logger.debug('Cleanup result', result);
     } catch (error) {
-      console.error('清理过期车次失败:', error);
+      logger.error('Failed to cleanup expired trains', error);
     }
   });
   
   // 每天凌晨3点生成第15天的车次数据
   // cron.schedule('0 3 * * *', async () => {
-  //   console.log('\n执行定时任务：生成第15天车次数据...');
+  //   logger.info('Executing scheduled task: Generate Day 15 trains');
   //   try {
   //     const result = await generateDay15Trains(require('sqlite3').verbose().Database);
-  //     console.log('生成结果:', result);
+  //     logger.debug('Generation result', result);
   //   } catch (error) {
-  //     console.error('生成车次数据失败:', error);
+  //     logger.error('Failed to generate train data', error);
   //   }
   // });
   
-  console.log('定时任务已启动：');
-  console.log('  - 每天凌晨2点：清理过期车次');
-  console.log('  - 每天凌晨3点：生成第15天车次数据');
+  logger.info('Scheduled tasks initialized');
 }
 
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    logger.info(`Server running on port ${PORT}`);
     
     // 启动所有定时任务
     startScheduledTasks();

@@ -1,69 +1,70 @@
 const dbService = require('./dbService');
 const stationService = require('./stationService');
 const routeService = require('./routeService');
+const logger = require('../utils/logger');
 
 /**
- * 车次服务
+ * Train Service
  */
 
 /**
- * 搜索车次
- * 支持按车次类型筛选，只返回直达车次
- * 添加日期过滤，只返回指定日期的车次，且过滤已过期的车次
- * 支持城市级搜索：当传入城市名时，查询该城市所有车站的车次
+ * Search for trains
+ * Supports filtering by train type, returns only direct trains
+ * Adds date filtering, returns only trains on specified date, filters expired trains
+ * Supports city-level search: queries all stations in the city when a city name is provided
  */
 async function searchTrains(departureCityOrStation, arrivalCityOrStation, departureDate, trainTypes = []) {
   try {
-    // 确保departureDate是有效的日期
+    // Ensure departureDate is a valid date
     if (!departureDate) {
       departureDate = new Date().toISOString().split('T')[0];
     }
     
-    console.log('trainService.searchTrains 调用:', { 
+    logger.info('trainService.searchTrains called', { 
       departureCityOrStation, 
       arrivalCityOrStation, 
       departureDate, 
       trainTypes 
     });
     
-    // 获取出发站点列表（优先判断为城市）
+    // Get departure station list (prioritize city check)
     let departureStations = [];
-    // 先尝试作为城市名获取车站列表
+    // Try to get station list by city name first
     departureStations = await stationService.getStationsByCity(departureCityOrStation);
     if (departureStations.length === 0) {
-      // 不是城市名，尝试作为车站名
+      // Not a city name, try as station name
       const depCity = await stationService.getCityByStation(departureCityOrStation);
       if (depCity) {
-        // 是车站名，获取该车站所在城市的所有车站
+        // Is a station name, get all stations in that city
         departureStations = await stationService.getStationsByCity(depCity);
       } else {
-        // 既不是城市也不是车站，返回空结果
-        console.log('无效的出发地:', departureCityOrStation);
+        // Neither city nor station, return empty result
+        logger.warn('Invalid departure location', { location: departureCityOrStation });
         return [];
       }
     }
     
-    // 获取到达站点列表（优先判断为城市）
+    // Get arrival station list (prioritize city check)
     let arrivalStations = [];
-    // 先尝试作为城市名获取车站列表
+    // Try to get station list by city name first
     arrivalStations = await stationService.getStationsByCity(arrivalCityOrStation);
     if (arrivalStations.length === 0) {
-      // 不是城市名，尝试作为车站名
+      // Not a city name, try as station name
       const arrCity = await stationService.getCityByStation(arrivalCityOrStation);
       if (arrCity) {
-        // 是车站名，获取该车站所在城市的所有车站
+        // Is a station name, get all stations in that city
         arrivalStations = await stationService.getStationsByCity(arrCity);
       } else {
-        // 既不是城市也不是车站，返回空结果
-        console.log('无效的到达地:', arrivalCityOrStation);
+        // Neither city nor station, return empty result
+        logger.warn('Invalid arrival location', { location: arrivalCityOrStation });
         return [];
       }
     }
     
-    console.log('出发站点列表:', departureStations);
-    console.log('到达站点列表:', arrivalStations);
+    logger.debug('Departure stations list', { stations: departureStations });
+    logger.debug('Arrival stations list', { stations: arrivalStations });
     
-    // 构建SQL查询，使用IN子句匹配多个车站
+    // Build SQL query, use IN clause to match multiple stations
     const depPlaceholders = departureStations.map(() => '?').join(',');
     const arrPlaceholders = arrivalStations.map(() => '?').join(',');
     
@@ -87,7 +88,7 @@ async function searchTrains(departureCityOrStation, arrivalCityOrStation, depart
       departureDate
     ];
     
-    // 如果提供了车次类型筛选
+    // If train type filter provided
     if (trainTypes && trainTypes.length > 0) {
       const typePlaceholders = trainTypes.map(() => '?').join(',');
       sql += ` AND SUBSTR(t.train_no, 1, 1) IN (${typePlaceholders})`;
@@ -96,53 +97,57 @@ async function searchTrains(departureCityOrStation, arrivalCityOrStation, depart
     
     sql += ' ORDER BY t.departure_time';
     
-    console.log('执行SQL查询:', { sql: sql.substring(0, 200) + '...', params });
+    logger.debug('Executing SQL query', { sql: sql.substring(0, 200) + '...', params });
     
     const rows = await dbService.all(sql, params);
     
-    console.log(`SQL查询返回 ${rows.length} 条原始记录`);
+    logger.info(`SQL query returned ${rows.length} raw records`);
     
     if (rows.length === 0) {
-      console.log('没有找到符合条件的车次');
+      logger.info('No matching trains found');
       return [];
     }
     
-    // 使用Promise.all来并行处理所有车次
+    // Use Promise.all to process all trains in parallel
     const trainPromises = rows.map(async (train) => {
       try {
-        // 获取该车次所有停靠站
+        // Get all stops for this train
         const stops = await dbService.all(
           'SELECT * FROM train_stops WHERE train_no = ? ORDER BY seq',
           [train.train_no]
         );
 
         if (!stops || stops.length < 2) {
-          console.log(`跳过车次 ${train.train_no}: 停靠站信息不完整`);
+          logger.warn(`Skipping train ${train.train_no}: Incomplete stop information`);
           return null;
         }
         
-        // 找到匹配的出发站和到达站
+        // Find matching departure and arrival stops
         const depStop = stops.find(s => departureStations.includes(s.station));
         const arrStop = stops.find(s => arrivalStations.includes(s.station));
         
         if (!depStop || !arrStop || depStop.seq >= arrStop.seq) {
-          console.log(`跳过车次 ${train.train_no}: 出发站/到达站不匹配或顺序错误`);
+          logger.debug(`Skipping train ${train.train_no}: Station mismatch or invalid sequence`, {
+            trainNo: train.train_no,
+            depStop: depStop?.station,
+            arrStop: arrStop?.station
+          });
           return null;
         }
         
-        // 如果是今天的车次，检查是否已过发车时间
+        // If it's today's train, check if departure time has passed
         const today = new Date().toISOString().split('T')[0];
         if (departureDate === today) {
           const now = new Date();
           const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
           
           if (depStop.depart_time < currentTime) {
-            console.log(`跳过车次 ${train.train_no}: 发车时间${depStop.depart_time}已过当前时间${currentTime}`);
+            logger.debug(`Skipping train ${train.train_no}: Departure time ${depStop.depart_time} has passed (Current: ${currentTime})`);
             return null;
           }
         }
         
-        // 构建区间列表，用于计算余票（优化：避免再次查询DB）
+        // Build interval list for calculating available seats (Optimization: avoid re-querying DB)
         const relevantStops = stops.filter(s => s.seq >= depStop.seq && s.seq <= arrStop.seq);
         const intervals = [];
         for (let i = 0; i < relevantStops.length - 1; i++) {
@@ -152,7 +157,7 @@ async function searchTrains(departureCityOrStation, arrivalCityOrStation, depart
           });
         }
 
-        // 计算余票
+        // Calculate available seats
         const availableSeats = await routeService.calculateAvailableSeats(
           train.train_no, 
           departureDate,
@@ -163,8 +168,8 @@ async function searchTrains(departureCityOrStation, arrivalCityOrStation, depart
           trainNo: train.train_no,
           trainType: train.train_type,
           model: train.model,
-          departureStation: depStop.station,  // 使用实际的车站名
-          arrivalStation: arrStop.station,    // 使用实际的车站名
+          departureStation: depStop.station,  // Use actual station name
+          arrivalStation: arrStop.station,    // Use actual station name
           departureTime: depStop.depart_time,
           arrivalTime: arrStop.arrive_time,
           duration: calculateDuration(depStop.depart_time, arrStop.arrive_time),
@@ -172,30 +177,30 @@ async function searchTrains(departureCityOrStation, arrivalCityOrStation, depart
           availableSeats: availableSeats
         };
       } catch (error) {
-        console.error(`处理车次 ${train.train_no} 时出错:`, error);
+        logger.error(`Error processing train ${train.train_no}`, { error });
         return null;
       }
     });
     
     const results = await Promise.all(trainPromises);
-    // 过滤掉null值
+    // Filter out null values
     const trainsWithDetails = results.filter(train => train !== null);
-    console.log(`最终返回 ${trainsWithDetails.length} 个车次`);
+    logger.info(`Returning ${trainsWithDetails.length} trains`);
     return trainsWithDetails;
 
   } catch (error) {
-    console.error('searchTrains error:', error);
+    logger.error('searchTrains error', { error });
     throw error;
   }
 }
 
 /**
- * 获取车次详情
- * 添加日期参数
+ * Get train details
+ * Adds date parameter
  */
 async function getTrainDetails(trainNo, departureDate) {
   try {
-    // 确保departureDate是有效的日期
+    // Ensure departureDate is a valid date
     if (!departureDate) {
       departureDate = new Date().toISOString().split('T')[0];
     }
@@ -206,25 +211,25 @@ async function getTrainDetails(trainNo, departureDate) {
       return null;
     }
     
-    // 获取停靠站信息
+    // Get stop information
     const stops = await dbService.all(
       'SELECT * FROM train_stops WHERE train_no = ? ORDER BY seq',
       [trainNo]
     );
         
-    // 获取车厢配置
+    // Get car configuration
     const cars = await dbService.all(
       'SELECT * FROM train_cars WHERE train_no = ? ORDER BY car_no',
       [trainNo]
     );
             
-    // 获取票价信息
+    // Get fare information
     const fares = await dbService.all(
       'SELECT * FROM train_fares WHERE train_no = ?',
       [trainNo]
     );
     
-    // 计算余票 (全程)
+    // Calculate available seats (full route)
     let availableSeats = {};
     if (stops && stops.length >= 2) {
       const intervals = [];
@@ -261,58 +266,58 @@ async function getTrainDetails(trainNo, departureDate) {
       availableSeats: availableSeats
     };
   } catch (error) {
-    console.error('获取车次详情失败:', error);
+    logger.error('Failed to get train details', { error });
     throw error;
   }
 }
 
 /**
- * 计算余票数
- * 兼容旧接口，内部调用 routeService
+ * Calculate available seats
+ * Compatible with old interface, calls routeService internally
  */
 async function calculateAvailableSeats(trainNo, departureStation, arrivalStation, departureDate) {
   try {
     const intervals = await routeService.getStationIntervals(trainNo, departureStation, arrivalStation);
     return await routeService.calculateAvailableSeats(trainNo, departureDate, intervals);
   } catch (error) {
-    console.error('calculateAvailableSeats error:', error);
+    logger.error('calculateAvailableSeats error', { error });
     return {};
   }
 }
 
 /**
- * 获取筛选选项
- * 返回出发城市和到达城市的所有车站（不只是有车的）
+ * Get filter options
+ * Returns all stations for departure and arrival cities (not just those with trains)
  */
 async function getFilterOptions(departureCityOrStation, arrivalCityOrStation, departureDate) {
   return new Promise(async (resolve, reject) => {
     try {
-      // 获取出发站点列表
+      // Get departure station list
       let departureStations = [];
       const depCity = await stationService.getCityByStation(departureCityOrStation);
       if (depCity) {
-        // 输入的是车站名，获取该车站所在城市的所有车站
+        // Input is station name, get all stations in that city
         departureStations = await stationService.getStationsByCity(depCity);
       } else {
-        // 输入的是城市名，获取该城市所有车站
+        // Input is city name, get all stations in that city
         departureStations = await stationService.getStationsByCity(departureCityOrStation);
       }
       
-      // 获取到达站点列表
+      // Get arrival station list
       let arrivalStations = [];
       const arrCity = await stationService.getCityByStation(arrivalCityOrStation);
       if (arrCity) {
-        // 输入的是车站名，获取该车站所在城市的所有车站
+        // Input is station name, get all stations in that city
         arrivalStations = await stationService.getStationsByCity(arrCity);
       } else {
-        // 输入的是城市名，获取该城市所有车站
+        // Input is city name, get all stations in that city
         arrivalStations = await stationService.getStationsByCity(arrivalCityOrStation);
       }
       
-      // 先搜索符合条件的车次，用于获取席别类型
+      // Search for matching trains first, to get seat types
       const trains = await searchTrains(departureCityOrStation, arrivalCityOrStation, departureDate);
       
-      // 从车次列表中提取席别类型
+      // Extract seat types from train list
       const seatTypesSet = new Set();
       trains.forEach(train => {
         if (train.availableSeats) {
@@ -334,8 +339,8 @@ async function getFilterOptions(departureCityOrStation, arrivalCityOrStation, de
 }
 
 /**
- * 获取可选日期
- * 返回从今天开始的14天日期（包括今天）
+ * Get available dates
+ * Returns 14 dates starting from today (including today)
  */
 async function getAvailableDates() {
   const dates = [];
@@ -352,7 +357,7 @@ async function getAvailableDates() {
 }
 
 /**
- * 计算历时（分钟）
+ * Calculate duration (minutes)
  */
 function calculateDuration(departureTime, arrivalTime) {
   const [depHour, depMin] = departureTime.split(':').map(Number);
@@ -360,7 +365,7 @@ function calculateDuration(departureTime, arrivalTime) {
   
   let duration = (arrHour * 60 + arrMin) - (depHour * 60 + depMin);
   
-  // 处理跨天情况
+  // Handle cross-day cases
   if (duration < 0) {
     duration += 24 * 60;
   }
@@ -369,29 +374,31 @@ function calculateDuration(departureTime, arrivalTime) {
 }
 
 /**
- * 获取车次在特定站点的时间信息
+ * Get train time details at specific stations
  */
 async function getTrainTimeDetails(trainNo, departureStation, arrivalStation) {
   try {
-    console.log(`getTrainTimeDetails called for ${trainNo}: ${departureStation} -> ${arrivalStation}`);
+    logger.info(`getTrainTimeDetails called for ${trainNo}: ${departureStation} -> ${arrivalStation}`);
     
-    // 查询车次停靠站信息
+    // Query train stop information
     const stops = await dbService.all(
       'SELECT * FROM train_stops WHERE train_no = ? ORDER BY seq',
       [trainNo]
     );
     
     if (!stops || stops.length === 0) {
-      console.log(`getTrainTimeDetails: No stops found for ${trainNo}`);
+      logger.warn(`getTrainTimeDetails: No stops found for ${trainNo}`);
       return null;
     }
     
-    // 找到出发站和到达站
+    // Find departure and arrival stops
     const depStop = stops.find(s => s.station === departureStation);
     const arrStop = stops.find(s => s.station === arrivalStation);
     
     if (!depStop || !arrStop) {
-      console.log(`getTrainTimeDetails: Station mismatch for ${trainNo}. Expected ${departureStation}->${arrivalStation}. Found stops:`, stops.map(s => s.station));
+      logger.warn(`getTrainTimeDetails: Station mismatch for ${trainNo}. Expected ${departureStation}->${arrivalStation}.`, {
+        stops: stops.map(s => s.station)
+      });
       return null;
     }
     
@@ -400,7 +407,7 @@ async function getTrainTimeDetails(trainNo, departureStation, arrivalStation) {
       arrivalTime: arrStop.arrive_time
     };
   } catch (err) {
-    console.error('查询车次停靠站失败:', err);
+    logger.error('Failed to query train stop details', { error: err });
     throw err;
   }
 }

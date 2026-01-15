@@ -299,6 +299,43 @@ describe('Login Integration Tests', () => {
 
   // ============ 补充测试：完整登录流程 ============
   describe('完整登录流程测试', () => {
+    beforeAll(async () => {
+      // 确保用户已注册
+      await dbService.run('DELETE FROM users WHERE username = ?', [testUser.username]);
+      await dbService.run('DELETE FROM users WHERE phone = ?', [testUser.phone]);
+
+      const regResponse = await request(app)
+        .post('/api/register')
+        .send({
+          username: testUser.username,
+          password: testUser.password,
+          confirmPassword: testUser.password,
+          idCardType: testUser.idCardType,
+          name: testUser.name,
+          idCardNumber: testUser.idCardNumber,
+          discountType: testUser.discountType,
+          email: testUser.email,
+          phone: testUser.phone,
+          agreedToTerms: true
+        });
+
+      const regSessionId = regResponse.body.sessionId;
+      const sendCodeResponse = await request(app)
+        .post('/api/register/send-verification-code')
+        .send({ sessionId: regSessionId });
+
+      const code = sendCodeResponse.body.verificationCode;
+      await request(app)
+        .post('/api/register/complete')
+        .send({
+          sessionId: regSessionId,
+          smsCode: code
+        });
+        
+      // 清理验证码，避免影响后续测试
+      await dbService.run('DELETE FROM verification_codes WHERE phone = ?', [testUser.phone]);
+    });
+
     test('完整流程：用户名→密码→证件号→验证码→成功', async () => {
       // 步骤1：用户名密码登录
       const loginResponse = await request(app)

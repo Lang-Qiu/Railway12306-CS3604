@@ -80,8 +80,8 @@ describe('Registration API Routes Tests', () => {
     test('用户名已存在时应返回409冲突错误', async () => {
       // Given: 数据库中已存在用户
       await dbService.run(
-        'INSERT INTO users (username, password, phone, id_card_number) VALUES (?, ?, ?, ?)',
-        ['existingUser', 'hashedPassword', '13800138000', '110101199001011234']
+        'INSERT INTO users (username, password, phone, id_card_number, email) VALUES (?, ?, ?, ?, ?)',
+        ['existingUser', 'hashedPassword', '13800138000', '110101199001011234', 'existing@example.com']
       );
 
       // When: 尝试验证已存在的用户名
@@ -282,8 +282,8 @@ describe('Registration API Routes Tests', () => {
     test('证件号码已被注册但实时验证不检查重复', async () => {
       // Given: 数据库中已存在用户
       await dbService.run(
-        'INSERT INTO users (username, password, phone, id_card_type, id_card_number) VALUES (?, ?, ?, ?, ?)',
-        ['user001', 'hashedPassword', '13800138000', '居民身份证', '110101199001011234']
+        'INSERT INTO users (username, password, phone, id_card_type, id_card_number, email) VALUES (?, ?, ?, ?, ?, ?)',
+        ['user001', 'hashedPassword', '13800138000', '居民身份证', '110101199001011234', 'user001@example.com']
       );
 
       // When: 尝试验证已存在的证件号码（实时验证不检查重复）
@@ -463,8 +463,8 @@ describe('Registration API Routes Tests', () => {
     test('用户名已存在时应返回409冲突错误', async () => {
       // Given: 数据库中已存在用户
       await dbService.run(
-        'INSERT INTO users (username, password, phone, id_card_number) VALUES (?, ?, ?, ?)',
-        ['existingUser', 'hashedPassword', '13800138001', '110101199001011235']
+        'INSERT INTO users (username, password, phone, id_card_number, email) VALUES (?, ?, ?, ?, ?)',
+        ['existingUser', 'hashedPassword', '13800138001', '110101199001011235', 'existing2@example.com']
       );
 
       // When: 尝试使用已存在的用户名注册
@@ -490,8 +490,8 @@ describe('Registration API Routes Tests', () => {
     test('证件号已被注册时应返回409冲突错误', async () => {
       // Given: 数据库中已存在用户
       await dbService.run(
-        'INSERT INTO users (username, password, phone, id_card_type, id_card_number) VALUES (?, ?, ?, ?, ?)',
-        ['user001', 'hashedPassword', '13800138003', '居民身份证', '110101199001011237']
+        'INSERT INTO users (username, password, phone, id_card_type, id_card_number, email) VALUES (?, ?, ?, ?, ?, ?)',
+        ['user001', 'hashedPassword', '13800138003', '居民身份证', '110101199001011237', 'user001_dup@example.com']
       );
 
       // When: 尝试使用已注册的证件号注册

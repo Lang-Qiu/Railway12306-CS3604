@@ -3,28 +3,29 @@ const crypto = require('crypto');
 const dbService = require('./dbService');
 const routeService = require('./routeService');
 const trainService = require('./trainService');
+const logger = require('../utils/logger');
 
-// 生成UUID v4
+// Generate UUID v4
 function uuidv4() {
   return crypto.randomUUID();
 }
 
 /**
- * 订单服务
+ * Order Service
  */
 
 /**
- * 获取订单填写页面数据
+ * Get order filling page data
  */
 async function getOrderPageData(params) {
   const { trainNo, departureStation, arrivalStation, departureDate, userId } = params;
   
-  // 验证参数
+  // Validate parameters
   if (!trainNo || !departureStation || !arrivalStation || !departureDate) {
-    throw { status: 400, message: '参数错误' };
+    throw { status: 400, message: 'Invalid parameters' };
   }
   
-  // TODO: 获取车次信息、票价、余票、乘客列表、默认席别
+  // TODO: Get train info, fares, available seats, passenger list, default seat type
   return {
     trainInfo: {},
     fareInfo: {},
@@ -35,8 +36,8 @@ async function getOrderPageData(params) {
 }
 
 /**
- * 获取默认席别
- * G/C/D字头车次默认二等座
+ * Get default seat type
+ * G/C/D trains default to Second Class (二等座)
  */
 async function getDefaultSeatType(trainNo) {
   const firstChar = trainNo.charAt(0);
@@ -48,10 +49,10 @@ async function getDefaultSeatType(trainNo) {
     );
     
     if (!train) {
-      throw { status: 404, message: '车次不存在' };
+      throw { status: 404, message: 'Train does not exist' };
     }
     
-    // 根据车次类型确定默认席别
+    // Determine default seat type based on train type
     let defaultSeatType = '硬座';
     if (firstChar === 'G' || firstChar === 'C' || firstChar === 'D') {
       defaultSeatType = '二等座';
@@ -59,27 +60,27 @@ async function getDefaultSeatType(trainNo) {
     
     return {
       seatType: defaultSeatType,
-      price: 0  // 价格需要根据具体区间查询
+      price: 0  // Price needs to be queried based on specific interval
     };
   } catch (error) {
     if (error.status) throw error;
-    throw { status: 500, message: '数据库查询失败' };
+    throw { status: 500, message: 'Database query failed' };
   }
 }
 
 /**
- * 获取有票席别列表
- * 支持跨区间票价计算
+ * Get available seat types list
+ * Supports cross-interval fare calculation
  */
 async function getAvailableSeatTypes(params) {
   const { trainNo, departureStation, arrivalStation, departureDate } = params;
   
   try {
-    // 步骤1: 计算跨区间票价（自动累加途经区间）
+    // Step 1: Calculate cross-interval fare (automatically accumulate intermediate intervals)
     const intervals = await routeService.getStationIntervals(trainNo, departureStation, arrivalStation);
     const fareData = await routeService.calculateFare(trainNo, intervals);
     
-    // 步骤2: 使用 trainService 的 calculateAvailableSeats 获取正确的余票数量
+    // Step 2: Use trainService.calculateAvailableSeats to get correct seat availability
     const availableSeats = await trainService.calculateAvailableSeats(
       trainNo,
       departureStation,
@@ -87,7 +88,7 @@ async function getAvailableSeatTypes(params) {
       departureDate
     );
     
-    // 步骤3: 构建席别列表（只返回有票的席别）
+    // Step 3: Build seat type list (only return seat types with tickets)
     const seatTypeMap = {
       '二等座': fareData.second_class_price,
       '一等座': fareData.first_class_price,
@@ -98,9 +99,9 @@ async function getAvailableSeatTypes(params) {
     
     const availableSeatTypes = [];
     
-    // 遍历所有席别类型
+    // Iterate through all seat types
     for (const [seatType, price] of Object.entries(seatTypeMap)) {
-      // 只添加有价格且有余票的席别
+      // Only add seat types with price and availability
       if (price !== null && price !== undefined && price > 0) {
         const available = availableSeats[seatType] || 0;
         if (available > 0) {
@@ -120,31 +121,31 @@ async function getAvailableSeatTypes(params) {
 }
 
 /**
- * 创建订单
+ * Create order
  */
 async function createOrder(orderData) {
   const { userId, trainNo, departureStation, arrivalStation, departureDate, passengers } = orderData;
   
-  // 验证至少选择一名乘客
+  // Validate at least one passenger selected
   if (!passengers || passengers.length === 0) {
-    throw { status: 400, message: '请选择乘车人！' };
+    throw { status: 400, message: 'Please select passengers!' };
   }
   
   const orderId = uuidv4();
   
   return dbService.transaction(async (tx) => {
     try {
-      // 查询车次信息
+      // Query train info
       const train = await tx.get(
         'SELECT * FROM trains WHERE train_no = ? AND departure_date = ?',
         [trainNo, departureDate]
       );
       
       if (!train) {
-        throw { status: 404, message: '车次不存在' };
+        throw { status: 404, message: 'Train does not exist' };
       }
       
-      // 获取票价信息（使用跨区间票价计算）
+      // Get fare info (use cross-interval fare calculation)
       const intervals = await routeService.getStationIntervals(trainNo, departureStation, arrivalStation);
       const fareData = await routeService.calculateFare(trainNo, intervals);
       
@@ -156,7 +157,7 @@ async function createOrder(orderData) {
         soft_sleeper_price: fareData.soft_sleeper_price
       };
       
-      // 为每个乘客计算对应席别的价格
+      // Calculate price for each passenger's seat type
       const getPriceForSeatType = (seatType) => {
         if (seatType === '二等座') {
           return fareRow.second_class_price;
@@ -169,40 +170,40 @@ async function createOrder(orderData) {
         } else if (seatType === '软卧') {
           return fareRow.soft_sleeper_price;
         } else {
-          return fareRow.second_class_price; // 默认二等座价格
+          return fareRow.second_class_price; // Default to second class price
         }
       };
       
-      // 计算总价：累加每个乘客的票价
+      // Calculate total price: sum of each passenger's fare
       let totalPrice = 0;
       for (const p of passengers) {
         const price = getPriceForSeatType(p.seatType);
         if (!price) {
-          throw { status: 400, message: `席别"${p.seatType}"暂不支持` };
+          throw { status: 400, message: `Seat type "${p.seatType}" not supported` };
         }
         totalPrice += price;
       }
       
-      // 获取乘客信息
+      // Get passenger info
       const passengerIds = passengers.map(p => p.passengerId).join("','");
       const passengerRecords = await tx.all(
         `SELECT * FROM passengers WHERE id IN ('${passengerIds}')`
       );
       
-      // 验证所有乘客是否都存在
+      // Validate all passengers exist
       if (!passengerRecords || passengerRecords.length !== passengers.length) {
-        throw { status: 400, message: '部分乘客信息不存在，请重新选择乘客' };
+        throw { status: 400, message: 'Some passenger information not found, please reselect passengers' };
       }
       
-      // 验证每个乘客ID都能找到对应记录
+      // Validate each passenger ID can be found
       for (const p of passengers) {
         const passenger = passengerRecords.find(pr => pr.id === p.passengerId);
         if (!passenger) {
-          throw { status: 400, message: `乘客${p.passengerId}不存在` };
+          throw { status: 400, message: `Passenger ${p.passengerId} does not exist` };
         }
       }
       
-      // 创建订单
+      // Create order
       await tx.run(
         `INSERT INTO orders (id, user_id, train_number, departure_station, arrival_station, 
          departure_date, departure_time, arrival_time, total_price, status, created_at)
@@ -211,10 +212,10 @@ async function createOrder(orderData) {
          train.departure_time, train.arrival_time, totalPrice]
       );
       
-      // 创建订单明细
+      // Create order details
       for (const [index, p] of passengers.entries()) {
         const passenger = passengerRecords.find(pr => pr.id === p.passengerId);
-        // 为每个乘客计算对应席别的价格
+        // Calculate price for each passenger's seat type
         const passengerPrice = getPriceForSeatType(p.seatType);
         
         await tx.run(
@@ -228,7 +229,7 @@ async function createOrder(orderData) {
       }
       
       return {
-        message: '订单提交成功',
+        message: 'Order submitted successfully',
         orderId,
         orderDetails: {
           trainInfo: {
@@ -243,28 +244,28 @@ async function createOrder(orderData) {
       };
     } catch (error) {
       if (error.status) throw error;
-      throw { status: 500, message: error.message || '创建订单失败' };
+      throw { status: 500, message: error.message || 'Failed to create order' };
     }
   });
 }
 
 /**
- * 获取订单详细信息
+ * Get order details
  */
 async function getOrderDetails(orderId, userId) {
   try {
-    // 查询订单基本信息
+    // Query basic order info
     const order = await dbService.get(
       'SELECT * FROM orders WHERE id = ?',
       [orderId]
     );
     
     if (!order) {
-      throw { status: 404, message: '订单不存在' };
+      throw { status: 404, message: 'Order does not exist' };
     }
     
-    // 调试日志：检查userId匹配
-    console.log('🔍 订单权限检查:', {
+    // Debug log: Check userId match
+    logger.debug('Order permission check', {
       orderId,
       order_user_id: order.user_id,
       order_user_id_type: typeof order.user_id,
@@ -274,18 +275,18 @@ async function getOrderDetails(orderId, userId) {
       string_match: String(order.user_id) === String(userId)
     });
     
-    // 兼容userId的类型差异（字符串 vs 数字）
+    // Compatible with userId type difference (string vs number)
     if (String(order.user_id) !== String(userId)) {
-      throw { status: 403, message: '无权访问此订单' };
+      throw { status: 403, message: 'Unauthorized to access this order' };
     }
     
-    // 查询订单明细
+    // Query order details
     const details = await dbService.all(
       'SELECT * FROM order_details WHERE order_id = ?',
       [orderId]
     );
     
-    // 获取乘客积分
+    // Get passenger points
     const passengerIds = details.map(d => d.passenger_id);
     let passengerPoints = [];
     if (passengerIds.length > 0) {
@@ -310,7 +311,7 @@ async function getOrderDetails(orderId, userId) {
       };
     });
     
-    // 获取实时余票信息
+    // Get real-time available seats info
     const trainService = require('./trainService');
     let availableSeats = {};
     try {
@@ -321,7 +322,7 @@ async function getOrderDetails(orderId, userId) {
         order.departure_date
       );
     } catch (err) {
-      console.error('获取余票信息失败:', err);
+      logger.error('Failed to get available seats info', { error: err });
     }
     
     return {
@@ -339,13 +340,13 @@ async function getOrderDetails(orderId, userId) {
     };
   } catch (error) {
     if (error.status) throw error;
-    throw { status: 500, message: '查询订单明细失败' };
+    throw { status: 500, message: 'Failed to query order details' };
   }
 }
 
 /**
- * 确认订单
- * 分配座位并更新座位状态为已预定
+ * Confirm order
+ * Allocate seats and update seat status to booked
  */
 async function confirmOrder(orderId, userId) {
   return dbService.transaction(async (tx) => {
@@ -355,8 +356,8 @@ async function confirmOrder(orderId, userId) {
       [orderId, String(userId)]
     );
     
-    if (!order) throw { status: 404, message: '订单不存在' };
-    if (order.status !== 'pending') throw { status: 400, message: '订单状态错误' };
+    if (!order) throw { status: 404, message: 'Order does not exist' };
+    if (order.status !== 'pending') throw { status: 400, message: 'Invalid order status' };
     
     // 2. Check Cancellation Limit
     const today = new Date().toISOString().split('T')[0];
@@ -367,12 +368,12 @@ async function confirmOrder(orderId, userId) {
     );
     
     if (cancelResult && cancelResult.count >= 3) {
-      throw { status: 403, message: '今日取消订单次数已达上限', code: 'CANCELLATION_LIMIT_EXCEEDED' };
+      throw { status: 403, message: 'Daily cancellation limit exceeded', code: 'CANCELLATION_LIMIT_EXCEEDED' };
     }
     
     // 3. Get Details
     const details = await tx.all('SELECT * FROM order_details WHERE order_id = ?', [orderId]);
-    if (!details || details.length === 0) throw { status: 400, message: '订单明细为空' };
+    if (!details || details.length === 0) throw { status: 400, message: 'Order details are empty' };
     
     // 4. Pre-check Seats
     // Get segments
@@ -394,7 +395,7 @@ async function confirmOrder(orderId, userId) {
         [order.train_number, order.departure_date, seatType]
       );
       
-      if (!allSeats || allSeats.length === 0) throw { status: 400, message: `${seatType}座位不存在` };
+      if (!allSeats || allSeats.length === 0) throw { status: 400, message: `Seat type ${seatType} does not exist` };
       
       let availableCount = 0;
       for (const seat of allSeats) {
@@ -411,7 +412,7 @@ async function confirmOrder(orderId, userId) {
       }
       
       if (availableCount < requiredCount) {
-        throw { status: 400, message: `${seatType}余票不足，需要${requiredCount}张，仅剩${availableCount}张` };
+        throw { status: 400, message: `Insufficient tickets for ${seatType}, needed ${requiredCount}, remaining ${availableCount}` };
       }
     }
     
@@ -433,7 +434,6 @@ async function confirmOrder(orderId, userId) {
         // Wait, seat_status is not updated yet. 
         // We need to keep track of allocated seats in this transaction scope if we don't update DB immediately.
         // But here we update DB immediately inside the loop.
-        // However, standard SELECT inside transaction might not see changes made by same transaction unless using specific isolation level or just works in SQLite.
         // SQLite: "Reads and writes within the same transaction see the effects of prior writes in that same transaction." -> So it works.
         
         const seatStatuses = await tx.all(
@@ -450,7 +450,7 @@ async function confirmOrder(orderId, userId) {
         }
       }
       
-      if (!selectedSeatNo) throw { status: 400, message: `${detail.seat_type}座位已售罄` };
+      if (!selectedSeatNo) throw { status: 400, message: `${detail.seat_type} sold out` };
       
       // Update seat status
       for (const segment of segments) {
@@ -487,7 +487,7 @@ async function confirmOrder(orderId, userId) {
     const orderInfo = await tx.get('SELECT payment_expires_at FROM orders WHERE id = ?', [orderId]);
     
     return {
-      message: '订单已确认，请完成支付',
+      message: 'Order confirmed, please complete payment',
       orderId,
       status: 'confirmed_unpaid',
       paymentExpiresAt: orderInfo?.payment_expires_at,
@@ -505,7 +505,7 @@ async function confirmOrder(orderId, userId) {
 }
 
 /**
- * 更新订单状态
+ * Update order status
  */
 async function updateOrderStatus(orderId, status) {
   try {
@@ -515,40 +515,40 @@ async function updateOrderStatus(orderId, status) {
     );
     
     if (result.changes === 0) {
-      throw { status: 404, message: '订单不存在' };
+      throw { status: 404, message: 'Order does not exist' };
     }
     
     return { success: true };
   } catch (error) {
     if (error.status) throw error;
-    throw { status: 500, message: '更新订单状态失败' };
+    throw { status: 500, message: 'Failed to update order status' };
   }
 }
 
 /**
- * 锁定座位
+ * Lock seats
  */
 async function lockSeats(orderId, passengers, trainNo, departureDate) {
-  // TODO: 实现座位锁定逻辑
+  // TODO: Implement seat locking logic
   return Promise.resolve([]);
 }
 
 
 /**
- * 确认座位分配
+ * Confirm seat allocation
  */
 async function confirmSeatAllocation(orderId) {
-  // TODO: 实现座位分配确认逻辑
+  // TODO: Implement seat allocation confirmation logic
   return Promise.resolve({ success: true });
 }
 
 /**
- * 计算订单总价
- * 支持跨区间票价计算
+ * Calculate order total price
+ * Supports cross-interval fare calculation
  */
 async function calculateOrderTotalPrice(passengers, trainNo, departureStation, arrivalStation) {
   try {
-    // 使用跨区间票价计算
+    // Use cross-interval fare calculation
     const intervals = await routeService.getStationIntervals(trainNo, departureStation, arrivalStation);
     const fareData = await routeService.calculateFare(trainNo, intervals);
     
@@ -567,7 +567,7 @@ async function calculateOrderTotalPrice(passengers, trainNo, departureStation, a
       } else if (p.seatType === '软卧') {
         price = fareData.soft_sleeper_price;
       } else {
-        price = fareData.second_class_price; // 默认二等座价格
+        price = fareData.second_class_price; // Default to second class price
       }
       
       totalPrice += price;
@@ -580,7 +580,7 @@ async function calculateOrderTotalPrice(passengers, trainNo, departureStation, a
 }
 
 /**
- * 获取支付页面数据
+ * Get payment page data
  */
 async function getPaymentPageData(orderId, userId) {
   try {
@@ -590,14 +590,14 @@ async function getPaymentPageData(orderId, userId) {
     );
     
     if (!order) {
-      throw { status: 404, message: '订单不存在' };
+      throw { status: 404, message: 'Order does not exist' };
     }
     
     if (order.status !== 'confirmed_unpaid') {
-      throw { status: 400, message: '订单状态错误，无法支付' };
+      throw { status: 400, message: 'Invalid order status, cannot pay' };
     }
     
-    // 检查订单是否已过期
+    // Check if order has expired
     if (order.payment_expires_at) {
       const result = await dbService.get(
         "SELECT datetime('now') > ? as is_expired",
@@ -605,17 +605,17 @@ async function getPaymentPageData(orderId, userId) {
       );
       
       if (result && result.is_expired === 1) {
-        throw { status: 400, message: '订单已过期' };
+        throw { status: 400, message: 'Order expired' };
       }
     }
     
-    // 查询订单明细
+    // Query order details
     const details = await dbService.all(
       'SELECT * FROM order_details WHERE order_id = ? ORDER BY sequence_number',
       [orderId]
     );
     
-    // 格式化订单明细
+    // Format order details
     const passengers = details.map(d => ({
       sequence: d.sequence_number,
       name: d.passenger_name,
@@ -645,12 +645,12 @@ async function getPaymentPageData(orderId, userId) {
     };
   } catch (error) {
     if (error.status) throw error;
-    throw { status: 500, message: '数据库查询失败' };
+    throw { status: 500, message: 'Database query failed' };
   }
 }
 
 /**
- * 确认支付
+ * Confirm payment
  */
 async function confirmPayment(orderId, userId) {
   try {
@@ -660,14 +660,14 @@ async function confirmPayment(orderId, userId) {
     );
     
     if (!order) {
-      throw { status: 404, message: '订单不存在' };
+      throw { status: 404, message: 'Order does not exist' };
     }
     
     if (order.status !== 'confirmed_unpaid') {
-      throw { status: 400, message: '订单状态错误，无法支付' };
+      throw { status: 400, message: 'Invalid order status, cannot pay' };
     }
     
-    // 检查订单是否已过期
+    // Check if order has expired
     if (order.payment_expires_at) {
       const result = await dbService.get(
         "SELECT datetime('now') > ? as is_expired",
@@ -675,27 +675,27 @@ async function confirmPayment(orderId, userId) {
       );
       
       if (result && result.is_expired === 1) {
-        throw { status: 400, message: '订单已过期，请重新购票' };
+        throw { status: 400, message: 'Order expired, please book again' };
       }
     }
     
-    // 更新订单状态为已支付
+    // Update order status to paid
     await dbService.run(
       "UPDATE orders SET status = 'paid', updated_at = datetime('now') WHERE id = ?",
       [orderId]
     );
     
-    // 查询订单明细获取座位信息
+    // Query order details to get seat info
     const details = await dbService.all(
       'SELECT * FROM order_details WHERE order_id = ? ORDER BY sequence_number',
       [orderId]
     );
     
-    // 生成订单号（EA + 8位数字）
+    // Generate order number (EA + 8 digits)
     const orderNumber = 'EA' + orderId.substring(0, 8).toUpperCase().replace(/-/g, '');
     
     return {
-      message: '支付成功',
+      message: 'Payment successful',
       orderId: order.id,
       orderNumber,
       status: 'paid',
@@ -719,12 +719,12 @@ async function confirmPayment(orderId, userId) {
     };
   } catch (error) {
     if (error.status) throw error;
-    throw { status: 500, message: '支付失败' };
+    throw { status: 500, message: 'Payment failed' };
   }
 }
 
 /**
- * 取消订单并记录取消次数
+ * Cancel order and track cancellation count
  */
 async function cancelOrderWithTracking(orderId, userId) {
   // Step 1: Validate order
@@ -734,19 +734,19 @@ async function cancelOrderWithTracking(orderId, userId) {
   );
   
   if (!order) {
-    throw { status: 404, message: '订单不存在' };
+    throw { status: 404, message: 'Order does not exist' };
   }
   
   if (order.status !== 'confirmed_unpaid') {
-    throw { status: 400, message: '只能取消待支付订单' };
+    throw { status: 400, message: 'Can only cancel unpaid orders' };
   }
   
   // Step 2: Release seat locks
   try {
     await releaseSeatLocks(orderId);
   } catch (error) {
-    console.error('释放座位锁定失败:', error);
-    throw { status: 500, message: error.message || '释放座位失败' };
+    logger.error('Failed to release seat locks', { error });
+    throw { status: 500, message: error.message || 'Failed to release seats' };
   }
   
   // Step 3 & 4: Record cancellation and Delete order (Atomic Transaction)
@@ -768,19 +768,19 @@ async function cancelOrderWithTracking(orderId, userId) {
       await tx.run('DELETE FROM orders WHERE id = ?', [orderId]);
     });
     
-    return { success: true, message: '订单已取消' };
+    return { success: true, message: 'Order cancelled' };
   } catch (error) {
-    console.error('取消订单事务失败:', error);
+    logger.error('Order cancellation transaction failed', { error });
     // Even if recording/deleting fails, we might have already released seats. 
     // Ideally releaseSeatLocks should be in the same transaction if possible, 
     // but here we keep it separate as per original logic flow (sort of).
     // But original logic had them separate.
-    throw { status: 500, message: '取消订单失败' };
+    throw { status: 500, message: 'Failed to cancel order' };
   }
 }
 
 /**
- * 检查用户是否有未支付的订单
+ * Check if user has unpaid orders
  */
 async function hasUnpaidOrder(userId) {
   try {
@@ -794,12 +794,12 @@ async function hasUnpaidOrder(userId) {
     
     return !!order;
   } catch (error) {
-    throw { status: 500, message: '查询失败' };
+    throw { status: 500, message: 'Query failed' };
   }
 }
 
 /**
- * 获取订单剩余支付时间（秒）
+ * Get remaining payment time for order (seconds)
  */
 async function getOrderTimeRemaining(orderId) {
   try {
@@ -821,12 +821,12 @@ async function getOrderTimeRemaining(orderId) {
     
     return Math.max(0, result.remaining_seconds || 0);
   } catch (error) {
-    throw { status: 500, message: '查询失败' };
+    throw { status: 500, message: 'Query failed' };
   }
 }
 
 /**
- * 释放座位锁定
+ * Release seat locks
  */
 async function releaseSeatLocks(orderId) {
   try {
@@ -838,16 +838,16 @@ async function releaseSeatLocks(orderId) {
     
     const details = await dbService.all('SELECT * FROM order_details WHERE order_id = ?', [orderId]);
     
-    // 获取出发站和到达站之间的所有区间
+    // Get all intervals between departure and arrival stations
     const segments = await routeService.getStationIntervals(
       order.train_number, 
       order.departure_station, 
       order.arrival_station
     );
     
-    // 释放每个乘客的座位
-    // 这里的循环更新可以使用 Promise.all 并发执行，或者在事务中执行
-    // 为了安全，建议顺序执行或事务
+    // Release seat for each passenger
+    // Loop updates can be done in Promise.all or transaction
+    // Recommended sequential or transaction for safety
     for (const detail of details) {
       if (!detail.seat_number) continue;
       
@@ -869,7 +869,7 @@ async function releaseSeatLocks(orderId) {
     
     return { success: true };
   } catch (error) {
-    throw { status: 500, message: error.message || '释放座位失败' };
+    throw { status: 500, message: error.message || 'Failed to release seats' };
   }
 }
 

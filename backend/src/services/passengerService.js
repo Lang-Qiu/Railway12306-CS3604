@@ -1,36 +1,37 @@
 const crypto = require('crypto');
 const db = require('../database');
+const logger = require('../utils/logger');
 
-// 生成UUID v4
+// Generate UUID v4
 function uuidv4() {
   return crypto.randomUUID();
 }
 
 /**
- * 乘客服务
+ * Passenger Service
  */
 
 /**
- * 证件号码脱敏
- * 保留前4位和后3位，中间用星号替换
+ * Mask ID card number
+ * Keep first 4 and last 3 digits, replace middle with asterisks
  */
 function maskIdNumber(idNumber) {
   if (!idNumber || idNumber.length < 8) return idNumber;
   const length = idNumber.length;
   if (length === 18) {
-    // 18位身份证：保留前4位和后3位
+    // 18-digit ID: keep first 4 and last 3
     return idNumber.substring(0, 4) + '***********' + idNumber.substring(length - 3);
   }
-  // 其他证件：保留前4位和后3位
+  // Other IDs: keep first 4 and last 3
   return idNumber.substring(0, 4) + '*'.repeat(length - 7) + idNumber.substring(length - 3);
 }
 
 /**
- * 获取用户的所有乘客列表
+ * Get all passengers for a user
  */
 async function getUserPassengers(userId) {
   try {
-    // 首先获取当前用户的身份证号码
+    // First get current user's ID card number
     const userRows = await db.query(
       'SELECT id_card_number FROM users WHERE id = ?',
       [userId]
@@ -42,7 +43,7 @@ async function getUserPassengers(userId) {
       [userId]
     );
     
-    // 证件号码脱敏，并标记是否是自己
+    // Mask ID number and mark if it is self
     const passengers = rows.map(p => ({
       id: p.id,
       name: p.name,
@@ -51,29 +52,29 @@ async function getUserPassengers(userId) {
       discountType: p.discount_type,
       phone: p.phone || '',
       points: p.points || 0,
-      isSelf: p.id_card_number === userIdCardNumber  // 标记是否是本人
+      isSelf: p.id_card_number === userIdCardNumber  // Mark if it is the user themselves
     }));
     
     return passengers;
   } catch (err) {
-    console.error('获取乘客列表失败:', err);
-    const error = new Error('获取乘客列表失败');
+    logger.error('Failed to get passenger list', { error: err });
+    const error = new Error('Failed to get passenger list');
     error.status = 500;
     throw error;
   }
 }
 
 /**
- * 搜索乘客
+ * Search passengers
  */
 async function searchPassengers(userId, keyword) {
-  // 如果关键词为空，返回所有乘客
+  // If keyword is empty, return all passengers
   if (!keyword || keyword.trim() === '') {
     return getUserPassengers(userId);
   }
   
   try {
-    // 首先获取当前用户的身份证号码
+    // First get current user's ID card number
     const userRows = await db.query(
       'SELECT id_card_number FROM users WHERE id = ?',
       [userId]
@@ -87,7 +88,7 @@ async function searchPassengers(userId, keyword) {
       [userId, searchPattern]
     );
     
-    // 证件号码脱敏，并标记是否是自己
+    // Mask ID number and mark if it is self
     const passengers = rows.map(p => ({
       id: p.id,
       name: p.name,
@@ -96,20 +97,20 @@ async function searchPassengers(userId, keyword) {
       discountType: p.discount_type,
       phone: p.phone || '',
       points: p.points || 0,
-      isSelf: p.id_card_number === userIdCardNumber  // 标记是否是本人
+      isSelf: p.id_card_number === userIdCardNumber  // Mark if it is the user themselves
     }));
     
     return passengers;
   } catch (err) {
-    console.error('搜索乘客失败:', err);
-    const error = new Error('搜索失败');
+    logger.error('Failed to search passengers', { error: err });
+    const error = new Error('Search failed');
     error.status = 500;
     throw error;
   }
 }
 
 /**
- * 获取乘客详细信息
+ * Get passenger details
  */
 async function getPassengerDetails(userId, passengerId) {
   try {
@@ -121,14 +122,14 @@ async function getPassengerDetails(userId, passengerId) {
     const row = rows[0];
     
     if (!row) {
-      const error = new Error('乘客不存在');
+      const error = new Error('Passenger not found');
       error.status = 404;
       throw error;
     }
     
-    // 类型转换：确保两者都是字符串进行比较
+    // Type conversion: ensure both are strings for comparison
     if (String(row.user_id) !== String(userId)) {
-      const error = new Error('无权访问此乘客信息');
+      const error = new Error('Unauthorized access to passenger information');
       error.status = 403;
       throw error;
     }
@@ -144,15 +145,15 @@ async function getPassengerDetails(userId, passengerId) {
     };
   } catch (err) {
     if (err.status) throw err;
-    console.error('获取乘客详情失败:', err);
-    const error = new Error('获取乘客详情失败');
+    logger.error('Failed to get passenger details', { error: err });
+    const error = new Error('Failed to get passenger details');
     error.status = 500;
     throw error;
   }
 }
 
 /**
- * 获取乘客积分
+ * Get passenger points
  */
 async function getPassengerPoints(passengerId) {
   try {
@@ -164,26 +165,26 @@ async function getPassengerPoints(passengerId) {
     const row = rows[0];
     return row ? (row.points || 0) : 0;
   } catch (err) {
-    console.error('获取乘客积分失败:', err);
-    const error = new Error('获取乘客积分失败');
+    logger.error('Failed to get passenger points', { error: err });
+    const error = new Error('Failed to get passenger points');
     error.status = 500;
     throw error;
   }
 }
 
 /**
- * 验证姓名长度
- * 1个汉字算2个字符
+ * Validate name length
+ * 1 Chinese character counts as 2 characters
  */
 function validateNameLength(name) {
   if (!name || name.trim() === '') {
     return false;
   }
-  // 计算字符长度（汉字算2个字符）
+  // Calculate character length (Chinese character counts as 2)
   let length = 0;
   for (let i = 0; i < name.length; i++) {
     const char = name.charAt(i);
-    // 判断是否为汉字
+    // Check if it is a Chinese character
     if (char.match(/[\u4e00-\u9fa5]/)) {
       length += 2;
     } else {
@@ -194,17 +195,17 @@ function validateNameLength(name) {
 }
 
 /**
- * 验证证件号码格式
+ * Validate ID card number format
  */
 function validateIdCardNumber(idCardNumber, idCardType) {
   if (!idCardNumber) return false;
   
   if (idCardType === '居民身份证') {
-    // 18位身份证号验证
+    // 18-digit ID card verification
     if (idCardNumber.length !== 18) {
       return false;
     }
-    // 只能包含数字和字母
+    // Only numbers and letters allowed
     if (!/^[0-9X]+$/i.test(idCardNumber)) {
       return false;
     }
@@ -214,41 +215,41 @@ function validateIdCardNumber(idCardNumber, idCardType) {
 }
 
 /**
- * 创建乘客
+ * Create passenger
  */
 async function createPassenger(userId, passengerData) {
   const { name, idCardType, idCardNumber, discountType, phone } = passengerData;
   
-  // 验证姓名长度
+  // Validate name length
   if (!validateNameLength(name)) {
-    const error = new Error('姓名长度不符合要求');
+    const error = new Error('Name length requirements not met');
     error.status = 400;
     throw error;
   }
   
-  // 验证证件号码格式
+  // Validate ID card number format
   if (!validateIdCardNumber(idCardNumber, idCardType)) {
-    const error = new Error('证件号码格式错误');
+    const error = new Error('Invalid ID card number format');
     error.status = 400;
     throw error;
   }
   
   try {
-    // 验证证件号码唯一性（同一用户下证件号不能重复）
+    // Validate ID card uniqueness (cannot duplicate within same user)
     const existingRows = await db.query(
       'SELECT id FROM passengers WHERE user_id = ? AND id_card_number = ?',
       [userId, idCardNumber]
     );
     
     if (existingRows.length > 0) {
-      const error = new Error('该乘客已存在');
+      const error = new Error('Passenger already exists');
       error.status = 409;
       throw error;
     }
     
     const passengerId = uuidv4();
     
-    // 创建乘客记录
+    // Create passenger record
     await db.run(
       `INSERT INTO passengers (id, user_id, name, id_card_type, id_card_number, discount_type, phone, points, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, 0, datetime('now'))`,
@@ -256,53 +257,53 @@ async function createPassenger(userId, passengerData) {
     );
     
     return { 
-      message: '添加乘客成功', 
+      message: 'Passenger added successfully', 
       passengerId,
       points: 0
     };
   } catch (err) {
     if (err.status) throw err;
-    console.error('创建乘客失败:', err);
+    logger.error('Failed to create passenger', { error: err });
     if (err.code === 'SQLITE_CONSTRAINT' || err.code === 'ER_DUP_ENTRY') {
-      const error = new Error('该乘客已存在');
+      const error = new Error('Passenger already exists');
       error.status = 409;
       throw error;
     }
-    const error = new Error('添加乘客失败');
+    const error = new Error('Failed to add passenger');
     error.status = 500;
     throw error;
   }
 }
 
 /**
- * 更新乘客信息
- * 注意：只允许更新 phone 和 discountType 字段
- * 姓名、证件类型、证件号码等基本信息不允许修改
+ * Update passenger information
+ * Note: Only phone and discountType fields are allowed to be updated
+ * Basic info like name, ID type, ID number are not allowed to be modified
  */
 async function updatePassenger(userId, passengerId, updateData) {
-  console.log('📝 收到更新乘客请求:', { userId, passengerId, updateData });
+  logger.info('Received update passenger request', { userId, passengerId, updateData });
   
   const { discountType, phone } = updateData;
   
-  // 验证优惠类型
+  // Validate discount type
   const validDiscountTypes = ['成人', '儿童', '学生', '残疾军人'];
   if (discountType && !validDiscountTypes.includes(discountType)) {
-    const error = new Error(`优惠类型无效，必须是以下之一：${validDiscountTypes.join('、')}`);
+    const error = new Error(`Invalid discount type, must be one of: ${validDiscountTypes.join(', ')}`);
     error.status = 400;
     throw error;
   }
   
-  // 验证手机号格式（可选）
+  // Validate phone number format (optional)
   if (phone && phone.trim() !== '') {
     if (!/^\d{11}$/.test(phone)) {
-      const error = new Error('手机号码格式错误，必须是11位数字');
+      const error = new Error('Invalid phone number format, must be 11 digits');
       error.status = 400;
       throw error;
     }
   }
   
   try {
-    // 先检查乘客是否存在且属于当前用户
+    // First check if passenger exists and belongs to current user
     const rows = await db.query(
       'SELECT * FROM passengers WHERE id = ?',
       [passengerId]
@@ -311,35 +312,35 @@ async function updatePassenger(userId, passengerId, updateData) {
     const passenger = rows[0];
     
     if (!passenger) {
-      const error = new Error('乘客不存在');
+      const error = new Error('Passenger not found');
       error.status = 404;
       throw error;
     }
     
-    // 类型转换：确保两者都是字符串或数字进行比较
+    // Type conversion: ensure both are strings or numbers for comparison
     const passengerUserId = String(passenger.user_id);
     const requestUserId = String(userId);
     
-    console.log('🔐 权限检查:', { 
+    logger.debug('Permission check', { 
       passengerUserId, 
       requestUserId, 
       match: passengerUserId === requestUserId 
     });
     
     if (passengerUserId !== requestUserId) {
-      const error = new Error('无权修改此乘客信息');
+      const error = new Error('Unauthorized to modify this passenger information');
       error.status = 403;
       throw error;
     }
     
-    console.log('📊 更新前数据:', { 
+    logger.debug('Data before update', { 
       oldPhone: passenger.phone, 
       oldDiscountType: passenger.discount_type,
       newPhone: phone,
       newDiscountType: discountType
     });
     
-    // 只更新允许修改的字段：phone 和 discountType
+    // Only update allowed fields: phone and discountType
     const result = await db.run(
       `UPDATE passengers 
        SET discount_type = ?, phone = ?, updated_at = datetime('now')
@@ -347,7 +348,7 @@ async function updatePassenger(userId, passengerId, updateData) {
       [discountType, phone || '', passengerId, userId]
     );
     
-    console.log('✅ 乘客信息更新成功:', { 
+    logger.info('Passenger info updated successfully', { 
       passengerId, 
       userId, 
       discountType, 
@@ -356,24 +357,24 @@ async function updatePassenger(userId, passengerId, updateData) {
     });
     
     return { 
-      message: '更新乘客信息成功',
+      message: 'Passenger info updated successfully',
       passengerId
     };
   } catch (err) {
     if (err.status) throw err;
-    console.error('❌ 更新乘客失败:', err);
-    const error = new Error('更新乘客失败: ' + err.message);
+    logger.error('Failed to update passenger', { error: err });
+    const error = new Error('Failed to update passenger: ' + err.message);
     error.status = 500;
     throw error;
   }
 }
 
 /**
- * 删除乘客
+ * Delete passenger
  */
 async function deletePassenger(userId, passengerId) {
   try {
-    // 先检查乘客是否存在且属于当前用户
+    // First check if passenger exists and belongs to current user
     const passengerRows = await db.query(
       'SELECT * FROM passengers WHERE id = ?',
       [passengerId]
@@ -381,7 +382,7 @@ async function deletePassenger(userId, passengerId) {
     
     const passenger = passengerRows[0];
     
-    console.log('删除乘客 - 检查权限:', {
+    logger.debug('Delete passenger - checking permission', {
       passengerId,
       requestUserId: userId,
       requestUserIdType: typeof userId,
@@ -391,28 +392,28 @@ async function deletePassenger(userId, passengerId) {
     });
     
     if (!passenger) {
-      const error = new Error('乘客不存在');
+      const error = new Error('Passenger not found');
       error.status = 404;
       throw error;
     }
     
-    // 将两个值都转换为字符串进行比较，避免类型不匹配
+    // Convert both to strings for comparison to avoid type mismatch
     const passengerUserIdStr = String(passenger.user_id);
     const userIdStr = String(userId);
     
-    console.log('删除乘客 - 字符串比较:', {
+    logger.debug('Delete passenger - string comparison', {
       passengerUserIdStr,
       userIdStr,
       match: passengerUserIdStr === userIdStr
     });
     
     if (passengerUserIdStr !== userIdStr) {
-      const error = new Error('无权删除此乘客');
+      const error = new Error('Unauthorized to delete this passenger');
       error.status = 403;
       throw error;
     }
     
-    // 检查该乘客是否有未完成的订单
+    // Check if the passenger has unfinished orders
     const orderRows = await db.query(
       `SELECT od.* FROM order_details od
        JOIN orders o ON od.order_id = o.id
@@ -424,24 +425,24 @@ async function deletePassenger(userId, passengerId) {
     const order = orderRows[0];
     
     if (order) {
-      const error = new Error('该乘客有未完成的订单，无法删除');
+      const error = new Error('Cannot delete passenger with unfinished orders');
       error.status = 400;
       throw error;
     }
     
-    // 删除乘客
+    // Delete passenger
     await db.run(
       'DELETE FROM passengers WHERE id = ?',
       [passengerId]
     );
     
-    console.log('删除乘客成功:', { passengerId, userId });
+    logger.info('Passenger deleted successfully', { passengerId, userId });
     
-    return { message: '删除乘客成功' };
+    return { message: 'Passenger deleted successfully' };
   } catch (err) {
     if (err.status) throw err;
-    console.error('删除乘客失败:', err);
-    const error = new Error('删除乘客失败');
+    logger.error('Failed to delete passenger', { error: err });
+    const error = new Error('Failed to delete passenger');
     error.status = 500;
     throw error;
   }

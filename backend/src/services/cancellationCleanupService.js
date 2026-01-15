@@ -1,5 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const logger = require('../utils/logger');
 
 const dbPath = path.resolve(__dirname, '../../database/railway.db');
 
@@ -12,9 +13,11 @@ function cleanupOldCancellations() {
     [today],
     function(err) {
       if (err) {
-        console.error('❌ 清理旧取消记录失败:', err);
+        logger.error('Failed to cleanup old cancellations', err);
       } else {
-        console.log(`✓ 清理了 ${this.changes} 条旧取消记录`);
+        if (this.changes > 0) {
+          logger.info(`Cleaned up ${this.changes} old cancellation records`);
+        }
       }
       db.close();
     }
@@ -35,7 +38,6 @@ setTimeout(() => {
   setInterval(cleanupOldCancellations, 24 * 60 * 60 * 1000);
 }, msUntilTomorrow1AM);
 
-console.log('✓ 取消记录清理服务已启动');
+logger.info('Cancellation cleanup service started');
 
 module.exports = { cleanupOldCancellations };
-

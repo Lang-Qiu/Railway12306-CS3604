@@ -1,17 +1,18 @@
-// 用户信息数据库服务
-// 用于个人信息页功能
+// User Info Database Service
+// For personal information page features
 
 const db = require('../database');
+const logger = require('../utils/logger');
 
 /**
- * 手机号脱敏处理
- * @param {string} phone - 原始手机号
- * @returns {string} 脱敏后的手机号
+ * Mask phone number
+ * @param {string} phone - Original phone number
+ * @returns {string} Masked phone number
  */
 function maskPhone(phone) {
   if (!phone) return '';
-  // 格式：(+86)158****9968
-  const phoneStr = phone.replace(/\D/g, ''); // 去除非数字字符
+  // Format: (+86)158****9968
+  const phoneStr = phone.replace(/\D/g, ''); // Remove non-digit characters
   if (phoneStr.length === 11) {
     return `(+86)${phoneStr.substring(0, 3)}****${phoneStr.substring(7)}`;
   }
@@ -19,9 +20,9 @@ function maskPhone(phone) {
 }
 
 /**
- * 验证邮箱格式
- * @param {string} email - 邮箱地址
- * @returns {boolean} 是否合法
+ * Validate email format
+ * @param {string} email - Email address
+ * @returns {boolean} Is valid
  */
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -29,9 +30,9 @@ function isValidEmail(email) {
 }
 
 /**
- * DB-GetUserInfo: 获取用户的完整个人信息
- * @param {string} userId - 用户ID
- * @returns {Promise<Object>} 用户信息对象
+ * DB-GetUserInfo: Get user's complete personal information
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} User info object
  */
 async function getUserInfo(userId) {
   try {
@@ -57,7 +58,7 @@ async function getUserInfo(userId) {
       return null;
     }
     
-    // 手机号脱敏处理
+    // Mask phone number
     user.phone = maskPhone(user.phone);
     
     return {
@@ -72,22 +73,22 @@ async function getUserInfo(userId) {
       discountType: user.discountType
     };
   } catch (error) {
-    console.error('获取用户信息失败:', error);
+    logger.error('Failed to get user info', { error });
     throw error;
   }
 }
 
 /**
- * DB-UpdateUserEmail: 更新用户的邮箱地址
- * @param {string} userId - 用户ID
- * @param {string} email - 新邮箱地址
- * @returns {Promise<boolean>} 更新成功返回true
+ * DB-UpdateUserEmail: Update user's email address
+ * @param {string} userId - User ID
+ * @param {string} email - New email address
+ * @returns {Promise<boolean>} Returns true if successful
  */
 async function updateUserEmail(userId, email) {
   try {
-    // 验证邮箱格式
+    // Validate email format
     if (!isValidEmail(email)) {
-      throw new Error('请输入有效的电子邮件地址！');
+      throw new Error('Please enter a valid email address!');
     }
     
     const sql = `
@@ -100,25 +101,25 @@ async function updateUserEmail(userId, email) {
     const result = await db.run(sql, [email, userId]);
     return result.changes > 0;
   } catch (error) {
-    console.error('更新用户邮箱失败:', error);
+    logger.error('Failed to update user email', { error });
     throw error;
   }
 }
 
 /**
- * DB-UpdateUserPhone: 更新用户的手机号
- * @param {string} userId - 用户ID
- * @param {string} phone - 新手机号
- * @returns {Promise<boolean>} 更新成功返回true
+ * DB-UpdateUserPhone: Update user's phone number
+ * @param {string} userId - User ID
+ * @param {string} phone - New phone number
+ * @returns {Promise<boolean>} Returns true if successful
  */
 async function updateUserPhone(userId, phone) {
   try {
-    // 检查新手机号是否已被其他用户使用
+    // Check if new phone number is already used by another user
     const checkSql = 'SELECT id FROM users WHERE phone = ? AND id != ?';
     const existingUser = await db.queryOne(checkSql, [phone, userId]);
     
     if (existingUser) {
-      throw new Error('该手机号已被使用');
+      throw new Error('This phone number is already in use');
     }
     
     const sql = `
@@ -131,23 +132,23 @@ async function updateUserPhone(userId, phone) {
     const result = await db.run(sql, [phone, userId]);
     return result.changes > 0;
   } catch (error) {
-    console.error('更新用户手机号失败:', error);
+    logger.error('Failed to update user phone', { error });
     throw error;
   }
 }
 
 /**
- * DB-UpdateUserDiscountType: 更新用户的优惠类型
- * @param {string} userId - 用户ID
- * @param {string} discountType - 新优惠类型
- * @returns {Promise<boolean>} 更新成功返回true
+ * DB-UpdateUserDiscountType: Update user's discount type
+ * @param {string} userId - User ID
+ * @param {string} discountType - New discount type
+ * @returns {Promise<boolean>} Returns true if successful
  */
 async function updateUserDiscountType(userId, discountType) {
   try {
-    // 验证优惠类型是否在允许的范围内
+    // Validate if discount type is within allowed range
     const validTypes = ['成人', '儿童', '学生', '残疾军人'];
     if (!validTypes.includes(discountType)) {
-      throw new Error('无效的优惠类型');
+      throw new Error('Invalid discount type');
     }
     
     const sql = `
@@ -160,22 +161,22 @@ async function updateUserDiscountType(userId, discountType) {
     const result = await db.run(sql, [discountType, userId]);
     return result.changes > 0;
   } catch (error) {
-    console.error('更新用户优惠类型失败:', error);
+    logger.error('Failed to update user discount type', { error });
     throw error;
   }
 }
 
 /**
- * DB-GetUserOrders: 获取用户的订单列表
- * @param {string} userId - 用户ID
- * @param {Object} options - 查询选项 { startDate, endDate, searchType }
- * @returns {Promise<Array>} 订单列表
+ * DB-GetUserOrders: Get user's order list
+ * @param {string} userId - User ID
+ * @param {Object} options - Query options { startDate, endDate, searchType }
+ * @returns {Promise<Array>} Order list
  */
 async function getUserOrders(userId, options = {}) {
   try {
     const { startDate, endDate, searchType } = options;
     
-    // 计算30日前的日期
+    // Calculate date 30 days ago
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
@@ -205,7 +206,7 @@ async function getUserOrders(userId, options = {}) {
     
     const params = [String(userId), thirtyDaysAgoStr];
     
-    // 添加日期范围筛选（根据查询类型选择字段）
+    // Add date range filter (select field based on search type)
     const dateField = searchType === 'travel-date' ? 'departure_date' : 'DATE(created_at)';
     
     if (startDate) {
@@ -218,14 +219,14 @@ async function getUserOrders(userId, options = {}) {
       params.push(endDate);
     }
     
-    // 按创建时间倒序排列
+    // Sort by creation time descending
     sql += ' ORDER BY created_at DESC';
     
     const orders = await db.query(sql, params);
     
-    // 为每个订单查询乘客信息和座位信息
+    // Query passenger info and seat info for each order
     const ordersWithPassengers = await Promise.all(orders.map(async (order) => {
-      // 查询该订单的乘客信息和座位信息
+      // Query passenger info and seat info for this order
       const passengersSql = `
         SELECT passenger_name, seat_type, seat_number, car_number, ticket_type
         FROM order_details
@@ -233,15 +234,15 @@ async function getUserOrders(userId, options = {}) {
       `;
       const passengerDetails = await db.query(passengersSql, [order.id]);
       
-      // 提取乘客姓名列表和座位信息
+      // Extract passenger name list and seat info
       const passengerNames = passengerDetails.map(p => p.passenger_name).join(', ');
       
-      // 根据订单状态构建座位信息
+      // Build seat info based on order status
       let seatInfo = '';
       let seatType = '';
       
       if (order.status === 'completed' || order.status === 'paid' || order.status === 'confirmed_unpaid') {
-        // 已完成、已支付或已确认未支付订单：返回完整的座位信息（包括座位号）
+        // Completed, paid, or confirmed unpaid orders: return complete seat info (including seat number)
         seatInfo = passengerDetails.map(p => {
           if (p.seat_number) {
             return `${p.seat_type} ${p.seat_number}`;
@@ -249,11 +250,11 @@ async function getUserOrders(userId, options = {}) {
           return p.seat_type;
         }).join(', ');
       } else if (order.status === 'pending') {
-        // 待确认订单：只返回席位类型，不包含座位号
+        // Pending confirmation orders: only return seat type, excluding seat number
         seatType = passengerDetails.map(p => p.seat_type).join(', ');
       }
       
-      // 返回下划线命名的字段（匹配前端期望）
+      // Return fields with underscore naming (matching frontend expectation)
       return {
         id: order.id,
         order_id: order.id,
@@ -275,16 +276,16 @@ async function getUserOrders(userId, options = {}) {
     
     return ordersWithPassengers;
   } catch (error) {
-    console.error('获取用户订单列表失败:', error);
+    logger.error('Failed to get user order list', { error });
     throw error;
   }
 }
 
 /**
- * DB-SearchOrders: 搜索用户的订单
- * @param {string} userId - 用户ID
- * @param {Object} searchCriteria - 搜索条件 { keyword, startDate, endDate, searchType }
- * @returns {Promise<Array>} 匹配的订单列表
+ * DB-SearchOrders: Search user's orders
+ * @param {string} userId - User ID
+ * @param {Object} searchCriteria - Search criteria { keyword, startDate, endDate, searchType }
+ * @returns {Promise<Array>} Matched order list
  */
 async function searchOrders(userId, searchCriteria) {
   try {
@@ -314,7 +315,7 @@ async function searchOrders(userId, searchCriteria) {
     
     const params = [String(userId)];
     
-    // 关键词搜索（订单号、车次号、乘客姓名）
+    // Keyword search (order ID, train number, passenger name)
     if (keyword) {
       sql += ` AND (
         id LIKE ? 
@@ -329,7 +330,7 @@ async function searchOrders(userId, searchCriteria) {
       params.push(keywordParam, keywordParam, keywordParam);
     }
     
-    // 日期范围筛选（根据查询类型选择字段）
+    // Date range filter (select field based on search type)
     const dateField = searchType === 'travel-date' ? 'departure_date' : 'DATE(created_at)';
     
     if (startDate) {
@@ -342,14 +343,14 @@ async function searchOrders(userId, searchCriteria) {
       params.push(endDate);
     }
     
-    // 按创建时间倒序排列
+    // Sort by creation time descending
     sql += ' ORDER BY created_at DESC';
     
     const orders = await db.query(sql, params);
     
-    // 为每个订单查询乘客信息和座位信息
+    // Query passenger info and seat info for each order
     const ordersWithPassengers = await Promise.all(orders.map(async (order) => {
-      // 查询该订单的乘客信息和座位信息
+      // Query passenger info and seat info for this order
       const passengersSql = `
         SELECT passenger_name, seat_type, seat_number, car_number, ticket_type
         FROM order_details
@@ -357,15 +358,15 @@ async function searchOrders(userId, searchCriteria) {
       `;
       const passengerDetails = await db.query(passengersSql, [order.id]);
       
-      // 提取乘客姓名列表和座位信息
+      // Extract passenger name list and seat info
       const passengerNames = passengerDetails.map(p => p.passenger_name).join(', ');
       
-      // 根据订单状态构建座位信息
+      // Build seat info based on order status
       let seatInfo = '';
       let seatType = '';
       
       if (order.status === 'completed' || order.status === 'paid' || order.status === 'confirmed_unpaid') {
-        // 已完成、已支付或已确认未支付订单：返回完整的座位信息（包括座位号）
+        // Completed, paid, or confirmed unpaid orders: return complete seat info (including seat number)
         seatInfo = passengerDetails.map(p => {
           if (p.seat_number) {
             return `${p.seat_type} ${p.seat_number}`;
@@ -373,11 +374,11 @@ async function searchOrders(userId, searchCriteria) {
           return p.seat_type;
         }).join(', ');
       } else if (order.status === 'pending') {
-        // 待确认订单：只返回席位类型，不包含座位号
+        // Pending confirmation orders: only return seat type, excluding seat number
         seatType = passengerDetails.map(p => p.seat_type).join(', ');
       }
       
-      // 返回下划线命名的字段（匹配前端期望）
+      // Return fields with underscore naming (matching frontend expectation)
       return {
         id: order.id,
         order_id: order.id,
@@ -399,7 +400,7 @@ async function searchOrders(userId, searchCriteria) {
     
     return ordersWithPassengers;
   } catch (error) {
-    console.error('搜索订单失败:', error);
+    logger.error('Failed to search orders', { error });
     throw error;
   }
 }

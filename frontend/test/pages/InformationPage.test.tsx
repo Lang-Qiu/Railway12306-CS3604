@@ -6,7 +6,7 @@ import * as userApi from '../../src/api/user';
 
 // Mock child components to focus on page logic
 vi.mock('../../src/components/TopNavigation', () => ({ default: () => <div data-testid="top-nav">TopNavigation</div> }));
-vi.mock('../../src/components/BottomNavigation', () => ({ default: () => <div data-testid="bottom-nav">BottomNavigation</div> }));
+vi.mock('../../src/components/CS3604_12306/BottomNavigation', () => ({ default: () => <div data-testid="bottom-nav">BottomNavigation</div> }));
 vi.mock('../../src/components/SideMenu', () => ({ default: () => <div data-testid="side-menu">SideMenu</div> }));
 vi.mock('../../src/components/BreadcrumbNavigation', () => ({ default: ({ items }: any) => <div data-testid="breadcrumb">{JSON.stringify(items)}</div> }));
 

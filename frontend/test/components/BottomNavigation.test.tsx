@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import BottomNavigation from '../../src/components/BottomNavigation'
+import BottomNavigation from '../../src/components/CS3604_12306/BottomNavigation'
 
 describe('BottomNavigation - 底部导航组件', () => {
   it('应该显示友情链接', () => {

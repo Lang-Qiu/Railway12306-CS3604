@@ -24,7 +24,7 @@ vi.mock('../../src/components/LoginForm', () => ({
   )
 }))
 
-vi.mock('../../src/components/BottomNavigation', () => ({
+vi.mock('../../src/components/CS3604_12306/BottomNavigation', () => ({
   default: ({ onFriendLinkClick }: { onFriendLinkClick: () => void }) => (
     <div data-testid="bottom-navigation" onClick={onFriendLinkClick}>
       Bottom Navigation

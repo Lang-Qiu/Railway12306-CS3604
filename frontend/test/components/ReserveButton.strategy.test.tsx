@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, test, expect, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
-import ReserveButton from '../../src/components/our12306/ReserveButton'
+import ReserveButton from '../../src/components/ReserveButton'
 
 describe('ReserveButton 策略管线', () => {
   test('未登录时弹出登录提示', () => {
